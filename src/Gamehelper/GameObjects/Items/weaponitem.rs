@@ -1,19 +1,23 @@
 use crate::item_handler::Item;
 
-struct Weapon_item{
+struct WeaponItem {
+
+    //Common stats for item
     name: String,
-    dmg_bonus: u8,
     equip_slot: Vec<String>,
     des: String,
+
+    //Specific WeaponItem stats:
+    dmg_bonus: u8,
 }
 
-impl Weapon_item {
+impl WeaponItem {
     fn get_bonus_dmg(&self){
 
     }
 }
 
-impl Item for Weapon_item{
+impl Item for WeaponItem {
     fn get_name(&self) -> &String {
         &self.name
     }
