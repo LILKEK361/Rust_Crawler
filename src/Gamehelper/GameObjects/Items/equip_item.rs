@@ -1,4 +1,4 @@
-use crate::item_handler::Item;
+use crate::gameobjects::item_handler::{Equipmintslots, Item};
 
 struct EquipItem{
     //Standart item attributs
@@ -6,7 +6,7 @@ struct EquipItem{
     des: String,
 
     //Stats of the item
-    equip_slot: Vec<String>,
+    equip_slot: Vec<Equipmintslots>,
     armor_buff: i8,
     dmg_buff: i8,
 
@@ -23,15 +23,15 @@ impl EquipItem {
 }
 
 impl Item for EquipItem {
-    fn get_name(&self) -> &String {
+    fn get_name(&self) -> &str {
         &self.name
     }
 
-    fn get_equipment_slot(&self) -> &Vec<String> {
+    fn get_equipment_slot(&self) -> &[Equipmintslots] {
         &self.equip_slot
     }
 
-    fn get_des(&self) -> &String {
+    fn get_des(&self) -> &str {
         &self.des
     }
 }

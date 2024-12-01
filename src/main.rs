@@ -12,26 +12,31 @@ use ratatui::{text::Text, Frame};
 
 
 
-#[path ="./Gamehelper/player.rs"]
-mod player;
+
 #[path= "Gamehelper/Gamelogic/uidrawer.rs"]
 mod uidrawer;
-#[path= "Gamehelper/GameObjects/item_handler.rs"]
-mod item_handler;
-#[path= "Gamehelper/GameObjects/Items/weaponitem.rs"]
-mod weaponitem;
-#[path= "Gamehelper/GameObjects/Items/equip_item.rs"]
-mod equip_item;
+
 #[path="Gamehelper/Gamelogic/terminaldrawer.rs"]
 mod terminaldrawer;
 #[path="Gamehelper/Gamelogic/Story.rs"]
 mod story;
 
+
+#[path="GameObjects.rs"]
+mod gameobjects;
+
 fn main() {
    
 
    let mut tdrawer = tdrawer::new();
-    tdrawer.draw_ui();
- 
+    let terminal = ratatui::init();
+    tdrawer.draw_ui(terminal);
+
+    /*
+    let player = gameobjects::player::Player::new();
+    let dungeon = gameobjects::dungeon::Dungeon::new(&player);
+    let _ = dungeon.Dungeon_run();
+ */
 }
+
    

@@ -7,6 +7,7 @@ name = "Rust_Crawler"
 version = "0.1.0"
 dependencies = [
  "crossterm",
+ "log",
  "ratatui",
 ]
 
