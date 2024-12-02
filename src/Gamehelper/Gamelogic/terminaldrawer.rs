@@ -179,10 +179,10 @@ impl tdrawer {
         
         let t = Text::raw(crate::story::MAINMENU);
         let input = Paragraph::new(self.input_string.as_str());
-        
-        
-        let log = log_ref().clone();
-        let messages: Vec<ListItem> = log.lock().unwrap().clone()
+
+
+
+        let messages: Vec<ListItem> = log_ref().lock().unwrap()
             .iter()
             .enumerate()
             .map(|(i, m)| {
@@ -237,9 +237,9 @@ impl tdrawer {
         let t = Text::raw(crate::story::MAINMENU);
         let input = Paragraph::new(self.input_string.as_str());
 
-        let log = log_ref().clone();
-            
-        let messages: Vec<ListItem> = log.lock().unwrap().clone()
+
+
+        let messages: Vec<ListItem> = log_ref().lock().unwrap()
             .iter()
             .enumerate()
             .map(|(i, m)| {

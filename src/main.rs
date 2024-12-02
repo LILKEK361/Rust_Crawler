@@ -28,7 +28,7 @@ mod story;
 #[path="GameObjects.rs"]
 mod gameobjects;
 
-pub fn log_ref() -> &'static Arc<Mutex<Vec<String>>>{
+pub fn log_ref() -> &'static Mutex<Vec<String>>{
     static LOG: OnceLock<Arc<Mutex<Vec<String>>>> = OnceLock::new();
 
     LOG.get_or_init(|| {
@@ -42,12 +42,11 @@ fn main() {
    
 
     let mut terminal = ratatui::init();
-    let dungeon = dungeon_ref().lock().unwrap();
-    let mut tdrawer = tdrawer::new();
-    //tdrawer.draw(&mut terminal).unwrap();
-    dungeon_ref().lock().unwrap().send_action("Test".into());
-    println!("{:?}", log_ref().lock().unwrap());
 
+    let mut tdrawer = tdrawer::new();
+    tdrawer.draw(&mut terminal).unwrap();
+
+    
 
 
 }
@@ -68,11 +67,11 @@ pub fn tdrawer_ref() -> &'static Mutex<tdrawer>{
     })
 }
 
-pub fn dungeon_ref() -> &'static Arc<Mutex<DungeonHandler>>{
-    static DUNGEON: OnceLock<Arc<Mutex<DungeonHandler>>> = OnceLock::new();
+pub fn dungeon_ref() -> &'static Mutex<DungeonHandler>{
+    static DUNGEON: OnceLock<Mutex<DungeonHandler>> = OnceLock::new();
 
     DUNGEON.get_or_init(||{
-        let dungeon = Arc::new(Mutex::new(DungeonHandler::new()));
+        let dungeon = Mutex::new(DungeonHandler::new());
         dungeon
     })
 }

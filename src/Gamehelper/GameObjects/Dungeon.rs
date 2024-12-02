@@ -15,6 +15,7 @@ use crate::log_ref;
 use crate::terminaldrawer::tdrawer;
 
 
+
 pub struct DungeonHandler{
 
         tx: Sender<()>,
@@ -27,6 +28,7 @@ pub struct DungeonHandler{
 
 impl DungeonHandler{
     pub fn new() -> Self {
+        
         let (tx, rx) = mpsc::channel();
 
         //Queue for storing the actions
@@ -37,19 +39,9 @@ impl DungeonHandler{
         let handle = std::thread::spawn(move || {
             loop {
 
-                match rx.recv() {
-                    Ok(_) => {
-                        println!("Thread received action");
-                        let mut log = log_ref().lock().unwrap();
-                        log.push("Received action".into());
-                    }
-                    Err(_) => {
-                        eprintln!("Thread exiting: channel disconnected");
-                        break;
-                    }
-                }
-                println!("Waiting for action");
-                //log_ref().lock().unwrap().deref_mut().push("Recived action".into());
+                //Check if there is any action in the queue
+                rx.recv().unwrap();
+                log_ref().lock().unwrap().deref_mut().push("Recived action".into());
 
             }
         });
