@@ -1,11 +1,12 @@
 use std::io::{self, stderr, stdout, Stdout};
-
-
+use std::ops::{Deref, DerefMut};
+use std::sync::MutexGuard;
 use ratatui::{crossterm::event::{self, Event, KeyCode, KeyEventKind}, layout, layout::{Constraint, Layout, Position}, style::{Color, Modifier, Style, Stylize}, text::{Line, Span, Text}, widgets::{Block, List, ListItem, Paragraph}, DefaultTerminal, Frame, Terminal};
 use ratatui::backend::CrosstermBackend;
 use ratatui::layout::Direction;
 use ratatui::widgets::Borders;
-use log::log;
+
+use crate::{Gamestate, gamestate_ref, log_ref, dungeon_ref};
 /*
     This file will handle the ui drawing for the game
 
@@ -16,7 +17,7 @@ pub struct tdrawer {
     input_string: String,
     character_index:usize,
     input_mode: InputMode,
-    commands: Vec<String>,
+
 }
 
 
@@ -26,7 +27,7 @@ enum InputMode {
     Editing,
 }
 
-struct home_screen {}
+
 
 impl tdrawer {
 
@@ -37,7 +38,6 @@ impl tdrawer {
 
             input_string: String::new(),
             input_mode: InputMode::Editing,
-            commands: Vec::new(),
             character_index: 0,
         }
     }
@@ -96,41 +96,58 @@ impl tdrawer {
         self.character_index = 0;
     }
 
-    fn submit_message(&mut self) {
-        self.commands.push(self.input_string.clone());
+    pub fn submit_message(&mut self) {
+        //log_ref().lock().unwrap().push(self.input_string.clone());
+        let dungeon = dungeon_ref().clone();
+        let mut dungeon_guard = dungeon.lock().unwrap();
+        dungeon_guard.send_action(self.input_string.clone());
         self.input_string.clear();
         self.reset_cursor();
     }
 
-    pub fn draw_ui(mut self, mut terminal: DefaultTerminal) -> io::Result<()> {
+
+
+    pub fn draw(&mut self, terminal: &mut DefaultTerminal) -> io::Result<&str> {
         loop{
-            
-            
+
             terminal.draw( |frame: &mut Frame| {
-                self.draw_home(frame);
-                ()
+                match (*gamestate_ref().lock().unwrap()) {
+                    Gamestate::home => {
+                        self.home_screen(frame);
+                    },
+                    Gamestate::run => {
+                        self.dungeon(frame);
+                    }
+                    Gamestate::end => todo!()
+                }
+
             })?;
             
             if let event::Event::Key(key) = event::read()? {
-                if key.kind == KeyEventKind::Press && key.code == KeyCode::Char('q') {
-                    return Ok(());
-                } else if (key.kind == KeyEventKind::Press) {
+               if (key.kind == KeyEventKind::Press) {
                     match key.code {
-                        KeyCode::Enter => self.submit_message(),
+                        KeyCode::Esc => return Ok("exit"),
+                        KeyCode::Enter => {
+                            self.submit_message();
+
+                        },
                         KeyCode::Char(to_insert) => self.enter_char(to_insert),
                         KeyCode::Backspace => self.delete_char(),
                         KeyCode::Left => self.move_cursor_left(),
                         KeyCode::Right => self.move_cursor_right(),
-                        KeyCode::Esc => self.input_mode = InputMode::Normal,
+
                         _ => {}
                     }
-                }
+               }
             
             }
+
+
         }
     }
     
-    pub fn draw_home(&self,frame: &mut Frame) {
+    pub fn home_screen(&self,frame: &mut Frame) {
+
         let  main_layout = Layout::default()
             .direction(Direction::Vertical)
             .margin(1)
@@ -162,9 +179,10 @@ impl tdrawer {
         
         let t = Text::raw(crate::story::MAINMENU);
         let input = Paragraph::new(self.input_string.as_str());
-
-        let messages: Vec<ListItem> = self
-            .commands
+        
+        
+        let log = log_ref().clone();
+        let messages: Vec<ListItem> = log.lock().unwrap().clone()
             .iter()
             .enumerate()
             .map(|(i, m)| {
@@ -185,11 +203,62 @@ impl tdrawer {
         frame.render_widget(log_block, big_screen[1]);
 
     }
-    
-    pub fn draw(frame: &mut Frame) {
-        let text = Text::raw("Hello World!");
-        frame.render_widget(text, frame.area());
-    }
+
+    fn dungeon(&self,frame: &mut Frame){
+        let  main_layout = Layout::default()
+        .direction(Direction::Vertical)
+        .margin(1)
+        .constraints(
+            [
+                Constraint::Percentage(90),
+                Constraint::Percentage(10),
+            ]
+                .as_ref(),
+        )
+        .split(frame.area());
+
+
+        let big_screen = layout::Layout::default()
+            .direction(Direction::Horizontal)
+            .margin(1)
+            .constraints(
+                [
+                    Constraint::Percentage(80),
+                    Constraint::Percentage(20),
+                ]
+                    .as_ref(),
+            )
+            .split(main_layout[0]);
+
+
+        let menu_block = Block::default().borders(Borders::ALL).title("Dungeon Menu").title_position(ratatui::widgets::block::Position::Top);
+        let input_block = Block::default().borders(Borders::ALL).title("Input").title_position(ratatui::widgets::block::Position::Top);
+
+        let t = Text::raw(crate::story::MAINMENU);
+        let input = Paragraph::new(self.input_string.as_str());
+
+        let log = log_ref().clone();
+            
+        let messages: Vec<ListItem> = log.lock().unwrap().clone()
+            .iter()
+            .enumerate()
+            .map(|(i, m)| {
+                let content = Line::from(Span::raw(format!("{i}: {m}")));
+                ListItem::new(content)
+            })
+            .collect();
+
+
+        let log_block = List::new(messages).block(Block::bordered().title("Command Log"));
+
+
+        frame.render_widget(&menu_block, big_screen[0]);
+
+        frame.render_widget(&input_block, main_layout[1]);
+        frame.render_widget(t, menu_block.inner(big_screen[0]));
+        frame.render_widget(input, input_block.inner(main_layout[1]));
+        frame.render_widget(log_block, big_screen[1]);}
+
 
 }
 

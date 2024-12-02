@@ -1,15 +1,89 @@
 use crate::gameobjects::monster_handler::{Monster};
 use std::any::Any;
+use std::collections::VecDeque;
 use std::io::Read;
+use std::ops::{Deref, DerefMut};
+use std::sync::{mpsc, Arc, Mutex};
+use std::sync::mpsc::{Receiver, Sender, channel};
+use std::thread;
+use std::time::Duration;
+use ratatui::DefaultTerminal;
 use crate::gameobjects::encounter::Encounter;
 
 use crate::gameobjects::player::Player;
+use crate::log_ref;
+use crate::terminaldrawer::tdrawer;
+
+
+pub struct DungeonHandler{
+
+        tx: Sender<()>,
+
+        action_queue: Arc<Mutex<VecDeque<String>>>
+
+
+
+}
+
+impl DungeonHandler{
+    pub fn new() -> Self {
+        let (tx, rx) = mpsc::channel();
+
+        //Queue for storing the actions
+        let action_queue = Arc::new(Mutex::new(VecDeque::<String>::new()));
+
+        let action_queue_clone = Arc::clone(&action_queue);
+
+        let handle = std::thread::spawn(move || {
+            loop {
+
+                match rx.recv() {
+                    Ok(_) => {
+                        println!("Thread received action");
+                        let mut log = log_ref().lock().unwrap();
+                        log.push("Received action".into());
+                    }
+                    Err(_) => {
+                        eprintln!("Thread exiting: channel disconnected");
+                        break;
+                    }
+                }
+                println!("Waiting for action");
+                //log_ref().lock().unwrap().deref_mut().push("Recived action".into());
+
+            }
+        });
+
+        drop(handle);
+
+        Self {
+            tx,
+            action_queue
+        }
+    }
+
+    pub fn send_action(&mut self, action: String) {
+        if let Ok(mut queue) = self.action_queue.lock() {
+            queue.push_back(action);
+        } else {
+            eprintln!("Failed to lock action queue");
+        }
+
+        if self.tx.send(()).is_err() {
+            eprintln!("Failed to send message to thread. Receiver might be closed.");
+        }
+    }
+
+
+}
+
 
 //This clase will handle the gameloop and all the game mechanics
 pub(crate) struct Dungeon<'a> {
     player: &'a Player<'a>,
     rooms: &'a [Dungeonroom],
     player_position: i8,
+
     //Will later be changed
 
 }
@@ -33,19 +107,10 @@ impl<'a> Dungeon<'a> {
     }
 
 
-    pub fn Dungeon_run(self)-> bool {
-        let mut input = String::new();
+    pub fn Dungeon_run(self, tdrawer: &mut tdrawer)-> bool {
 
-        while (self.player.alive) {
-            std::io::stdin().read_line(&mut input).unwrap();
 
-            if input == "" {
 
-            } else {
-                return false
-            }
-
-        }
 
         true
     }
