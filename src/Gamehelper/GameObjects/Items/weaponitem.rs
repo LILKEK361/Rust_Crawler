@@ -1,7 +1,8 @@
 use crate::gameobjects::encounter::{Encounter, EncounterTypes};
 use crate::gameobjects::item_handler::{Equipmintslots, Item};
 
-struct WeaponItem {
+#[derive(Clone)]
+pub(crate) struct WeaponItem {
 
     //Common stats for item
     name: String,
@@ -23,10 +24,10 @@ impl Item for WeaponItem {
         &self.name
     }
 
-    fn get_equipment_slot(&self) -> &[Equipmintslots] {
-        &self.equip_slot
+    fn get_equipment_slot(&self) -> Vec<crate::gameobjects::item_handler::Equipmintslots> {
+        self.equip_slot.clone()
     }
-    
+
     fn get_des(&self) -> &str {
         &self.des
     }

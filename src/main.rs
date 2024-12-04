@@ -12,8 +12,9 @@ use ratatui::{text::Text, Frame};
 
 
 use std::{sync::{Mutex, OnceLock}, thread::{sleep, Thread}};
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
+use ratatui::widgets::Block;
 use crate::gameobjects::dungeon::{Dungeon, DungeonHandler};
 
 #[path= "Gamehelper/Gamelogic/uidrawer.rs"]
@@ -36,6 +37,13 @@ pub fn log_ref() -> &'static Mutex<Vec<String>>{
     })
 }
 
+pub fn add_log(message: &str){
+    log_ref().lock().unwrap().push(message.into());
+}
+
+pub fn read_log() -> Vec<String>{
+    log_ref().lock().unwrap().clone()
+}
 
 
 fn main() {
@@ -43,8 +51,8 @@ fn main() {
 
     let mut terminal = ratatui::init();
 
-    let mut tdrawer = tdrawer::new();
-    tdrawer.draw(&mut terminal).unwrap();
+    tdrawer_ref().lock().unwrap().deref_mut().draw(&mut terminal).unwrap();
+
 
     
 
@@ -57,6 +65,17 @@ pub enum Gamestate {
     end,
 }
 
+impl PartialEq for Gamestate {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Gamestate::run, Gamestate::run) => true,
+            (Gamestate::home, Gamestate::home) => true,
+            (Gamestate::end, Gamestate::end) => true,
+            _ => false,
+        }
+    }
+}
+
 pub fn tdrawer_ref() -> &'static Mutex<tdrawer>{
     static TDRAWER: OnceLock<Mutex<tdrawer>> = OnceLock::new();
 
@@ -67,14 +86,7 @@ pub fn tdrawer_ref() -> &'static Mutex<tdrawer>{
     })
 }
 
-pub fn dungeon_ref() -> &'static Mutex<DungeonHandler>{
-    static DUNGEON: OnceLock<Mutex<DungeonHandler>> = OnceLock::new();
 
-    DUNGEON.get_or_init(||{
-        let dungeon = Mutex::new(DungeonHandler::new());
-        dungeon
-    })
-}
 
 pub fn gamestate_ref() -> &'static Mutex<Gamestate>{
     static GAMESTATE: OnceLock<Mutex<Gamestate>> = OnceLock::new();

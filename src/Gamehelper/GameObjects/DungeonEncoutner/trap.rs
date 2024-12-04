@@ -1,11 +1,12 @@
 use crate::gameobjects::encounter::Encounter;
 
-struct Trap {
+#[derive(Clone)]
+pub(crate) struct Trap {
 
 }
 
 impl Encounter for Trap {
-    fn get_Name(&self) -> &str {
+    fn get_Name(&self) ->&str {
         todo!()
     }
 

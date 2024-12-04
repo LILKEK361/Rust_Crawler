@@ -1,6 +1,8 @@
 use crate::gameobjects::item_handler::{Equipmintslots, Item};
 
-struct EquipItem{
+
+#[derive(Clone)]
+pub(crate) struct EquipItem{
     //Standart item attributs
     name: String,
     des: String,
@@ -27,8 +29,8 @@ impl Item for EquipItem {
         &self.name
     }
 
-    fn get_equipment_slot(&self) -> &[Equipmintslots] {
-        &self.equip_slot
+    fn get_equipment_slot(&self) -> Vec<crate::gameobjects::item_handler::Equipmintslots> {
+        self.equip_slot.clone()
     }
 
     fn get_des(&self) -> &str {

@@ -1,12 +1,16 @@
+use std::any::Any;
+use std::cmp::PartialEq;
 use std::io::{self, stderr, stdout, Stdout};
 use std::ops::{Deref, DerefMut};
-use std::sync::MutexGuard;
+use std::sync::{Mutex, MutexGuard, OnceLock};
 use ratatui::{crossterm::event::{self, Event, KeyCode, KeyEventKind}, layout, layout::{Constraint, Layout, Position}, style::{Color, Modifier, Style, Stylize}, text::{Line, Span, Text}, widgets::{Block, List, ListItem, Paragraph}, DefaultTerminal, Frame, Terminal};
 use ratatui::backend::CrosstermBackend;
 use ratatui::layout::Direction;
+
 use ratatui::widgets::Borders;
 
-use crate::{Gamestate, gamestate_ref, log_ref, dungeon_ref};
+use crate::{Gamestate, gamestate_ref, log_ref, read_log, add_log};
+use crate::gameobjects::dungeon::{Dungeon, DungeonHandler};
 /*
     This file will handle the ui drawing for the game
 
@@ -17,6 +21,10 @@ pub struct tdrawer {
     input_string: String,
     character_index:usize,
     input_mode: InputMode,
+    dislay: Block<'static>,
+
+
+
 
 }
 
@@ -39,6 +47,8 @@ impl tdrawer {
             input_string: String::new(),
             input_mode: InputMode::Editing,
             character_index: 0,
+            dislay: Block::default().borders(Borders::ALL).title("Placeholder").title_position(ratatui::widgets::block::Position::Top),
+
         }
     }
 
@@ -97,10 +107,21 @@ impl tdrawer {
     }
 
     pub fn submit_message(&mut self) {
-        //log_ref().lock().unwrap().push(self.input_string.clone());
-        let dungeon = dungeon_ref().clone();
-        let mut dungeon_guard = dungeon.lock().unwrap();
-        dungeon_guard.send_action(self.input_string.clone());
+        add_log(&self.input_string);
+
+        if(self.input_string.clone() == "start" && *gamestate_ref().lock().unwrap() == Gamestate::home){
+            *gamestate_ref().lock().unwrap() = Gamestate::run;
+            DungeonHandler::dungeon_handler_ref().lock().unwrap().send_action("start".into());
+        }else if((self.input_string.clone() == "exit" || self.input_string.clone() == "end") && *gamestate_ref().lock().unwrap() == Gamestate::run){
+            *gamestate_ref().lock().unwrap() = Gamestate::home;
+        }
+        else if(*gamestate_ref().lock().unwrap() == Gamestate::run){
+            DungeonHandler::dungeon_handler_ref().lock().unwrap().send_action(self.input_string.clone());
+        }
+
+
+
+
         self.input_string.clear();
         self.reset_cursor();
     }
@@ -111,12 +132,13 @@ impl tdrawer {
         loop{
 
             terminal.draw( |frame: &mut Frame| {
+
                 match (*gamestate_ref().lock().unwrap()) {
                     Gamestate::home => {
                         self.home_screen(frame);
                     },
                     Gamestate::run => {
-                        self.dungeon(frame);
+                        self.home_screen(frame);
                     }
                     Gamestate::end => todo!()
                 }
@@ -148,7 +170,7 @@ impl tdrawer {
     
     pub fn home_screen(&self,frame: &mut Frame) {
 
-        let  main_layout = Layout::default()
+        let main_layout = Layout::default()
             .direction(Direction::Vertical)
             .margin(1)
             .constraints(
@@ -174,72 +196,28 @@ impl tdrawer {
             .split(main_layout[0]);
         
         
-        let menu_block = Block::default().borders(Borders::ALL).title("Main Menu").title_position(ratatui::widgets::block::Position::Top);
-        let input_block = Block::default().borders(Borders::ALL).title("Input").title_position(ratatui::widgets::block::Position::Top);
+        let menu_block = Block::default().borders(Borders::ALL).title("Menu").title_position(ratatui::widgets::block::Position::Top);
+
         
         let t = Text::raw(crate::story::MAINMENU);
         let input = Paragraph::new(self.input_string.as_str());
 
 
 
-        let messages: Vec<ListItem> = log_ref().lock().unwrap()
-            .iter()
-            .enumerate()
-            .map(|(i, m)| {
-                let content = Line::from(Span::raw(format!("{i}: {m}")));
-                ListItem::new(content)
-            })
-            .collect();
 
-
-        let log_block = List::new(messages).block(Block::bordered().title("Command Log"));
-
+        let input_block = Block::default().borders(Borders::ALL).title("Input").title_position(ratatui::widgets::block::Position::Top);
 
         frame.render_widget(&menu_block, big_screen[0]);
 
         frame.render_widget(&input_block, main_layout[1]);
-        frame.render_widget(t, menu_block.inner(big_screen[0]));
+        frame.render_widget(Self::read_display().unwrap(), menu_block.inner(big_screen[0]) );
         frame.render_widget(input, input_block.inner(main_layout[1]));
-        frame.render_widget(log_block, big_screen[1]);
+        frame.render_widget(Self::get_log(), big_screen[1]);
 
     }
 
-    fn dungeon(&self,frame: &mut Frame){
-        let  main_layout = Layout::default()
-        .direction(Direction::Vertical)
-        .margin(1)
-        .constraints(
-            [
-                Constraint::Percentage(90),
-                Constraint::Percentage(10),
-            ]
-                .as_ref(),
-        )
-        .split(frame.area());
-
-
-        let big_screen = layout::Layout::default()
-            .direction(Direction::Horizontal)
-            .margin(1)
-            .constraints(
-                [
-                    Constraint::Percentage(80),
-                    Constraint::Percentage(20),
-                ]
-                    .as_ref(),
-            )
-            .split(main_layout[0]);
-
-
-        let menu_block = Block::default().borders(Borders::ALL).title("Dungeon Menu").title_position(ratatui::widgets::block::Position::Top);
-        let input_block = Block::default().borders(Borders::ALL).title("Input").title_position(ratatui::widgets::block::Position::Top);
-
-        let t = Text::raw(crate::story::MAINMENU);
-        let input = Paragraph::new(self.input_string.as_str());
-
-
-
-        let messages: Vec<ListItem> = log_ref().lock().unwrap()
+    pub fn get_log() ->  List<'static>{
+        let messages: Vec<ListItem> = read_log()
             .iter()
             .enumerate()
             .map(|(i, m)| {
@@ -250,14 +228,31 @@ impl tdrawer {
 
 
         let log_block = List::new(messages).block(Block::bordered().title("Command Log"));
+        log_block
+    }
+
+    pub fn to_display() -> &'static Mutex<Block<'static>>{
+        static DISPLAY: OnceLock<Mutex<Block<>>> = OnceLock::new();
+
+        DISPLAY.get_or_init(||{
+            let display = Mutex::new(Block::default().title("Game"));
+            display
+        })
+    }
+
+    pub fn update_display(new_block: Block<'static>) {
+        if let Ok(mut block) = Self::to_display().lock(){
+            *block = new_block
+        }else {
+            eprintln!("Failed to lock display");
+        }
+    }
+
+    pub fn read_display() -> Option<Block<'static>> {
+        Self::to_display().lock().ok().map(|block| block.clone())
+    }
 
 
-        frame.render_widget(&menu_block, big_screen[0]);
-
-        frame.render_widget(&input_block, main_layout[1]);
-        frame.render_widget(t, menu_block.inner(big_screen[0]));
-        frame.render_widget(input, input_block.inner(main_layout[1]));
-        frame.render_widget(log_block, big_screen[1]);}
 
 
 }

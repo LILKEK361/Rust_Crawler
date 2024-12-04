@@ -1,28 +1,33 @@
 use std::net::Incoming;
 use crate::gameobjects::item_handler::Equipmintslots;
+use crate::gameobjects::item_handler::Item;
 
-pub(crate) struct Inventoryslot<'a>{
-    name: &'a str,
-    eq_slot: &'a [Equipmintslots]
+#[derive(Clone)]
+pub(crate) struct Inventoryslot{
+    name: String,
+    eq_slot:  Equipmintslots,
 }
 
- impl Inventoryslot<'static> {
+ impl Inventoryslot {
+
     pub fn empty()-> Self {
-        Self {
-            name: &"Empty",
-            eq_slot: &[Equipmintslots::None],
+       Self {
+            name: "Empty".into(),
+            eq_slot: Equipmintslots::None,
         }
     }
 }
 
-impl crate::gameobjects::item_handler::Item for Inventoryslot<'static> {
+
+
+impl Item for Inventoryslot {
     fn get_name(&self) -> &str {
         &self.name
     }
 
-    fn get_equipment_slot(&self) -> &[crate::gameobjects::item_handler::Equipmintslots] {
+    fn get_equipment_slot(&self) -> Vec<crate::gameobjects::item_handler::Equipmintslots> {
 
-        &self.eq_slot
+        vec![self.eq_slot.clone()]
     }
 
     fn get_des(&self) -> &str {
