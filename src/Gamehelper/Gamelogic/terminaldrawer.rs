@@ -3,10 +3,10 @@ use std::cmp::PartialEq;
 use std::io::{self, stderr, stdout, Stdout};
 use std::ops::{Deref, DerefMut};
 use std::sync::{Mutex, MutexGuard, OnceLock};
+use crossterm::queue;
 use ratatui::{crossterm::event::{self, Event, KeyCode, KeyEventKind}, layout, layout::{Constraint, Layout, Position}, style::{Color, Modifier, Style, Stylize}, text::{Line, Span, Text}, widgets::{Block, List, ListItem, Paragraph}, DefaultTerminal, Frame, Terminal};
 use ratatui::backend::CrosstermBackend;
-use ratatui::layout::Direction;
-
+use ratatui::layout::{Direction, Rect};
 use ratatui::widgets::Borders;
 
 use crate::{Gamestate, gamestate_ref, log_ref, read_log, add_log};
@@ -133,15 +133,7 @@ impl tdrawer {
 
             terminal.draw( |frame: &mut Frame| {
 
-                match (*gamestate_ref().lock().unwrap()) {
-                    Gamestate::home => {
-                        self.home_screen(frame);
-                    },
-                    Gamestate::run => {
-                        self.home_screen(frame);
-                    }
-                    Gamestate::end => todo!()
-                }
+                self.screen(frame);
 
             })?;
             
@@ -168,8 +160,7 @@ impl tdrawer {
         }
     }
     
-    pub fn home_screen(&self,frame: &mut Frame) {
-
+    pub fn screen(&self, frame: &mut Frame) {
         let main_layout = Layout::default()
             .direction(Direction::Vertical)
             .margin(1)
@@ -178,7 +169,7 @@ impl tdrawer {
                     Constraint::Percentage(90),
                     Constraint::Percentage(10),
                 ]
-                .as_ref(),
+                    .as_ref(),
             )
             .split(frame.area());
 
@@ -191,32 +182,40 @@ impl tdrawer {
                     Constraint::Percentage(80),
                     Constraint::Percentage(20),
                 ]
-                .as_ref(),
+                    .as_ref(),
             )
             .split(main_layout[0]);
-        
-        
-        let menu_block = Block::default().borders(Borders::ALL).title("Menu").title_position(ratatui::widgets::block::Position::Top);
 
-        
+
+
+
+
         let t = Text::raw(crate::story::MAINMENU);
         let input = Paragraph::new(self.input_string.as_str());
 
 
-
-
         let input_block = Block::default().borders(Borders::ALL).title("Input").title_position(ratatui::widgets::block::Position::Top);
 
-        frame.render_widget(&menu_block, big_screen[0]);
 
         frame.render_widget(&input_block, main_layout[1]);
-        frame.render_widget(Self::read_display().unwrap(), menu_block.inner(big_screen[0]) );
         frame.render_widget(input, input_block.inner(main_layout[1]));
         frame.render_widget(Self::get_log(), big_screen[1]);
 
+        if(*gamestate_ref().lock().unwrap() == Gamestate::run){
+            let big_container = Block::default().borders(Borders::ALL).title("Dungeon").title_position(ratatui::widgets::block::Position::Top);
+            tdrawer::display_dungeon_context(frame,&big_container ,&big_screen[0]);
+            frame.render_widget(big_container, big_screen[0])
+        } else {
+            let big_container = Block::default().borders(Borders::ALL).title("Menu").title_position(ratatui::widgets::block::Position::Top);
+            frame.render_widget(big_container, big_screen[0])
+        };
+
+
+
+
     }
 
-    pub fn get_log() ->  List<'static>{
+pub fn get_log() ->  List<'static>{
         let messages: Vec<ListItem> = read_log()
             .iter()
             .enumerate()
@@ -231,27 +230,32 @@ impl tdrawer {
         log_block
     }
 
-    pub fn to_display() -> &'static Mutex<Block<'static>>{
-        static DISPLAY: OnceLock<Mutex<Block<>>> = OnceLock::new();
-
-        DISPLAY.get_or_init(||{
-            let display = Mutex::new(Block::default().title("Game"));
-            display
+    pub fn render_queue() -> &'static Mutex<String> {
+        static QUEUE: OnceLock<Mutex<String>> = OnceLock::new();
+        QUEUE.get_or_init(||{
+            let queue = Mutex::new(String::new());
+            queue
         })
     }
 
-    pub fn update_display(new_block: Block<'static>) {
-        if let Ok(mut block) = Self::to_display().lock(){
-            *block = new_block
+    pub fn set_render_queue(to_display: String){
+        if let Ok(mut queue) = Self::render_queue().lock(){
+            *queue = to_display
         }else {
-            eprintln!("Failed to lock display");
+            eprintln!("Failed to lock render");
         }
     }
 
-    pub fn read_display() -> Option<Block<'static>> {
-        Self::to_display().lock().ok().map(|block| block.clone())
-    }
 
+    pub fn display_dungeon_context(frame: &mut Frame,container: &Block, area: &Rect) {
+
+        if(Self::render_queue().lock().unwrap().eq(&String::from("Map"))){
+            let Map =Block::new().title("Map");
+            frame.render_widget(&Map,container.inner(*area));
+        }
+
+
+    }
 
 
 

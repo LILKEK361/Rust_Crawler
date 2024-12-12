@@ -11,6 +11,8 @@ use std::time::Duration;
 use ratatui::DefaultTerminal;
 
 use ratatui::widgets::{Block, Borders};
+
+use serde::de::Unexpected::Str;
 use serde::Serialize;
 use crate::gameobjects::encounter::{Encounter, EncounterTypes};
 
@@ -18,18 +20,8 @@ use crate::gameobjects::player::Player;
 use crate::{add_log, log_ref, tdrawer_ref};
 use crate::terminaldrawer::tdrawer;
 
-enum DungeonCommands{
-    Lookaround,
-}
 
-//Returns the possible command in long and short form
-impl DungeonCommands{
-    pub fn to_string(&self) -> (String, String){
-        match self {
-            DungeonCommands::Lookaround => ("Look around".into(), "la".into()),
-        }
-    }
-}
+
 
 pub struct DungeonHandler{
 
@@ -70,10 +62,14 @@ impl DungeonHandler{
                 rx.recv().unwrap();
                 //match logic for player inputs needs to be added next
                 let mut action_queue = action_queue_clone.lock().unwrap();
+                let action = action_queue.pop_front().unwrap();
 
-                match let Some(action) = action_queue.pop_front().unwrap() {
-
+                if(action.eq(&String::from("la")) ){
+                    //let Map: Block = Block::new();
+                    tdrawer::set_render_queue(String::from("Map"))
+                    //tdrawer::update_display(Block::new().title("Map"))
                 }
+
 
             }
         });
@@ -133,9 +129,7 @@ pub(crate) struct Dungeon {
 
     rooms: Vec<Vec<Dungeonroom>>,
     player_position: i8,
-    //current_room: Arc<Mutex<Dungeonroom>>,
-
-    //Will later be changed
+    DungeonCommands: Vec<String>
 
 }
 
@@ -144,10 +138,15 @@ impl Dungeon {
 
     pub fn new( )-> Self{
         let rooms= Self::generat_generate_dungeon_rooms(0);
+        let DUNGEON_COMMANDS: Vec<String> = Vec::from([
+            String::from("la"),
+            String::from("Look around"),
+        ]);
         let dungeon = Self{
 
             rooms,
             player_position: 0,
+            DungeonCommands: DUNGEON_COMMANDS,
         };
         dungeon
     }
@@ -157,10 +156,10 @@ impl Dungeon {
     }
 
 
-    pub fn Dungeon_run(self, )-> bool {
 
-        true
-    }
+
+
+
 
     pub fn dungeon_ref() -> &'static Arc<Mutex<Dungeon>> {
         static DUNGEON: OnceLock<Arc<Mutex<Dungeon>>>  = OnceLock::new();
