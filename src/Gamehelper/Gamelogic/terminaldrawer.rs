@@ -1,16 +1,13 @@
-use std::any::Any;
-use std::cmp::PartialEq;
-use std::io::{self, stderr, stdout, Stdout};
-use std::ops::{Deref, DerefMut};
-use std::sync::{Mutex, MutexGuard, OnceLock};
-use crossterm::queue;
-use ratatui::{crossterm::event::{self, Event, KeyCode, KeyEventKind}, layout, layout::{Constraint, Layout, Position}, style::{Color, Modifier, Style, Stylize}, text::{Line, Span, Text}, widgets::{Block, List, ListItem, Paragraph}, DefaultTerminal, Frame, Terminal};
-use ratatui::backend::CrosstermBackend;
 use ratatui::layout::{Direction, Rect};
+use ratatui::{crossterm::event::{self, KeyCode, KeyEventKind}, layout, layout::{Constraint, Layout}, text::{Line, Span, Text}, widgets::{Block, List, ListItem, Paragraph}, DefaultTerminal, Frame};
+use std::cmp::PartialEq;
+use std::io::{self};
+use std::sync::{Mutex, OnceLock};
+
 use ratatui::widgets::Borders;
 
-use crate::{Gamestate, gamestate_ref, log_ref, read_log, add_log};
 use crate::gameobjects::dungeon::{Dungeon, DungeonHandler};
+use crate::{add_log, gamestate_ref, read_log, Gamestate};
 /*
     This file will handle the ui drawing for the game
 
@@ -202,20 +199,61 @@ impl tdrawer {
         frame.render_widget(Self::get_log(), big_screen[1]);
 
         if(*gamestate_ref().lock().unwrap() == Gamestate::run){
+
             let big_container = Block::default().borders(Borders::ALL).title("Dungeon").title_position(ratatui::widgets::block::Position::Top);
-            tdrawer::display_dungeon_context(frame,&big_container ,&big_screen[0]);
-            frame.render_widget(big_container, big_screen[0])
+
+            frame.render_widget(&big_container, big_screen[0]);
+            tdrawer::display_dungeon_context(frame, &big_container ,&big_screen[0]);
+
         } else {
             let big_container = Block::default().borders(Borders::ALL).title("Menu").title_position(ratatui::widgets::block::Position::Top);
             frame.render_widget(big_container, big_screen[0])
         };
+
+    }
+
+    pub fn display_dungeon_context(frame: &mut Frame,container: &Block, area: &Rect) {
+
+
+        let command = Self::render_queue().lock().unwrap();
+        if command.eq(&String::from("map")) {
+            Self::draw_dungeon(frame,container,area);
+        }
+
 
 
 
 
     }
 
-pub fn get_log() ->  List<'static>{
+    pub fn draw_dungeon(frame: &mut Frame,container: &Block, area: &Rect){
+        let dungeon = Dungeon::dungeon_ref().lock().unwrap();
+        let dungeonrooms = dungeon.get_all_rooms();
+
+        let mapLayout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints((&dungeonrooms).iter().map(|_| { Constraint::Percentage(10) }))
+            .split(container.inner(*area));
+
+        let rows = dungeonrooms.len();
+
+        for i in 0..rows {
+            let dungeonroomrow = &dungeonrooms[i];
+            let row_size = &dungeonrooms[i].len();
+            let row_layout = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints(dungeonrooms[i].iter().map(|_|{Constraint::Percentage(10)}))
+                .split(mapLayout[i]);
+
+
+            for j in 0..*row_size {
+                frame.render_widget(Block::default().title(dungeonroomrow[j].display_room()[0]).borders(Borders::ALL),row_layout[j])
+            }
+
+        }
+    }
+
+    pub fn get_log() ->  List<'static>{
         let messages: Vec<ListItem> = read_log()
             .iter()
             .enumerate()
@@ -247,15 +285,9 @@ pub fn get_log() ->  List<'static>{
     }
 
 
-    pub fn display_dungeon_context(frame: &mut Frame,container: &Block, area: &Rect) {
-
-        if(Self::render_queue().lock().unwrap().eq(&String::from("Map"))){
-            let Map =Block::new().title("Map");
-            frame.render_widget(&Map,container.inner(*area));
-        }
 
 
-    }
+
 
 
 

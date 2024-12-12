@@ -51,9 +51,9 @@ impl DungeonHandler{
         let dungeon_clone = Arc::clone(&Dungeon::dungeon_ref());
 
 
-        let handle = std::thread::spawn(move || {
+        let handle = thread::spawn(move || {
 
-            let dungeon = dungeon_clone.lock().unwrap();
+
 
 
             loop {
@@ -64,10 +64,14 @@ impl DungeonHandler{
                 let mut action_queue = action_queue_clone.lock().unwrap();
                 let action = action_queue.pop_front().unwrap();
 
-                if(action.eq(&String::from("la")) ){
-                    //let Map: Block = Block::new();
-                    tdrawer::set_render_queue(String::from("Map"))
-                    //tdrawer::update_display(Block::new().title("Map"))
+                if(action.to_ascii_lowercase().eq(&String::from("map")) ){
+
+                    tdrawer::set_render_queue(String::from("map"));
+                    //let dungeon = dungeon_clone.lock().unwrap();
+
+                } else if(action.eq(&String::from("la"))){
+
+                    tdrawer::set_render_queue(String::from("room"));
                 }
 
 
@@ -152,7 +156,10 @@ impl Dungeon {
     }
     pub fn generat_generate_dungeon_rooms(nofrooms: i8) -> Vec<Vec<Dungeonroom>> {
 
-       vec![vec![Dungeonroom::MonsterRoom("Goblin")]]
+       vec![
+           vec![Dungeonroom::MonsterRoom("Goblin"),Dungeonroom::MonsterRoom("Goblin"),Dungeonroom::MonsterRoom("Goblin"),Dungeonroom::MonsterRoom("Goblin")],
+           vec![Dungeonroom::MonsterRoom("Goblin"),Dungeonroom::MonsterRoom("Goblin"),Dungeonroom::MonsterRoom("Goblin"),Dungeonroom::MonsterRoom("Goblin")],
+           vec![Dungeonroom::MonsterRoom("Goblin"),Dungeonroom::MonsterRoom("Goblin"),Dungeonroom::MonsterRoom("Goblin"),Dungeonroom::MonsterRoom("Goblin")]]
     }
 
 
@@ -174,15 +181,17 @@ impl Dungeon {
     pub fn get_current_room(&self) -> &Dungeonroom {
         &self.rooms[0][0]
     }
+    pub fn get_all_rooms(&self) -> &Vec<Vec<Dungeonroom>> {&self.rooms}
 
 
 }
 
 
-pub struct Dungeonroom {
+pub struct Dungeonroom{
     encoutner: EncounterTypes ,
 
 }
+
 
 impl Dungeonroom{
 
@@ -194,9 +203,9 @@ impl Dungeonroom{
         }
     }
 
-    pub fn display_room() -> Block<'static>{
-        let room = Block::new().title("Room").borders(Borders::ALL);
-        room
+    pub fn display_room(&self) -> Vec<&'static str> {
+       let roominfo = vec!["room"];
+        roominfo
     }
 
 
