@@ -1,8 +1,8 @@
 use crate::gameobjects::monster::{Monster};
 use std::any::Any;
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 use std::io::Read;
-use std::iter::Once;
+use std::iter::{Map, Once};
 use std::ops::{Deref, DerefMut};
 use std::sync::{mpsc, Arc, Mutex, OnceLock};
 use std::sync::mpsc::{Receiver, Sender, channel};
@@ -67,11 +67,11 @@ impl DungeonHandler{
                 if(action.to_ascii_lowercase().eq(&String::from("map")) ){
 
                     tdrawer::set_render_queue(String::from("map"));
-                    //let dungeon = dungeon_clone.lock().unwrap();
 
                 } else if(action.eq(&String::from("la"))){
 
                     tdrawer::set_render_queue(String::from("room"));
+
                 }
 
 
@@ -188,10 +188,20 @@ impl Dungeon {
 
 
 pub struct Dungeonroom{
-    encoutner: EncounterTypes ,
+    encoutner: EncounterTypes,
+    visited: bool,
 
 }
 
+impl Dungeonroom {
+    pub(crate) fn get_room_title(&self) -> String {
+        if(!*&self.visited){
+            "???".to_string()
+        } else {
+            self.encoutner.get_Type().to_string()
+        }
+    }
+}
 
 impl Dungeonroom{
 
@@ -200,13 +210,11 @@ impl Dungeonroom{
 
         Self{
             encoutner: EncounterTypes::Monster(Monster::new("Goblin".to_string())),
+            visited: false,
         }
     }
 
-    pub fn display_room(&self) -> Vec<&'static str> {
-       let roominfo = vec!["room"];
-        roominfo
-    }
+
 
 
 

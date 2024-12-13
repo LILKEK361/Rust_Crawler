@@ -2,12 +2,13 @@ use ratatui::layout::{Direction, Rect};
 use ratatui::{crossterm::event::{self, KeyCode, KeyEventKind}, layout, layout::{Constraint, Layout}, text::{Line, Span, Text}, widgets::{Block, List, ListItem, Paragraph}, DefaultTerminal, Frame};
 use std::cmp::PartialEq;
 use std::io::{self};
+use std::ops::Deref;
 use std::sync::{Mutex, OnceLock};
 
 use ratatui::widgets::Borders;
 
 use crate::gameobjects::dungeon::{Dungeon, DungeonHandler};
-use crate::{add_log, gamestate_ref, read_log, Gamestate};
+use crate::{add_log, gamestate_ref, read_log, tdrawer_ref, Gamestate};
 /*
     This file will handle the ui drawing for the game
 
@@ -19,13 +20,12 @@ pub struct tdrawer {
     character_index:usize,
     input_mode: InputMode,
     dislay: Block<'static>,
+    log_start: i32,
 
 
 
 
 }
-
-
 
 enum InputMode {
     Normal,
@@ -45,7 +45,7 @@ impl tdrawer {
             input_mode: InputMode::Editing,
             character_index: 0,
             dislay: Block::default().borders(Borders::ALL).title("Placeholder").title_position(ratatui::widgets::block::Position::Top),
-
+            log_start: 0,
         }
     }
 
@@ -117,8 +117,6 @@ impl tdrawer {
         }
 
 
-
-
         self.input_string.clear();
         self.reset_cursor();
     }
@@ -146,6 +144,9 @@ impl tdrawer {
                         KeyCode::Backspace => self.delete_char(),
                         KeyCode::Left => self.move_cursor_left(),
                         KeyCode::Right => self.move_cursor_right(),
+                        KeyCode::Down => {
+                            if(true){}
+                        }
 
                         _ => {}
                     }
@@ -247,14 +248,19 @@ impl tdrawer {
 
 
             for j in 0..*row_size {
-                frame.render_widget(Block::default().title(dungeonroomrow[j].display_room()[0]).borders(Borders::ALL),row_layout[j])
+                let mut roomtitle = dungeonroomrow[j].get_room_title();
+
+                frame.render_widget(Block::default()
+                                        .title(roomtitle)
+                                        .borders(Borders::ALL), row_layout[j])
             }
 
         }
     }
 
     pub fn get_log() ->  List<'static>{
-        let messages: Vec<ListItem> = read_log()
+
+        let mut messages: Vec<ListItem> = read_log()
             .iter()
             .enumerate()
             .map(|(i, m)| {
@@ -263,6 +269,7 @@ impl tdrawer {
             })
             .collect();
 
+        messages = messages.into_iter().rev().collect();
 
         let log_block = List::new(messages).block(Block::bordered().title("Command Log"));
         log_block

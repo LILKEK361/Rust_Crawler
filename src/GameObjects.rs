@@ -1,7 +1,7 @@
 #[path="Gamehelper/GameObjects/encounter.rs"]
 mod encounter;
 
-#[path= "Gamehelper/GameObjects/item_handler.rs"]
+#[path= "Gamehelper/GameObjects/Item_Handler.rs"]
 mod item_handler;
 #[path= "Gamehelper/GameObjects/Items/weaponitem.rs"]
 mod weaponitem;
@@ -11,7 +11,7 @@ mod equip_item;
 pub(crate) mod player;
 #[path= "Gamehelper/GameObjects/Dungeon.rs"]
 pub(crate) mod dungeon;
-#[path="Gamehelper/GameObjects/Items/Inventoryslot.rs"]
+#[path="Gamehelper/GameObjects/Items/InventorySlot.rs"]
 mod inventoryslot;
 #[path= "Gamehelper/GameObjects/DungeonEncoutner/trap.rs"]
 mod trap;

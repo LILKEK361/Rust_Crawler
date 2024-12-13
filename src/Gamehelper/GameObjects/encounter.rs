@@ -20,7 +20,11 @@ impl Encounter for EncounterTypes {
     }
 
     fn get_Type(&self) -> &str {
-        todo!()
+        match self {
+            EncounterTypes::Monster(monster) => "Monster",
+            EncounterTypes::Trap(trap) => "Trap",
+            EncounterTypes::Empty => "Empty",
+        }
     }
 
     fn get_description(&self) -> &str {
