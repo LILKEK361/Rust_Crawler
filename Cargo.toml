@@ -7,4 +7,5 @@ edition = "2021"
 crossterm = "0.28.1"
 ratatui = "0.29.0"
 serde = { version = "1.0.215", features = ["derive"] }
+log = "0.4.22"
 

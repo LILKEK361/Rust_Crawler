@@ -4,9 +4,11 @@ use std::cmp::PartialEq;
 use std::io::{self};
 use std::ops::Deref;
 use std::sync::{Mutex, OnceLock};
+use crossterm::event::read;
 
 use ratatui::widgets::Borders;
-
+use log::log;
+use ratatui::prelude::Stylize;
 use crate::gameobjects::dungeon::{Dungeon, DungeonHandler};
 use crate::{add_log, gamestate_ref, read_log, tdrawer_ref, Gamestate};
 /*
@@ -20,7 +22,7 @@ pub struct tdrawer {
     character_index:usize,
     input_mode: InputMode,
     dislay: Block<'static>,
-    log_start: i32,
+    log_index: i8,
 
 
 
@@ -45,7 +47,8 @@ impl tdrawer {
             input_mode: InputMode::Editing,
             character_index: 0,
             dislay: Block::default().borders(Borders::ALL).title("Placeholder").title_position(ratatui::widgets::block::Position::Top),
-            log_start: 0,
+            log_index: 15,
+
         }
     }
 
@@ -137,15 +140,26 @@ impl tdrawer {
                     match key.code {
                         KeyCode::Esc => return Ok("exit"),
                         KeyCode::Enter => {
-                            self.submit_message();
-
+                            if(self.input_string != "") {
+                                self.submit_message();
+                            }
                         },
                         KeyCode::Char(to_insert) => self.enter_char(to_insert),
                         KeyCode::Backspace => self.delete_char(),
                         KeyCode::Left => self.move_cursor_left(),
                         KeyCode::Right => self.move_cursor_right(),
                         KeyCode::Down => {
-                            if(true){}
+                            if(read_log().len() >= (self.log_index + 1) as usize) {
+                                self.log_index += 1;
+
+                            }
+
+                        }
+                        KeyCode::Up => {
+                            if (10 < (self.log_index - 1)) {
+                                self.log_index -= 1;
+
+                            }
                         }
 
                         _ => {}
@@ -197,7 +211,11 @@ impl tdrawer {
 
         frame.render_widget(&input_block, main_layout[1]);
         frame.render_widget(input, input_block.inner(main_layout[1]));
-        frame.render_widget(Self::get_log(), big_screen[1]);
+        if(read_log().len() as i8 > 14i8){
+            frame.render_widget(Self::get_specific_log((read_log().len() as i8 - self.log_index ), read_log().len() as i8), big_screen[1]);
+        }else {
+            frame.render_widget(Self::get_log(), big_screen[1]);
+        }
 
         if(*gamestate_ref().lock().unwrap() == Gamestate::run){
 
@@ -215,16 +233,10 @@ impl tdrawer {
 
     pub fn display_dungeon_context(frame: &mut Frame,container: &Block, area: &Rect) {
 
-
         let command = Self::render_queue().lock().unwrap();
         if command.eq(&String::from("map")) {
             Self::draw_dungeon(frame,container,area);
         }
-
-
-
-
-
     }
 
     pub fn draw_dungeon(frame: &mut Frame,container: &Block, area: &Rect){
@@ -233,7 +245,7 @@ impl tdrawer {
 
         let mapLayout = Layout::default()
             .direction(Direction::Vertical)
-            .constraints((&dungeonrooms).iter().map(|_| { Constraint::Percentage(10) }))
+            .constraints((&dungeonrooms).iter().map(|_| { Constraint::Ratio(1, dungeonrooms.len() as u32)}))
             .split(container.inner(*area));
 
         let rows = dungeonrooms.len();
@@ -243,16 +255,25 @@ impl tdrawer {
             let row_size = &dungeonrooms[i].len();
             let row_layout = Layout::default()
                 .direction(Direction::Horizontal)
-                .constraints(dungeonrooms[i].iter().map(|_|{Constraint::Percentage(10)}))
+                .constraints(dungeonrooms[i].iter().map(|_|{Constraint::Ratio(1, dungeonroomrow.len() as u32)}))
                 .split(mapLayout[i]);
 
 
             for j in 0..*row_size {
                 let mut roomtitle = dungeonroomrow[j].get_room_title();
+                let pp =  dungeon.get_player_position();
+                if(i == pp[0] as usize && j == pp[1] as usize){
+                    frame.render_widget(Block::default()
+                                            .title(String::from(format!("{}: {}", "\\@/", roomtitle)))
+                                            .borders(Borders::ALL)
+                                            .red()
+                                            , row_layout[j])
+                }else if(!dungeonroomrow[j].get_Type().eq("Empty")){
+                    frame.render_widget(Block::default()
+                                            .title(roomtitle)
+                                            .borders(Borders::ALL), row_layout[j])
+                }
 
-                frame.render_widget(Block::default()
-                                        .title(roomtitle)
-                                        .borders(Borders::ALL), row_layout[j])
             }
 
         }
@@ -264,14 +285,13 @@ impl tdrawer {
             .iter()
             .enumerate()
             .map(|(i, m)| {
-                let content = Line::from(Span::raw(format!("{i}: {m}")));
+                let content = Line::from(Span::raw(format!("{m}")));
                 ListItem::new(content)
             })
             .collect();
 
-        messages = messages.into_iter().rev().collect();
 
-        let log_block = List::new(messages).block(Block::bordered().title("Command Log"));
+        let log_block = List::new(messages).block(Block::bordered().title("Log"));
         log_block
     }
 
@@ -281,6 +301,25 @@ impl tdrawer {
             let queue = Mutex::new(String::new());
             queue
         })
+    }
+
+    pub fn get_specific_log(start: i8, end: i8) -> List<'static>{
+
+        let logs = read_log();
+
+        let mut messages: Vec<ListItem> = Vec::new();
+
+        if (logs.len() as i8 >= end ){
+            for i in start..end  {
+
+                let log = logs.get(i as usize).unwrap();
+                messages.push(ListItem::new(Line::from(Span::raw(format!("Player: {log}")))));
+            }
+            let log_block = List::new(messages).block(Block::bordered().title("Log"));
+            log_block
+        } else {
+            Self::get_log()
+        }
     }
 
     pub fn set_render_queue(to_display: String){

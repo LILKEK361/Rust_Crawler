@@ -33,7 +33,7 @@ pub fn log_ref() -> &'static Mutex<Vec<String>>{
     static LOG: OnceLock<Arc<Mutex<Vec<String>>>> = OnceLock::new();
 
     LOG.get_or_init(|| {
-        Arc::new(Mutex::new(Vec::from(["First message".into()])))
+        Arc::new(Mutex::new(Vec::from([String::from("WELCOME")])))
     })
 }
 
