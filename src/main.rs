@@ -2,7 +2,7 @@ use std::{io, thread, time::Duration};
 
 use crossterm::event;
 use ratatui::Terminal;
-use terminaldrawer::tdrawer;
+use gamelogic::terminaldrawer::tdrawer;
 use std::io::{stderr, stdout, Stdout};
 
 use crossterm::terminal;
@@ -20,14 +20,14 @@ use crate::gameobjects::dungeon::{Dungeon, DungeonHandler};
 #[path= "Gamehelper/Gamelogic/uidrawer.rs"]
 mod uidrawer;
 
-#[path="Gamehelper/Gamelogic/terminaldrawer.rs"]
-mod terminaldrawer;
-#[path="Gamehelper/Gamelogic/Story.rs"]
-mod story;
+
+#[path= "Gamelogic.rs"]
+mod gamelogic;
 
 
 #[path="GameObjects.rs"]
 mod gameobjects;
+
 
 pub fn log_ref() -> &'static Mutex<Vec<String>>{
     static LOG: OnceLock<Arc<Mutex<Vec<String>>>> = OnceLock::new();
@@ -51,7 +51,7 @@ fn main() {
 
     let mut terminal = ratatui::init();
 
-    tdrawer_ref().lock().unwrap().deref_mut().draw(&mut terminal).unwrap();
+    gamelogic::terminaldrawer::tdrawer::tdrawer_ref().lock().unwrap().deref_mut().draw(&mut terminal).unwrap();
 
 
     
@@ -76,15 +76,7 @@ impl PartialEq for Gamestate {
     }
 }
 
-pub fn tdrawer_ref() -> &'static Mutex<tdrawer>{
-    static TDRAWER: OnceLock<Mutex<tdrawer>> = OnceLock::new();
 
-    TDRAWER.get_or_init(||{
-
-        let tdrawer = Mutex::new(tdrawer::new());
-        tdrawer
-    })
-}
 
 
 

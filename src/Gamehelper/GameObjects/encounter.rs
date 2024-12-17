@@ -2,9 +2,6 @@
 pub(crate) enum EncounterTypes{
     Monster(crate::gameobjects::monster::Monster),
     Trap(crate::gameobjects::trap::Trap),
-
-
-
     Empty,
 }
 

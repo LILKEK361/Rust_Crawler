@@ -1,3 +1,4 @@
+use std::any::Any;
 use crate::add_log;
 use crate::gameobjects::encounter::{Encounter, EncounterTypes};
 use crate::gameobjects::monster::Monster;
@@ -6,8 +7,8 @@ use std::ptr::eq;
 use std::sync::mpsc::Sender;
 use std::sync::{mpsc, Arc, Mutex, OnceLock};
 use std::thread;
+use crate::gamelogic::terminaldrawer::tdrawer;
 
-use crate::terminaldrawer::tdrawer;
 
 pub struct DungeonHandler {
     tx: Sender<()>,
@@ -42,26 +43,32 @@ impl DungeonHandler {
 
                 let action = action_queue.pop_front().unwrap();
 
-                if (action.to_ascii_lowercase().eq(&String::from("map"))) {
-                    tdrawer::set_render_queue(String::from("map"));
-                } else if (action.eq(&String::from("la"))) {
-                    tdrawer::set_render_queue(String::from("room"));
-                } else if cmd_map.get("movement").unwrap().contains(&action) {
-                    let m = &cmd_map.get("movement").unwrap();
 
-                    if action.eq(&m[0]) {
-                       Dungeon::dungeon_ref().lock().unwrap().move_player("up");
-                    } else if action.eq(&m[1]) {
-                        Dungeon::dungeon_ref().lock().unwrap().move_player("down");//down
-                    } else if action.eq(&m[2]) {
+                if( dungeon_clone.lock().unwrap().is_combat() == &true){
+                    add_log("a");
 
-                        Dungeon::dungeon_ref().lock().unwrap().move_player("left");//down //left
-                    } else if action.eq(&m[3]) {
+                }else {
+                    if (action.to_ascii_lowercase().eq(&String::from("map"))) {
 
-                        Dungeon::dungeon_ref().lock().unwrap().move_player("right");//down
+
+                        tdrawer::set_render_queue(String::from("map"));
+
+                    } else if (action.eq(&String::from("la"))) {
+                        tdrawer::set_render_queue(String::from("room"));
+                    } else if cmd_map.get("movement").unwrap().contains(&action) {
+                        let m = &cmd_map.get("movement").unwrap();
+
+                        if action.eq(&m[0]) {
+                            Dungeon::dungeon_ref().lock().unwrap().move_player("up");
+                        } else if action.eq(&m[1]) {
+                            Dungeon::dungeon_ref().lock().unwrap().move_player("down");
+                        } else if action.eq(&m[2]) {
+                            Dungeon::dungeon_ref().lock().unwrap().move_player("left");
+                        } else if action.eq(&m[3]) {
+                            Dungeon::dungeon_ref().lock().unwrap().move_player("right");
+
+                        }
                     }
-
-
                 }
             }
         });
@@ -97,17 +104,19 @@ impl DungeonHandler {
 pub(crate) struct Dungeon {
     rooms: Vec<Vec<Dungeonroom>>,
     player_position: Vec<i8>,
+    combat: bool
 }
 
 impl Dungeon {
     pub fn new() -> Self {
         let mut rooms = Self::generat_generate_dungeon_rooms(0);
         rooms[0][0].visit_room();
-        add_log(&*rooms[0][0].enterable.to_string());
-        let player_position =  &[0i8, 0i8];
+
+
         let dungeon = Self {
             rooms,
-           player_position: vec![0,0],
+            player_position: vec![0,0],
+            combat: false,
         };
 
 
@@ -141,7 +150,7 @@ impl Dungeon {
                 Dungeonroom::MonsterRoom("Goblin"),
             ],
             vec![
-                Dungeonroom::EmptyRoom("Empty"),
+                Dungeonroom::MonsterRoom("Goblin"),
                 Dungeonroom::MonsterRoom("Goblin"),
                 Dungeonroom::EmptyRoom("Empty"),
                 Dungeonroom::MonsterRoom("Goblin"),
@@ -187,6 +196,10 @@ impl Dungeon {
         &self.rooms
     }
 
+    pub fn is_combat(&self) -> &bool {
+        &self.combat
+    }
+
     pub fn move_player(&mut self, direction: &str) {
         let pp = &self.player_position;
 
@@ -196,7 +209,8 @@ impl Dungeon {
                 let next_room:&Dungeonroom = &self.rooms[(pp[0] - 1) as usize][pp[1] as usize];
 
                 if(next_room.enterable){
-                    self.player_position = vec![pp[0] - 1, pp[1]]
+                    self.player_position = vec![pp[0] - 1, pp[1]];
+                    self.check_room();
                 }else {
                     add_log("wall");
                 }
@@ -206,11 +220,12 @@ impl Dungeon {
             }
         } else if(direction.eq("down") ){
 
-            if let Some(index) = (pp[0] as usize).checked_add(1) {
+            if pp[0] + 1 <= (self.rooms.len() - 1) as i8 {
                 let next_room: &Dungeonroom = &self.rooms[(pp[0] + 1) as usize][pp[1] as usize];
 
                 if(next_room.enterable){
-                    self.player_position = vec![pp[0] + 1, pp[1]]
+                    self.player_position = vec![pp[0] + 1, pp[1]];
+                    self.check_room();
                 }else {
                     add_log("wall");
                 }
@@ -224,7 +239,8 @@ impl Dungeon {
                 let next_room: &Dungeonroom = &self.rooms[pp[0]  as usize][(pp[1] - 1) as usize];
 
                 if(next_room.enterable){
-                    self.player_position = vec![pp[0] , pp[1] - 1]
+                    self.player_position = vec![pp[0] , pp[1] - 1];
+                    self.check_room();
                 }else {
                     add_log("wall");
                 }
@@ -232,13 +248,16 @@ impl Dungeon {
             }else {
                 add_log("wall");
             }
-        }else if(direction.eq("right") ){
+        }else if(direction.eq("right")) {
 
-            if let Some(index) = (pp[1] as usize).checked_add(1) {
+            if pp[1] + 1 <= ((&self.rooms[pp[0] as usize] as &Vec<Dungeonroom>).len() - 1) as i8 {
+
+
                 let next_room: &Dungeonroom = &self.rooms[pp[0]  as usize][(pp[1] + 1) as usize];
 
                 if(next_room.enterable){
-                    self.player_position = vec![pp[0] , pp[1] + 1]
+                    self.player_position = vec![pp[0] , pp[1] + 1];
+                    self.check_room();
                 }else {
                     add_log("wall");
                 }
@@ -247,7 +266,17 @@ impl Dungeon {
                 add_log("wall");
             }
         }
+
+
     }
+    pub fn check_room(&mut self){
+        if(self.get_current_room().encoutner.get_Type().eq("Monster")){
+            self.combat = true;
+            tdrawer::set_render_queue("combat".parse().unwrap());
+        }
+
+    }
+
 }
 
 

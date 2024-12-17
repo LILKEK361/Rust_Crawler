@@ -5,7 +5,11 @@ use crate::gameobjects::encounter::Encounter;
 pub(crate) struct Monster {
     name: String,
     m_type: String,
-    des: String
+    des: String,
+    alvie: bool,
+    hp: u8,
+
+
 }
 
 impl Monster {
@@ -14,10 +18,17 @@ impl Monster {
             name,
             m_type: "Monster".into(),
             des: "A monster".into(),
+            alvie: true,
+            hp: 100,
         }
     }
 }
 
+impl Monster {
+    pub fn is_alive(&self) -> bool {
+        self.alvie
+    }
+}
 
 
 impl Encounter for Monster{

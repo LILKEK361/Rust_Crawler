@@ -6,7 +6,7 @@ use crate::gameobjects::item_handler::Item;
 
 
 pub(crate) struct Player {
-    name: String,
+    pub(crate) name: String,
     inventory: [Box<dyn crate::gameobjects::item_handler::Item>;10],
     health: i32,
     attack: i32,
@@ -60,6 +60,10 @@ impl Player{
     
     //Loot to inventory
     fn add_loot(&self){todo!()}
+
+    pub fn get_player(&self) -> &Player{
+        &self
+    }
     
     pub fn player_ref() -> &'static Mutex<Player>{
         static PLAYER: OnceLock<Mutex<Player>> = OnceLock::new();
@@ -68,6 +72,7 @@ impl Player{
             let player = Mutex::new(Player::new("Playerholder".to_string()));
             player
         })
+
     }
     
     

@@ -1,20 +1,27 @@
+use std::any::Any;
 use ratatui::layout::{Direction, Rect};
 use ratatui::{crossterm::event::{self, KeyCode, KeyEventKind}, layout, layout::{Constraint, Layout}, text::{Line, Span, Text}, widgets::{Block, List, ListItem, Paragraph}, DefaultTerminal, Frame};
 use std::cmp::PartialEq;
+use std::collections::HashMap;
 use std::io::{self};
-use std::ops::Deref;
-use std::sync::{Mutex, OnceLock};
+use std::ops::{Deref, DerefMut};
+use std::sync::{Mutex, MutexGuard, OnceLock};
 use crossterm::event::read;
 
 use ratatui::widgets::Borders;
 use log::log;
 use ratatui::prelude::Stylize;
-use crate::gameobjects::dungeon::{Dungeon, DungeonHandler};
-use crate::{add_log, gamestate_ref, read_log, tdrawer_ref, Gamestate};
+
+use crate::gameobjects::dungeon::{Dungeon, DungeonHandler, Dungeonroom};
+use crate::{add_log, gamestate_ref, read_log, Gamestate};
+use crate::gamelogic::payload_handler::Payload;
+use crate::gameobjects::player;
 /*
     This file will handle the ui drawing for the game
 
 */
+
+
 pub struct tdrawer {
 
 
@@ -23,6 +30,7 @@ pub struct tdrawer {
     input_mode: InputMode,
     dislay: Block<'static>,
     log_index: i8,
+
 
 
 
@@ -48,6 +56,7 @@ impl tdrawer {
             character_index: 0,
             dislay: Block::default().borders(Borders::ALL).title("Placeholder").title_position(ratatui::widgets::block::Position::Top),
             log_index: 15,
+
 
         }
     }
@@ -131,7 +140,8 @@ impl tdrawer {
 
             terminal.draw( |frame: &mut Frame| {
 
-                self.screen(frame);
+                &self.screen(frame);
+
 
             })?;
             
@@ -202,7 +212,7 @@ impl tdrawer {
 
 
 
-        let t = Text::raw(crate::story::MAINMENU);
+
         let input = Paragraph::new(self.input_string.as_str());
 
 
@@ -233,15 +243,21 @@ impl tdrawer {
 
     pub fn display_dungeon_context(frame: &mut Frame,container: &Block, area: &Rect) {
 
-        let command = Self::render_queue().lock().unwrap();
+        let command= Self::render_queue().lock().unwrap();
         if command.eq(&String::from("map")) {
-            Self::draw_dungeon(frame,container,area);
+
+            Self::draw_map(frame, container, area);
+        } else if command.eq(&String::from("combat")){
+            Self::draw_combat(frame, container,area);
+
         }
     }
 
-    pub fn draw_dungeon(frame: &mut Frame,container: &Block, area: &Rect){
+
+    pub fn draw_map(frame: &mut Frame, container: &Block, area: &Rect){
         let dungeon = Dungeon::dungeon_ref().lock().unwrap();
         let dungeonrooms = dungeon.get_all_rooms();
+        let pp = dungeon.get_player_position();
 
         let mapLayout = Layout::default()
             .direction(Direction::Vertical)
@@ -261,7 +277,6 @@ impl tdrawer {
 
             for j in 0..*row_size {
                 let mut roomtitle = dungeonroomrow[j].get_room_title();
-                let pp =  dungeon.get_player_position();
                 if(i == pp[0] as usize && j == pp[1] as usize){
                     frame.render_widget(Block::default()
                                             .title(String::from(format!("{}: {}", "\\@/", roomtitle)))
@@ -277,6 +292,24 @@ impl tdrawer {
             }
 
         }
+    }
+
+    pub fn draw_combat(frame: &mut Frame, container: &Block, area: &Rect){
+
+        let dungeon = Dungeon::dungeon_ref().lock().unwrap();
+        let dungeonroom = dungeon.get_current_room();
+
+        let player =  player::Player::player_ref().lock().unwrap();
+        let mapLayout = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([Constraint::Percentage(20),Constraint::Percentage(20),Constraint::Percentage(20),Constraint::Percentage(20),Constraint::Percentage(20)])
+            .split(container.inner(*area));
+
+        let playercard = Block::default().borders(Borders::ALL).title(&*player.name);
+        let monstercard = Block::default().borders(Borders::ALL).title(dungeonroom.get_room_title());
+
+        frame.render_widget(playercard, mapLayout[0]);
+        frame.render_widget(monstercard, mapLayout[4]);
     }
 
     pub fn get_log() ->  List<'static>{
@@ -302,6 +335,13 @@ impl tdrawer {
             queue
         })
     }
+    pub fn set_render_queue(name: String){
+        if let Ok(mut queue) = Self::render_queue().lock(){
+            *queue = name
+        }else {
+            eprintln!("Failed to lock render");
+        }
+    }
 
     pub fn get_specific_log(start: i8, end: i8) -> List<'static>{
 
@@ -322,12 +362,16 @@ impl tdrawer {
         }
     }
 
-    pub fn set_render_queue(to_display: String){
-        if let Ok(mut queue) = Self::render_queue().lock(){
-            *queue = to_display
-        }else {
-            eprintln!("Failed to lock render");
-        }
+
+
+    pub fn tdrawer_ref() -> &'static Mutex<tdrawer>{
+        static TDRAWER: OnceLock<Mutex<tdrawer>> = OnceLock::new();
+
+        TDRAWER.get_or_init(||{
+
+            let tdrawer = Mutex::new(tdrawer::new());
+            tdrawer
+        })
     }
 
 
