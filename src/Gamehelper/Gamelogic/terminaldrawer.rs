@@ -3,15 +3,17 @@ use ratatui::layout::{Direction, Rect};
 use ratatui::{crossterm::event::{self, KeyCode, KeyEventKind}, layout, layout::{Constraint, Layout}, text::{Line, Span, Text}, widgets::{Block, List, ListItem, Paragraph}, DefaultTerminal, Frame};
 use std::cmp::PartialEq;
 use std::collections::HashMap;
+use std::fmt::format;
 use std::io::{self};
 use std::ops::{Deref, DerefMut};
 use std::sync::{Mutex, MutexGuard, OnceLock};
 use crossterm::event::read;
 
-use ratatui::widgets::Borders;
+use ratatui::widgets::{BorderType, Borders};
 use log::log;
 use ratatui::prelude::Stylize;
-
+use ratatui::style::{Color, Style};
+use ratatui::widgets::block::Position;
 use crate::gameobjects::dungeon::{Dungeon, DungeonHandler, Dungeonroom};
 use crate::{add_log, gamestate_ref, read_log, Gamestate};
 use crate::gamelogic::payload_handler::Payload;
@@ -45,7 +47,6 @@ enum InputMode {
 
 
 impl tdrawer {
-
 
     pub fn new() -> tdrawer {
 
@@ -296,20 +297,22 @@ impl tdrawer {
 
     pub fn draw_combat(frame: &mut Frame, container: &Block, area: &Rect){
 
-        let dungeon = Dungeon::dungeon_ref().lock().unwrap();
-        let dungeonroom = dungeon.get_current_room();
+        let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
+
+        let monster = dungeon.get_current_room().get_Monster().unwrap();
 
         let player =  player::Player::player_ref().lock().unwrap();
+
         let mapLayout = Layout::default()
             .direction(Direction::Horizontal)
-            .constraints([Constraint::Percentage(20),Constraint::Percentage(20),Constraint::Percentage(20),Constraint::Percentage(20),Constraint::Percentage(20)])
+            .constraints([Constraint::Percentage(25),Constraint::Percentage(25),Constraint::Percentage(25),Constraint::Percentage(25),])
             .split(container.inner(*area));
 
-        let playercard = Block::default().borders(Borders::ALL).title(&*player.name);
-        let monstercard = Block::default().borders(Borders::ALL).title(dungeonroom.get_room_title());
+        let playercard = generate_Card(String::from(&player.name), *player.get_hp() as i8, *player.get_max_hp());
+        let monstercard = generate_Card(String::from(&monster.name), *monster.get_hp() as i8, *monster.get_max_hp());
 
         frame.render_widget(playercard, mapLayout[0]);
-        frame.render_widget(monstercard, mapLayout[4]);
+        frame.render_widget(monstercard, mapLayout[3]);
     }
 
     pub fn get_log() ->  List<'static>{
@@ -353,7 +356,7 @@ impl tdrawer {
             for i in start..end  {
 
                 let log = logs.get(i as usize).unwrap();
-                messages.push(ListItem::new(Line::from(Span::raw(format!("Player: {log}")))));
+                messages.push(ListItem::new(Line::from(Span::raw(format!("{log}")))));
             }
             let log_block = List::new(messages).block(Block::bordered().title("Log"));
             log_block
@@ -374,13 +377,17 @@ impl tdrawer {
         })
     }
 
+}
 
+pub  fn generate_Card(name: String, hp: i8, max_hp: i8) -> Paragraph<'static>{
+    let card = Block::default()
+        .title(name)
+        .borders(Borders::ALL)
+        .border_type(BorderType::Rounded);
 
-
-
-
-
-
+    let info = Paragraph::new(format!("HP: {hp}/{max_hp}"))
+        .block(card);
+    info
 }
 
 

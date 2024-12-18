@@ -6,13 +6,14 @@ use crate::gameobjects::item_handler::Item;
 
 
 pub(crate) struct Player {
-    pub(crate) name: String,
+    pub name: String,
     inventory: [Box<dyn crate::gameobjects::item_handler::Item>;10],
-    health: i32,
-    attack: i32,
-    defense: i32,
-    level: i32,
-    pub(crate) alive: bool,
+    health: u8,
+    attack: i8,
+    defense: i8,
+    level: i8,
+    pub alive: bool,
+    max_hp: i8
 }
 
 
@@ -39,9 +40,10 @@ impl Player{
             ],
             health: 100,
             alive: true,
-            attack: 10,
+            attack: 50,
             defense: 1,
             level: 0,
+            max_hp: 100
 
         }
     }
@@ -50,12 +52,25 @@ impl Player{
     fn display_inventory(&self){todo!()}
 
     //Functions for combat of the player
-    fn attack(&self){
-        //Check for equipment
-        todo!()
+    pub fn attack(&self) -> &i8{
+        //todo: Check for equipment
+        &self.attack
     }
     
-    fn take_dmg(&self){todo!()}
+    pub fn take_dmg(&mut self, dmg: i8){
+        self.health = self.health - dmg as u8;
+        if(self.health <= 0){
+            self.alive = false;
+        }
+    }
+
+    pub fn get_hp(&self) -> &u8 {
+        &self.health
+    }
+
+    pub fn get_max_hp(&self) -> &i8{
+        &self.max_hp
+    }
     
     
     //Loot to inventory
