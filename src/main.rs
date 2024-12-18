@@ -1,13 +1,13 @@
 use std::{io, thread, time::Duration};
 
-use crossterm::event;
+use crossterm::{event, execute,terminal::{self, SetSize}};
 use ratatui::Terminal;
 use gamelogic::terminaldrawer::tdrawer;
 use std::io::{stderr, stdout, Stdout};
 
-use crossterm::terminal;
+
 use ratatui::{backend, layout::{Constraint, Direction, Layout}, prelude::CrosstermBackend, DefaultTerminal};
-use crossterm::event::{Event};
+
 use ratatui::{text::Text, Frame};
 
 
@@ -47,11 +47,16 @@ pub fn read_log() -> Vec<String>{
 
 
 fn main() {
-   
+
+    execute!(
+        stdout(),
+        SetSize(100, 30) // width, height
+    );
 
     let mut terminal = ratatui::init();
 
-    gamelogic::terminaldrawer::tdrawer::tdrawer_ref().lock().unwrap().deref_mut().draw(&mut terminal).unwrap();
+
+    tdrawer::tdrawer_ref().lock().unwrap().deref_mut().draw(&mut terminal).unwrap();
 
 
     
