@@ -1,11 +1,12 @@
 use std::net::Incoming;
-use crate::gameobjects::item_handler::Equipmintslots;
+use crate::gameobjects::item_handler::{Equipmintslots, Raritys};
 use crate::gameobjects::item_handler::Item;
 
 #[derive(Clone)]
 pub(crate) struct Inventoryslot{
     name: String,
     eq_slot:  Equipmintslots,
+    raritys: Raritys
 }
 
  impl Inventoryslot {
@@ -14,6 +15,7 @@ pub(crate) struct Inventoryslot{
        Self {
             name: "Empty".into(),
             eq_slot: Equipmintslots::None,
+            raritys: Raritys::common
         }
     }
 }
@@ -33,6 +35,9 @@ impl Item for Inventoryslot {
     fn get_des(&self) -> &str {
         "Empty"
 
+    }
+    fn get_rarity(&self) -> &Raritys {
+        &self.rarity
     }
 
 

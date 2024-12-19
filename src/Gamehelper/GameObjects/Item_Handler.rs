@@ -7,6 +7,16 @@ enum ItemTypes{
     InventorySlot,
 
 }
+
+#[derive(Clone)]
+pub enum Raritys {
+    common,
+    rare,
+    godly,
+    shizo,
+    broken,
+    demonic
+}
 #[derive(Clone)]
 pub(crate) enum Equipmintslots {
     Head,
@@ -18,8 +28,8 @@ pub(crate) enum Equipmintslots {
     None,
 }
 
-
-pub(crate) enum Items {
+#[derive(Clone)]
+pub(crate) enum ItemsTypes {
 
     EquipItem(crate::gameobjects::equip_item::EquipItem),
     WeaponItem(crate::gameobjects::weaponitem::WeaponItem),
@@ -27,36 +37,47 @@ pub(crate) enum Items {
 
 }
 
-impl Item for Items {
+
+
+impl Item for ItemsTypes {
     fn get_name(&self) -> &str {
         match self {
-            Items::EquipItem(item) => item.get_name(),
-            Items::WeaponItem(item) => item.get_name(),
-            Items::InventorySlot(item) => item.get_name()
+            ItemsTypes::EquipItem(item) => item.get_name(),
+            ItemsTypes::WeaponItem(item) => item.get_name(),
+            ItemsTypes::InventorySlot(item) => item.get_name()
         }
     }
 
     fn get_equipment_slot(&self) -> Vec<Equipmintslots> {
         match self {
-            Items::EquipItem(item) => item.get_equipment_slot(),
-            Items::InventorySlot(item) => item.get_equipment_slot(),
-            Items::WeaponItem(item) => item.get_equipment_slot()
+            ItemsTypes::EquipItem(item) => item.get_equipment_slot(),
+            ItemsTypes::InventorySlot(item) => item.get_equipment_slot(),
+            ItemsTypes::WeaponItem(item) => item.get_equipment_slot()
         }
     }
 
     fn get_des(&self) -> &str {
         match self {
-            Items::EquipItem(item) => item.get_des(),
-            Items::InventorySlot(item) => item.get_des(),
-            Items::WeaponItem(item) => item.get_des()
+            ItemsTypes::EquipItem(item) => item.get_des(),
+            ItemsTypes::InventorySlot(item) => item.get_des(),
+            ItemsTypes::WeaponItem(item) => item.get_des()
+        }
+    }
+    
+    fn get_rarity(&self) -> Raritys {
+        match self {
+            ItemsTypes::EquipItem(item) => item.get_rarity(),
+            ItemsTypes::InventorySlot(item) => item.get_rarity(),
+            ItemsTypes::WeaponItem(item) => item.get_rarity(),
         }
     }
 }
 
-pub trait Item: Sync + Send {
+pub trait Item: Sync + Send + Clone {
     fn get_name(&self) -> &str;
     fn get_equipment_slot(&self) -> Vec<crate::gameobjects::item_handler::Equipmintslots>;
     fn get_des(&self) -> &str;
+    fn get_rarity(&self) -> Raritys;
 
 
 

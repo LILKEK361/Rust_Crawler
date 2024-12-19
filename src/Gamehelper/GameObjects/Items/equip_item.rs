@@ -1,4 +1,4 @@
-use crate::gameobjects::item_handler::{Equipmintslots, Item};
+use crate::gameobjects::item_handler::{Equipmintslots, Item, Raritys};
 
 
 #[derive(Clone)]
@@ -11,6 +11,7 @@ pub(crate) struct EquipItem{
     equip_slot: Vec<Equipmintslots>,
     armor_buff: i8,
     dmg_buff: i8,
+    rarity: Raritys
 
 }
 
@@ -35,5 +36,9 @@ impl Item for EquipItem {
 
     fn get_des(&self) -> &str {
         &self.des
+    }
+
+    fn get_rarity(&self) -> &Raritys {
+        &self.rarity
     }
 }

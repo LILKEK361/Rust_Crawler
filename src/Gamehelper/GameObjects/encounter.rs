@@ -11,7 +11,7 @@ impl Encounter for EncounterTypes {
     fn get_Name(&self) -> &str {
         match self {
             EncounterTypes::Monster(monster) => monster.get_Name(),
-            EncounterTypes::Trap(trap) => &*trap.get_Name(),
+            EncounterTypes::Trap(trap) => trap.get_Name(),
             EncounterTypes::Empty => "Empty",
         }
     }

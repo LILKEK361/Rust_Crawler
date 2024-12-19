@@ -59,7 +59,7 @@ impl DungeonHandler {
                             player.take_dmg(*monster.get_dmg());
                             if(!monster.is_alive()){
                                 dungeon.combat = false;
-                                dungeonroom.clear();
+                                dungeonroom.clear( );
                             }
                         }
 
@@ -71,8 +71,7 @@ impl DungeonHandler {
                 } else {
                     if (action.to_ascii_lowercase().eq(&String::from("map"))) {
                         tdrawer::set_render_queue(String::from("map"));
-                    } else if (action.eq(&String::from("la"))) {
-                        tdrawer::set_render_queue(String::from("room"));
+
                     } else if cmd_map.get("movement").unwrap().contains(&action.to_ascii_lowercase()) {
                         let movment = &cmd_map.get("movement").unwrap();
 
@@ -85,7 +84,10 @@ impl DungeonHandler {
                         } else if action.eq(&movment[3]) {
                             Dungeon::dungeon_ref().lock().unwrap().move_player("right");
                         }
-                    } else {
+                    } else if(action.to_ascii_lowercase().eq(&String::from("inventory"))){
+                        tdrawer::set_render_queue("inventory".into());
+                    }
+                    else {
                         add_log("Unvaild Command")
                     }
                 }
@@ -363,6 +365,10 @@ impl Dungeonroom {
             }
             _ => None
         }
+    }
+
+    pub fn clear(&mut self){
+
     }
 
 }

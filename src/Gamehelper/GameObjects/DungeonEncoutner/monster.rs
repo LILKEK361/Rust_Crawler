@@ -1,5 +1,5 @@
 use crate::gameobjects::encounter::Encounter;
-
+use crate::gameobjects::item_handler::ItemsTypes;
 
 #[derive(Clone)]
 pub(crate) struct Monster {
@@ -10,6 +10,7 @@ pub(crate) struct Monster {
     hp: u8,
     dmg: i8,
     max_hp: i8,
+    loot: Vec<ItemsTypes>
 
 
 }
@@ -24,6 +25,7 @@ impl Monster {
             hp: 100,
             max_hp: 100,
             dmg: 2,
+            loot: vec![]
         }
     }
 }

@@ -1,13 +1,14 @@
 use std::collections::hash_map::IntoValues;
 use std::sync::{Mutex, OnceLock};
+use crate::add_log;
 use crate::gameobjects::inventoryslot;
 use crate::gameobjects::inventoryslot::Inventoryslot;
-use crate::gameobjects::item_handler::Item;
+use crate::gameobjects::item_handler::{Item, ItemsTypes};
 
 
 pub(crate) struct Player {
     pub name: String,
-    inventory: [Box<dyn crate::gameobjects::item_handler::Item>;10],
+    inventory: [ItemsTypes;10],
     health: u8,
     attack: i8,
     defense: i8,
@@ -27,16 +28,16 @@ impl Player{
         Self {
             name,
             inventory: [
-                Box::new(Inventoryslot::empty()),
-                Box::new(Inventoryslot::empty()),
-                Box::new(Inventoryslot::empty()),
-                Box::new(Inventoryslot::empty()),
-                Box::new(Inventoryslot::empty()),
-                Box::new(Inventoryslot::empty()),
-                Box::new(Inventoryslot::empty()),
-                Box::new(Inventoryslot::empty()),
-                Box::new(Inventoryslot::empty()),
-                Box::new(Inventoryslot::empty()),
+                ItemsTypes::InventorySlot(Inventoryslot::empty()),
+                ItemsTypes::InventorySlot(Inventoryslot::empty()),
+                ItemsTypes::InventorySlot(Inventoryslot::empty()),
+                ItemsTypes::InventorySlot(Inventoryslot::empty()),
+                ItemsTypes::InventorySlot(Inventoryslot::empty()),
+                ItemsTypes::InventorySlot(Inventoryslot::empty()),
+                ItemsTypes::InventorySlot(Inventoryslot::empty()),
+                ItemsTypes::InventorySlot(Inventoryslot::empty()),
+                ItemsTypes::InventorySlot(Inventoryslot::empty()),
+                ItemsTypes::InventorySlot(Inventoryslot::empty()),
             ],
             health: 100,
             alive: true,
@@ -74,11 +75,26 @@ impl Player{
     
     
     //Loot to inventory
-    fn add_loot(&self){todo!()}
+    fn add_loot(&mut self, inventory_slot: i8, item: ItemsTypes){
+        if(inventory_slot <= self.inventory.len() as i8){
+
+            self.inventory[inventory_slot] = item;
+
+        }else {
+            add_log("Inventory Slot doesn't exist")
+        }
+    }
+
+    pub fn get_inventory(&self) -> &[ItemsTypes]{
+        &self.inventory
+    }
+
 
     pub fn get_player(&self) -> &Player{
         &self
     }
+
+
     
     pub fn player_ref() -> &'static Mutex<Player>{
         static PLAYER: OnceLock<Mutex<Player>> = OnceLock::new();

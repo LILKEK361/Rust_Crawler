@@ -1,5 +1,5 @@
 use crate::gameobjects::encounter::{Encounter, EncounterTypes};
-use crate::gameobjects::item_handler::{Equipmintslots, Item};
+use crate::gameobjects::item_handler::{Equipmintslots, Item, Raritys};
 
 #[derive(Clone)]
 pub(crate) struct WeaponItem {
@@ -8,7 +8,7 @@ pub(crate) struct WeaponItem {
     name: String,
     equip_slot: Vec<Equipmintslots>,
     des: String,
-
+    rarity: Raritys,
     //Specific WeaponItem stats:
     dmg_bonus: u8,
 }
@@ -30,5 +30,8 @@ impl Item for WeaponItem {
 
     fn get_des(&self) -> &str {
         &self.des
+    }
+    fn get_rarity(&self) -> &Raritys {
+        &self.rarity
     }
 }

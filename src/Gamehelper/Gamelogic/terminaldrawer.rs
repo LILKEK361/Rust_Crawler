@@ -18,6 +18,7 @@ use crate::gameobjects::dungeon::{Dungeon, DungeonHandler, Dungeonroom};
 use crate::{add_log, gamestate_ref, read_log, Gamestate};
 use crate::gamelogic::payload_handler::Payload;
 use crate::gameobjects::player;
+use crate::gameobjects::player::Player;
 /*
     This file will handle the ui drawing for the game
 
@@ -251,6 +252,8 @@ impl tdrawer {
         } else if command.eq(&String::from("combat")){
             Self::draw_combat(frame, container,area);
 
+        }else if command.eq(&String::from("inventory")){
+            Self::draw_inventory(frame, container, area);
         }
     }
 
@@ -314,6 +317,21 @@ impl tdrawer {
         frame.render_widget(playercard, mapLayout[0]);
         frame.render_widget(monstercard, mapLayout[3]);
     }
+    fn draw_inventory(frame: &mut Frame, container: &Block, area: &Rect) {
+        let player = Player::player_ref().lock().unwrap();
+
+        let inventory = player.get_inventory();
+
+        let inventory_layout = Layout::default()
+            .direction(Direction::Vertical)
+            .split(container.inner(*area));
+
+        let invorty_slots = inventory.iter().map(|item|{
+
+        })
+
+
+    }
 
     pub fn get_log() ->  List<'static>{
 
@@ -376,6 +394,7 @@ impl tdrawer {
             tdrawer
         })
     }
+
 
 }
 
