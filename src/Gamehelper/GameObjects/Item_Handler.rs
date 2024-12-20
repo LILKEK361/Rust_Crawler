@@ -64,7 +64,7 @@ impl Item for ItemsTypes {
         }
     }
     
-    fn get_rarity(&self) -> Raritys {
+    fn get_rarity(&self) -> &Raritys {
         match self {
             ItemsTypes::EquipItem(item) => item.get_rarity(),
             ItemsTypes::InventorySlot(item) => item.get_rarity(),
@@ -77,7 +77,7 @@ pub trait Item: Sync + Send + Clone {
     fn get_name(&self) -> &str;
     fn get_equipment_slot(&self) -> Vec<crate::gameobjects::item_handler::Equipmintslots>;
     fn get_des(&self) -> &str;
-    fn get_rarity(&self) -> Raritys;
+    fn get_rarity(&self) -> &Raritys;
 
 
 

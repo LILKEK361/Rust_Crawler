@@ -6,7 +6,7 @@ use crate::gameobjects::item_handler::Item;
 pub(crate) struct Inventoryslot{
     name: String,
     eq_slot:  Equipmintslots,
-    raritys: Raritys
+    rarity: Raritys
 }
 
  impl Inventoryslot {
@@ -15,7 +15,7 @@ pub(crate) struct Inventoryslot{
        Self {
             name: "Empty".into(),
             eq_slot: Equipmintslots::None,
-            raritys: Raritys::common
+           rarity: Raritys::common
         }
     }
 }

@@ -122,7 +122,7 @@ impl tdrawer {
 
         if(self.input_string.clone() == "start" && *gamestate_ref().lock().unwrap() == Gamestate::home){
             *gamestate_ref().lock().unwrap() = Gamestate::run;
-            DungeonHandler::dungeon_handler_ref().lock().unwrap().send_action("start".into());
+            DungeonHandler::dungeon_handler_ref().lock().unwrap().send_action("map".into());
         }else if((self.input_string.clone() == "exit" || self.input_string.clone() == "end") && *gamestate_ref().lock().unwrap() == Gamestate::run){
             *gamestate_ref().lock().unwrap() = Gamestate::home;
         }
@@ -287,7 +287,7 @@ impl tdrawer {
                                             .borders(Borders::ALL)
                                             .red()
                                             , row_layout[j])
-                }else if(!dungeonroomrow[j].get_Type().eq("Empty")){
+                }else if(!dungeonroomrow[j].get_Type().eq("None")){
                     frame.render_widget(Block::default()
                                             .title(roomtitle)
                                             .borders(Borders::ALL), row_layout[j])
@@ -328,7 +328,7 @@ impl tdrawer {
 
         let invorty_slots = inventory.iter().map(|item|{
 
-        })
+        });
 
 
     }

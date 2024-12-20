@@ -78,7 +78,7 @@ impl Player{
     fn add_loot(&mut self, inventory_slot: i8, item: ItemsTypes){
         if(inventory_slot <= self.inventory.len() as i8){
 
-            self.inventory[inventory_slot] = item;
+            self.inventory[inventory_slot as usize] = item;
 
         }else {
             add_log("Inventory Slot doesn't exist")

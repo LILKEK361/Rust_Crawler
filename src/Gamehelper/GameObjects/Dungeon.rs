@@ -45,12 +45,13 @@ impl DungeonHandler {
 
                 let action = action_queue.pop_front().unwrap();
 
+
                 if (dungeon_clone.lock().unwrap().is_combat() == &true) {
                     if(cmd_map.get("combat").unwrap().contains(&action.to_ascii_lowercase())){
 
                         let combat_action = cmd_map.get("combat").unwrap();
                         let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
-                        let mut dungeonroom: &mut Dungeonroom = dungeon.get_current_room();
+                        let mut dungeonroom = dungeon.get_current_room();
                         let monster = dungeonroom.get_Monster().unwrap();
                         let mut player = Player::player_ref().lock().unwrap();
 
@@ -58,8 +59,9 @@ impl DungeonHandler {
                             monster.take_dmg(*player.attack());
                             player.take_dmg(*monster.get_dmg());
                             if(!monster.is_alive()){
+                                dungeonroom.clearMonsterRoom(&player);
                                 dungeon.combat = false;
-                                dungeonroom.clear( );
+                                tdrawer::set_render_queue("map".into())
                             }
                         }
 
@@ -86,6 +88,8 @@ impl DungeonHandler {
                         }
                     } else if(action.to_ascii_lowercase().eq(&String::from("inventory"))){
                         tdrawer::set_render_queue("inventory".into());
+                    }else if(action.to_ascii_lowercase().eq(&String::from("look around")) && action.to_ascii_lowercase().eq(&String::from("la"))) {
+                        tdrawer::set_render_queue("look".into());
                     }
                     else {
                         add_log("Unvaild Command")
@@ -133,6 +137,7 @@ impl Dungeon {
         let mut rooms = Self::generat_generate_dungeon_rooms(0);
         rooms[0][0].visit_room();
 
+
         let dungeon = Self {
             rooms,
             player_position: vec![0, 0],
@@ -145,6 +150,24 @@ impl Dungeon {
     pub fn generat_generate_dungeon_rooms(nu_of_rooms: i8) -> Vec<Vec<Dungeonroom>> {
         vec![
             vec![
+                Dungeonroom::EmptyRoom("Starting Point"),
+                Dungeonroom::MonsterRoom("Goblin"),
+                Dungeonroom::MonsterRoom("Goblin"),
+                Dungeonroom::MonsterRoom("Goblin"),
+            ],
+            vec![
+                Dungeonroom::MonsterRoom("Goblin"),
+                Dungeonroom::None(),
+                Dungeonroom::MonsterRoom("Goblin"),
+                Dungeonroom::None(),
+            ],
+            vec![
+                Dungeonroom::MonsterRoom("Goblin"),
+                Dungeonroom::MonsterRoom("Goblin"),
+                Dungeonroom::MonsterRoom("Goblin"),
+                Dungeonroom::None(),
+            ],
+            vec![
                 Dungeonroom::MonsterRoom("Goblin"),
                 Dungeonroom::MonsterRoom("Goblin"),
                 Dungeonroom::MonsterRoom("Goblin"),
@@ -152,26 +175,8 @@ impl Dungeon {
             ],
             vec![
                 Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::EmptyRoom("Empty"),
                 Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::EmptyRoom("Empty"),
-            ],
-            vec![
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::EmptyRoom("Empty"),
-            ],
-            vec![
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::MonsterRoom("Goblin"),
-            ],
-            vec![
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::EmptyRoom("Empty"),
+                Dungeonroom::None(),
                 Dungeonroom::MonsterRoom("Goblin"),
             ],
         ]
@@ -192,7 +197,7 @@ impl Dungeon {
         CMD_MAP.get_or_init(|| {
             let cmd_map = Arc::new(Mutex::new(HashMap::from([
                 (
-                    "movement".to_string(),
+                   "movement".to_string(),
                     vec![
                         "move up".to_string(),
                         "move down".to_string(),
@@ -207,7 +212,13 @@ impl Dungeon {
                         "defend".to_string(),
 
                     ]
+
                 ),
+
+                (
+                   "lock around".to_string(), vec![
+
+                ]),
             ])));
             cmd_map
         })
@@ -217,7 +228,8 @@ impl Dungeon {
         &self.player_position
     }
     pub fn get_current_room(&mut self) -> &mut Dungeonroom {
-        &mut self.rooms[0][0]
+        let pp = &self.player_position;
+        &mut self.rooms[pp[0] as usize][pp[1] as usize]
     }
     pub fn get_all_rooms(&self) -> &Vec<Vec<Dungeonroom>> {
         &self.rooms
@@ -285,10 +297,18 @@ impl Dungeon {
         }
     }
     pub fn check_room(&mut self) {
-        if (self.get_current_room().encoutner.get_Type().eq("Monster")) {
-            self.combat = true;
-            tdrawer::set_render_queue("combat".parse().unwrap());
+
+        let room = self.get_current_room();
+        match &room.encoutner  {
+            EncounterTypes::Monster(monster) => {
+                if(monster.is_alive()){
+                    self.combat = true;
+                    tdrawer::set_render_queue("combat".parse().unwrap());
+                }
+            }
+            _ => {}
         }
+        self.get_current_room().visited = true
     }
 }
 
@@ -300,10 +320,10 @@ pub struct Dungeonroom {
 
 impl Dungeonroom {
     pub(crate) fn get_room_title(&self) -> String {
-        if (!*&self.visited) {
+        if (!&self.visited) {
             "???".to_string()
         } else {
-            self.encoutner.get_Type().to_string()
+            self.encoutner.get_Name().to_string()
         }
     }
 }
@@ -319,8 +339,16 @@ impl Dungeonroom {
 
     pub fn EmptyRoom(name: &str) -> Self {
         Self {
-            enterable: false,
+            enterable: true,
             encoutner: EncounterTypes::Empty,
+            visited: false,
+        }
+    }
+
+    pub fn None() -> Self {
+        Self{
+            enterable: false,
+            encoutner: EncounterTypes::None,
             visited: false,
         }
     }
@@ -337,15 +365,7 @@ impl Dungeonroom {
         &self.encoutner.get_Type()
     }
 
-    pub fn do_dmg_to_monster(&mut self, dmg: i8){
-        match &mut self.encoutner {
-            EncounterTypes::Monster(monster) => {
-                monster.take_dmg(dmg);
-            }
 
-            _ => {}
-        }
-    }
 
     pub fn get_dmg_from_Monster(&self) -> &i8{
         match &self.encoutner {
@@ -367,7 +387,16 @@ impl Dungeonroom {
         }
     }
 
-    pub fn clear(&mut self){
+    pub fn clearMonsterRoom(&mut self, player: &Player){
+        match &mut self.encoutner{
+            EncounterTypes::Monster(monster) => {
+
+                monster.dead();
+
+            }
+            _ => {}
+        }
+
 
     }
 

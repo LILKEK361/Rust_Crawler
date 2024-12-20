@@ -10,7 +10,8 @@ pub(crate) struct Monster {
     hp: u8,
     dmg: i8,
     max_hp: i8,
-    loot: Vec<ItemsTypes>
+    loot: Vec<ItemsTypes>,
+
 
 
 }
@@ -18,9 +19,9 @@ pub(crate) struct Monster {
 impl Monster {
     pub fn new(name: String) -> Self {
         Self {
-            name,
+            name: String::from(&name),
             m_type: "Monster".into(),
-            des: "A monster".into(),
+            des: format!("A {name} is viben in the room. Oh no it attacks").into(),
             alvie: true,
             hp: 100,
             max_hp: 100,
@@ -28,9 +29,10 @@ impl Monster {
             loot: vec![]
         }
     }
-}
 
-impl Monster {
+
+
+
     pub fn is_alive(&self) -> bool {
         self.alvie
     }
@@ -50,6 +52,12 @@ impl Monster {
 
     pub fn get_max_hp(&self) -> &i8 {
         &self.max_hp
+    }
+
+    pub fn dead(&mut self){
+        let monster = &self.name;
+        self.des = format!("A {monster} lies on the ground.\n Dead.\n You killed it");
+        self.name = format!("Dead {monster}")
     }
 
 }
