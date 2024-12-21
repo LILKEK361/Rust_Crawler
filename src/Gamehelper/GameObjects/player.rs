@@ -14,7 +14,8 @@ pub(crate) struct Player {
     defense: i8,
     level: i8,
     pub alive: bool,
-    max_hp: i8
+    max_hp: i8,
+    in_inventory: bool,
 }
 
 
@@ -44,7 +45,8 @@ impl Player{
             attack: 50,
             defense: 1,
             level: 0,
-            max_hp: 100
+            max_hp: 100,
+            in_inventory: false
 
         }
     }
@@ -72,7 +74,10 @@ impl Player{
     pub fn get_max_hp(&self) -> &i8{
         &self.max_hp
     }
-    
+
+    pub fn defend(&mut self, dmg: i8){
+        self.health = self.health - (dmg - 1) as u8//todo
+    }
     
     //Loot to inventory
     fn add_loot(&mut self, inventory_slot: i8, item: ItemsTypes){

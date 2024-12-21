@@ -28,7 +28,12 @@ impl Encounter for EncounterTypes {
     }
 
     fn get_description(&self) -> &str {
-        todo!()
+        match self {
+            EncounterTypes::Monster(monster) => monster.get_description(),
+            EncounterTypes::Trap(trap) => trap.get_description(),
+            EncounterTypes::Empty => "A Empty room or is it?",
+            EncounterTypes::None => "None",
+        }
     }
 }
 

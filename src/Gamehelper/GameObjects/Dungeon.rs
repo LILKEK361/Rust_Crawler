@@ -10,14 +10,15 @@ use std::ptr::eq;
 use std::sync::mpsc::Sender;
 use std::sync::{mpsc, Arc, Mutex, OnceLock};
 use std::thread;
+use rand::Rng;
 use crate::gameobjects::player::Player;
+use crate::gameobjects::trap::Trap;
 
 pub struct DungeonHandler {
-    tx: Sender<()>,
 
+    tx: Sender<()>,
     action_queue: Arc<Mutex<VecDeque<String>>>,
-    //dungeon: &'static Dungeon<'static>,
-    //player: &'static Player<'static>,
+
 }
 
 impl DungeonHandler {
@@ -62,7 +63,10 @@ impl DungeonHandler {
                                 dungeonroom.clearMonsterRoom(&player);
                                 dungeon.combat = false;
                                 tdrawer::set_render_queue("map".into())
+
                             }
+                        }else if(action.eq(&combat_action[1] /*Defend*/)){
+                            player.defend(*monster.get_dmg());
                         }
 
                     }else {
@@ -74,7 +78,7 @@ impl DungeonHandler {
                     if (action.to_ascii_lowercase().eq(&String::from("map"))) {
                         tdrawer::set_render_queue(String::from("map"));
 
-                    } else if cmd_map.get("movement").unwrap().contains(&action.to_ascii_lowercase()) {
+                    } else if cmd_map.get("movement").unwrap().contains(&action) {
                         let movment = &cmd_map.get("movement").unwrap();
 
                         if action.eq(&movment[0]) {
@@ -88,8 +92,10 @@ impl DungeonHandler {
                         }
                     } else if(action.to_ascii_lowercase().eq(&String::from("inventory"))){
                         tdrawer::set_render_queue("inventory".into());
-                    }else if(action.to_ascii_lowercase().eq(&String::from("look around")) && action.to_ascii_lowercase().eq(&String::from("la"))) {
+                    }else if(action.to_ascii_lowercase().eq(&String::from("look around")) || action.to_ascii_lowercase().eq(&String::from("la"))) {
                         tdrawer::set_render_queue("look".into());
+                    } else if(action.eq(&String::from("help"))){
+                        tdrawer::set_render_queue("help".into())
                     }
                     else {
                         add_log("Unvaild Command")
@@ -130,11 +136,12 @@ pub(crate) struct Dungeon {
     rooms: Vec<Vec<Dungeonroom>>,
     player_position: Vec<i8>,
     combat: bool,
+
 }
 
 impl Dungeon {
     pub fn new() -> Self {
-        let mut rooms = Self::generat_generate_dungeon_rooms(0);
+        let mut rooms = Self::generat_generate_dungeon_rooms(8,4);
         rooms[0][0].visit_room();
 
 
@@ -147,39 +154,14 @@ impl Dungeon {
         dungeon
     }
 
-    pub fn generat_generate_dungeon_rooms(nu_of_rooms: i8) -> Vec<Vec<Dungeonroom>> {
-        vec![
-            vec![
-                Dungeonroom::EmptyRoom("Starting Point"),
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::MonsterRoom("Goblin"),
-            ],
-            vec![
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::None(),
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::None(),
-            ],
-            vec![
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::None(),
-            ],
-            vec![
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::MonsterRoom("Goblin"),
-            ],
-            vec![
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::MonsterRoom("Goblin"),
-                Dungeonroom::None(),
-                Dungeonroom::MonsterRoom("Goblin"),
-            ],
-        ]
+    pub fn generat_generate_dungeon_rooms(width: i8, height: i8) -> Vec<Vec<Dungeonroom>> {
+
+        let rooms = (0..height).map(|row|  {
+            (0..width).map(|roomnumber|{
+                Dungeonroom::randomRoom()
+            }).collect::<Vec<Dungeonroom>>()
+        }).collect::<Vec<Vec<Dungeonroom>>>();
+        rooms
     }
 
     pub fn dungeon_ref() -> &'static Arc<Mutex<Dungeon>> {
@@ -199,10 +181,10 @@ impl Dungeon {
                 (
                    "movement".to_string(),
                     vec![
-                        "move up".to_string(),
-                        "move down".to_string(),
-                        "move left".to_string(),
-                        "move right".to_string(),
+                        "up".to_string(),
+                        "down".to_string(),
+                        "left".to_string(),
+                        "right".to_string(),
                     ],
                 ),
                 (
@@ -215,10 +197,6 @@ impl Dungeon {
 
                 ),
 
-                (
-                   "lock around".to_string(), vec![
-
-                ]),
             ])));
             cmd_map
         })
@@ -326,14 +304,30 @@ impl Dungeonroom {
             self.encoutner.get_Name().to_string()
         }
     }
-}
-
-impl Dungeonroom {
-    pub fn MonsterRoom(name: &str) -> Self {
+    pub fn randomRoom() -> Self{
+        let random_number = rand::rng().random_range(0..=3);
+        add_log(&*random_number.to_string());
+        match random_number {
+            0 => {Dungeonroom::MonsterRoom("Nigga".into())},
+            1 => {Dungeonroom::EmptyRoom("E")},
+            2 => {Dungeonroom::MonsterRoom("Nigga".into())},
+            3 => {Dungeonroom::EmptyRoom("E")},
+            _ => {Dungeonroom::None()},
+        }
+    }
+    pub fn MonsterRoom(name: String) -> Self {
         Self {
-            encoutner: EncounterTypes::Monster(Monster::new("Goblin".to_string())),
+            encoutner: EncounterTypes::Monster(Monster::new(name)),
             visited: false,
             enterable: true,
+        }
+    }
+
+    pub fn TrapRoom() -> Self {
+        Self {
+            enterable: true,
+            visited: false,
+            encoutner: EncounterTypes::Trap(Trap::new())
         }
     }
 
@@ -341,7 +335,7 @@ impl Dungeonroom {
         Self {
             enterable: true,
             encoutner: EncounterTypes::Empty,
-            visited: false,
+            visited: true, //todo! change after testing
         }
     }
 
@@ -363,6 +357,10 @@ impl Dungeonroom {
 
     pub fn get_Type(&self) -> &str {
         &self.encoutner.get_Type()
+    }
+
+    pub fn get_des(&self) -> &str{
+        &self.encoutner.get_description()
     }
 
 

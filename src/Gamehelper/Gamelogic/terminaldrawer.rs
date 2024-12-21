@@ -1,4 +1,5 @@
 use std::any::Any;
+
 use ratatui::layout::{Direction, Rect};
 use ratatui::{crossterm::event::{self, KeyCode, KeyEventKind}, layout, layout::{Constraint, Layout}, text::{Line, Span, Text}, widgets::{Block, List, ListItem, Paragraph}, DefaultTerminal, Frame};
 use std::cmp::PartialEq;
@@ -9,10 +10,12 @@ use std::ops::{Deref, DerefMut};
 use std::sync::{Mutex, MutexGuard, OnceLock};
 use crossterm::event::read;
 
-use ratatui::widgets::{BorderType, Borders};
+use ratatui::widgets::{BorderType, Borders, Row, Table, Cell};
 use log::log;
+use ratatui::layout::Direction::{Horizontal, Vertical};
 use ratatui::prelude::Stylize;
 use ratatui::style::{Color, Style};
+
 use ratatui::widgets::block::Position;
 use crate::gameobjects::dungeon::{Dungeon, DungeonHandler, Dungeonroom};
 use crate::{add_log, gamestate_ref, read_log, Gamestate};
@@ -210,13 +213,7 @@ impl tdrawer {
             )
             .split(main_layout[0]);
 
-
-
-
-
-
         let input = Paragraph::new(self.input_string.as_str());
-
 
         let input_block = Block::default().borders(Borders::ALL).title("Input").title_position(ratatui::widgets::block::Position::Top);
 
@@ -254,9 +251,51 @@ impl tdrawer {
 
         }else if command.eq(&String::from("inventory")){
             Self::draw_inventory(frame, container, area);
+        }else if command.eq(&String::from("look")){
+            Self::draw_room(frame, container, area);
+        }else if command.eq(&String::from("help")){
+            Self::draw_help(frame, container, area);
         }
     }
+    pub fn draw_help(frame: &mut Frame, container: &Block, area: &Rect) {
+        let help = "\
+        All commands avalibale / lower- or uppercase isn't important: \n
+        ~Movement: [up, down, left, right] | you can move always but for a better experience open the map \n
+        ~Map: displays the dungeonmap\n
+        ~La | Look around: displays extra information for the current room\n
+        ~inventory: todo!\n
+        ~equip: todo!\n
+        ";
 
+        frame.render_widget(Paragraph::new(help), container.inner(*area))
+
+    }
+    pub fn draw_room(frame: &mut Frame, container: &Block, area: &Rect){
+        let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
+        let current_room = dungeon.get_current_room();
+
+
+        let fulllayout = Layout::default()
+            .direction(Horizontal)
+            .constraints([Constraint::Ratio(1,3),Constraint::Ratio(1,3),Constraint::Ratio(1,3)])
+            .split(container.inner(*area));
+        let roomlayout = Layout::default()
+            .direction(Vertical)
+            .constraints([Constraint::Ratio(1,3),Constraint::Ratio(1,3),Constraint::Ratio(1,3)])
+            .split(fulllayout[1]);
+
+        let paragraphlayout = Layout::default()
+            .direction(Vertical)
+            .constraints([Constraint::Ratio(1,3),Constraint::Ratio(1,3),Constraint::Ratio(1,3)])
+            .split(roomlayout[0]);
+
+
+        let test_room =Block::default().borders(Borders::ALL).title(current_room.get_room_title());
+        let des = Paragraph::new(current_room.get_des());
+        frame.render_widget(test_room, roomlayout[1]);
+        frame.render_widget(des, paragraphlayout[2]);
+
+    }
 
     pub fn draw_map(frame: &mut Frame, container: &Block, area: &Rect){
         let dungeon = Dungeon::dungeon_ref().lock().unwrap();
@@ -408,6 +447,7 @@ pub  fn generate_Card(name: String, hp: i8, max_hp: i8) -> Paragraph<'static>{
         .block(card);
     info
 }
+
 
 
 
