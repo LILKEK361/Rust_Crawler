@@ -25,7 +25,7 @@ impl Monster {
             alvie: true,
             hp: 100,
             max_hp: 100,
-            dmg: 2,
+            dmg: 10,
             loot: vec![]
         }
     }
@@ -56,7 +56,7 @@ impl Monster {
 
     pub fn dead(&mut self){
         let monster = &self.name;
-        self.des = format!("A {monster} lies on the ground.\nDead.\nYou killed it.");
+        self.des = format!("A dead {monster} lies on the ground.\nDead.\nYou killed it.");
         self.name = format!("Dead {monster}")
     }
 

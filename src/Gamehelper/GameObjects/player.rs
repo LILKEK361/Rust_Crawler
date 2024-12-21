@@ -11,11 +11,12 @@ pub(crate) struct Player {
     inventory: [ItemsTypes;10],
     health: u8,
     attack: i8,
-    defense: i8,
+
     level: i8,
     pub alive: bool,
     max_hp: i8,
     in_inventory: bool,
+    armor: i8,
 }
 
 
@@ -43,10 +44,11 @@ impl Player{
             health: 100,
             alive: true,
             attack: 50,
-            defense: 1,
+
             level: 0,
             max_hp: 100,
-            in_inventory: false
+            in_inventory: false,
+            armor: 5,
 
         }
     }
@@ -76,7 +78,13 @@ impl Player{
     }
 
     pub fn defend(&mut self, dmg: i8){
-        self.health = self.health - (dmg - 1) as u8//todo
+        if(dmg - self.armor > 0){
+            self.health = self.health - ((dmg - self.armor) as u8)
+        }
+
+        if(self.health <= 0){
+            self.alive = false;
+        }
     }
     
     //Loot to inventory
@@ -90,6 +98,13 @@ impl Player{
         }
     }
 
+    pub fn is_in_inventory(&self) -> &bool{
+        &self.in_inventory
+    }
+
+    pub fn set_inventory(&mut self, yes: bool) {
+        self.in_inventory = yes;
+    }
     pub fn get_inventory(&self) -> &[ItemsTypes]{
         &self.inventory
     }
@@ -99,6 +114,9 @@ impl Player{
         &self
     }
 
+    pub fn get_stats(&self) -> (u8,i8,i8,i8,i8, &str,) {
+        (self.health, self.max_hp, self.inventory.len() as i8, self.armor, self.level, &self.name )
+    }
 
     
     pub fn player_ref() -> &'static Mutex<Player>{

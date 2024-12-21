@@ -243,18 +243,20 @@ impl tdrawer {
     pub fn display_dungeon_context(frame: &mut Frame,container: &Block, area: &Rect) {
 
         let command= Self::render_queue().lock().unwrap();
-        if command.eq(&String::from("map")) {
+        if command.eq("map".into()) {
 
             Self::draw_map(frame, container, area);
-        } else if command.eq(&String::from("combat")){
+        } else if command.eq("combat".into()){
             Self::draw_combat(frame, container,area);
 
-        }else if command.eq(&String::from("inventory")){
+        }else if command.eq("inventory".into()){
             Self::draw_inventory(frame, container, area);
-        }else if command.eq(&String::from("look")){
+        }else if command.eq("look".into()){
             Self::draw_room(frame, container, area);
-        }else if command.eq(&String::from("help")){
+        }else if command.eq("help".into()){
             Self::draw_help(frame, container, area);
+        }else if(command.eq("info".into())){
+            Self::draw_character_sheet(frame, container, area)
         }
     }
     pub fn draw_help(frame: &mut Frame, container: &Block, area: &Rect) {
@@ -265,6 +267,7 @@ impl tdrawer {
         ~La | Look around: displays extra information for the current room\n
         ~inventory: todo!\n
         ~equip: todo!\n
+        ~info: displays the character stats \n
         ";
 
         frame.render_widget(Paragraph::new(help), container.inner(*area))
@@ -335,6 +338,29 @@ impl tdrawer {
             }
 
         }
+    }
+
+    pub fn draw_character_sheet (frame: &mut Frame, container: &Block, area: &Rect) {
+        let player = Player::player_ref().lock().unwrap();
+
+        let (healt, max_health, inventory_size, armor,level,name) = player.get_stats();
+        let stat_sheet = format!("\n
+        Stats:
+        -----
+        Name: {name}
+        -----
+        Level: {level}
+        -----
+        Health:{healt}/{max_health}
+        -----
+        Armor: {armor}
+        -----
+        Inventory size: {inventory_size}
+        -----
+        ");
+
+        frame.render_widget(Paragraph::new(stat_sheet), container.inner(*area))
+
     }
 
     pub fn draw_combat(frame: &mut Frame, container: &Block, area: &Rect){

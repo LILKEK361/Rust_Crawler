@@ -74,9 +74,14 @@ impl DungeonHandler {
                     }
 
 
-                } else {
-                    if (action.to_ascii_lowercase().eq(&String::from("map"))) {
-                        tdrawer::set_render_queue(String::from("map"));
+                } else if(*Player::player_ref().lock().unwrap().is_in_inventory()){
+                    add_log("your are in the invenotry");
+                    Player::player_ref().lock().unwrap().set_inventory(false);
+                }
+
+                else {
+                    if (action.to_ascii_lowercase().eq("map".into())) {
+                        tdrawer::set_render_queue("map".into());
 
                     } else if cmd_map.get("movement").unwrap().contains(&action) {
                         let movment = &cmd_map.get("movement").unwrap();
@@ -90,12 +95,15 @@ impl DungeonHandler {
                         } else if action.eq(&movment[3]) {
                             Dungeon::dungeon_ref().lock().unwrap().move_player("right");
                         }
-                    } else if(action.to_ascii_lowercase().eq(&String::from("inventory"))){
+                    } else if(action.to_ascii_lowercase().eq("inventory".into())){
                         tdrawer::set_render_queue("inventory".into());
-                    }else if(action.to_ascii_lowercase().eq(&String::from("look around")) || action.to_ascii_lowercase().eq(&String::from("la"))) {
+                        Player::player_ref().lock().unwrap().set_inventory(true);
+                    }else if(action.to_ascii_lowercase().eq("look around".into()) || action.to_ascii_lowercase().eq("la".into())) {
                         tdrawer::set_render_queue("look".into());
-                    } else if(action.eq(&String::from("help"))){
+                    } else if(action.eq("help".into())){
                         tdrawer::set_render_queue("help".into())
+                    } else if(action.eq("info".into())){
+                        tdrawer::set_render_queue("info".into())
                     }
                     else {
                         add_log("Unvaild Command")
