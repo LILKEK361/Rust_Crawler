@@ -1,5 +1,7 @@
+use crossterm::style::Stylize;
 use crate::gameobjects::encounter::Encounter;
-use crate::gameobjects::item_handler::ItemsTypes;
+use crate::gameobjects::item_handler::{ItemsTypes, Raritys};
+use crate::gameobjects::weaponitem::WeaponItem;
 
 #[derive(Clone)]
 pub(crate) struct Monster {
@@ -18,6 +20,7 @@ pub(crate) struct Monster {
 
 impl Monster {
     pub fn new(name: String) -> Self {
+
         Self {
             name: String::from(&name),
             m_type: "Monster".into(),
@@ -26,7 +29,7 @@ impl Monster {
             hp: 100,
             max_hp: 100,
             dmg: 10,
-            loot: vec![]
+            loot: vec![ItemsTypes::WeaponItem(WeaponItem::new("Dagger".into(),"A Dagger".into(), Raritys::COMMON, 10))]
         }
     }
 
@@ -56,9 +59,17 @@ impl Monster {
 
     pub fn dead(&mut self){
         let monster = &self.name;
-        self.des = format!("A dead {monster} lies on the ground.\nDead.\nYou killed it.");
+        let dead = "Dead".red();
+        self.des = format!("A {monster} lies on the ground.\n Dead\nYou killed it.", );
         self.name = format!("Dead {monster}")
     }
+
+    pub fn drop(&mut self) -> &ItemsTypes{
+        //todo
+        &self.loot.get(0).unwrap()
+    }
+
+
 
 }
 

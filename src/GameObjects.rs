@@ -2,9 +2,9 @@
 mod encounter;
 
 #[path= "Gamehelper/GameObjects/Item_Handler.rs"]
-mod item_handler;
+pub(crate) mod item_handler;
 #[path= "Gamehelper/GameObjects/Items/weaponitem.rs"]
-mod weaponitem;
+pub(crate) mod weaponitem;
 #[path= "Gamehelper/GameObjects/Items/equip_item.rs"]
 mod equip_item;
 #[path = "Gamehelper/GameObjects/player.rs"]

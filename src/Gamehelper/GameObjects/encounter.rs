@@ -3,7 +3,8 @@ pub(crate) enum EncounterTypes{
     Monster(crate::gameobjects::monster::Monster),
     Trap(crate::gameobjects::trap::Trap),
     Empty,
-    None
+    None,
+    Goal,
 }
 
 
@@ -15,6 +16,7 @@ impl Encounter for EncounterTypes {
             EncounterTypes::Trap(trap) => trap.get_Name(),
             EncounterTypes::Empty => "Empty",
             EncounterTypes::None => "None",
+            EncounterTypes::Goal => "Goal",
         }
     }
 
@@ -24,6 +26,7 @@ impl Encounter for EncounterTypes {
             EncounterTypes::Trap(trap) => "Trap",
             EncounterTypes::Empty => "Empty",
             EncounterTypes::None => "None",
+            EncounterTypes::Goal => "Goal",
         }
     }
 
@@ -33,6 +36,7 @@ impl Encounter for EncounterTypes {
             EncounterTypes::Trap(trap) => trap.get_description(),
             EncounterTypes::Empty => "A Empty room or is it?",
             EncounterTypes::None => "None",
+            EncounterTypes::Goal => "Goal",
         }
     }
 }

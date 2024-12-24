@@ -10,13 +10,34 @@ enum ItemTypes{
 
 #[derive(Clone)]
 pub enum Raritys {
-    common,
-    rare,
-    godly,
-    shizo,
-    broken,
-    demonic
+    TRASH,
+    COMMON,
+    RARE,
+    GODLY,
+    SHIZO,
+    BROKEN,
+    DEMONIC,
+
+    
 }
+
+impl Raritys {
+    pub fn from(s: String) -> Option<Self> {
+        match s.to_lowercase().as_str() {
+            "trash" => Some(Raritys::TRASH),
+            "common" => Some(Raritys::COMMON),
+            "rare" => Some(Raritys::RARE),
+            "godly" => Some(Raritys::GODLY),
+            "shizo" => Some(Raritys::SHIZO),
+            "broken" => Some(Raritys::BROKEN),
+            "demonic" => Some(Raritys::DEMONIC),
+            _ => None, // Return None for invalid inputs
+        }
+    }
+
+
+}
+
 #[derive(Clone)]
 pub(crate) enum Equipmintslots {
     Head,

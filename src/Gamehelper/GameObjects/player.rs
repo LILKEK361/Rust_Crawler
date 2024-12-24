@@ -17,6 +17,8 @@ pub(crate) struct Player {
     max_hp: i8,
     in_inventory: bool,
     armor: i8,
+    skillmod: i8,
+    skills: Vec<String> //todo
 }
 
 
@@ -44,11 +46,13 @@ impl Player{
             health: 100,
             alive: true,
             attack: 50,
+            skillmod: 0,
 
             level: 0,
             max_hp: 100,
             in_inventory: false,
             armor: 5,
+            skills: vec!["Todo".into()]
 
         }
     }
@@ -86,6 +90,10 @@ impl Player{
             self.alive = false;
         }
     }
+
+    pub fn get_skill(&self) -> &i8{
+        &self.skillmod
+    }
     
     //Loot to inventory
     fn add_loot(&mut self, inventory_slot: i8, item: ItemsTypes){
@@ -114,8 +122,8 @@ impl Player{
         &self
     }
 
-    pub fn get_stats(&self) -> (u8,i8,i8,i8,i8, &str,) {
-        (self.health, self.max_hp, self.inventory.len() as i8, self.armor, self.level, &self.name )
+    pub fn get_stats(&self) -> (&str,u8,i8,i8,i8,i8, &Vec<String>) {
+        (&self.name, self.health, self.max_hp, self.inventory.len() as i8, self.armor, self.level, &self.skills  )
     }
 
     

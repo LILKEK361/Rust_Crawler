@@ -14,7 +14,23 @@ pub(crate) struct WeaponItem {
 }
 
 impl WeaponItem {
-    fn get_bonus_dmg(&self){
+
+    pub fn new(name: String, des: String, rarity: Raritys, dmg_bonus: u8) -> Self {
+
+        Self {
+            name,
+            equip_slot: vec![Equipmintslots::Hands],
+            des,
+            rarity,
+            dmg_bonus
+        }
+
+    }
+    fn get_bonus_dmg(&self) -> &u8{
+        &self.dmg_bonus
+    }
+
+    pub fn get_stats(&self) -> () {
 
     }
 }

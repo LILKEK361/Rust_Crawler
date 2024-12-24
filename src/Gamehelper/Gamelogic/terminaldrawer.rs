@@ -1,6 +1,7 @@
+use crate::gameobjects::item_handler::Item;
 use std::any::Any;
 
-use ratatui::layout::{Direction, Rect};
+use ratatui::layout::{Alignment, Direction, Rect, Rows};
 use ratatui::{crossterm::event::{self, KeyCode, KeyEventKind}, layout, layout::{Constraint, Layout}, text::{Line, Span, Text}, widgets::{Block, List, ListItem, Paragraph}, DefaultTerminal, Frame};
 use std::cmp::PartialEq;
 use std::collections::HashMap;
@@ -10,7 +11,7 @@ use std::ops::{Deref, DerefMut};
 use std::sync::{Mutex, MutexGuard, OnceLock};
 use crossterm::event::read;
 
-use ratatui::widgets::{BorderType, Borders, Row, Table, Cell};
+use ratatui::widgets::{BorderType, Borders, Row, Table, Cell, Wrap};
 use log::log;
 use ratatui::layout::Direction::{Horizontal, Vertical};
 use ratatui::prelude::Stylize;
@@ -19,9 +20,10 @@ use ratatui::style::{Color, Style};
 use ratatui::widgets::block::Position;
 use crate::gameobjects::dungeon::{Dungeon, DungeonHandler, Dungeonroom};
 use crate::{add_log, gamestate_ref, read_log, Gamestate};
-use crate::gamelogic::payload_handler::Payload;
+
 use crate::gameobjects::player;
 use crate::gameobjects::player::Player;
+use crate::gamelogic::konst;
 /*
     This file will handle the ui drawing for the game
 
@@ -36,6 +38,7 @@ pub struct tdrawer {
     input_mode: InputMode,
     dislay: Block<'static>,
     log_index: i8,
+
 
 
 
@@ -60,7 +63,7 @@ impl tdrawer {
             input_mode: InputMode::Editing,
             character_index: 0,
             dislay: Block::default().borders(Borders::ALL).title("Placeholder").title_position(ratatui::widgets::block::Position::Top),
-            log_index: 15,
+            log_index: 30,
 
 
         }
@@ -121,7 +124,7 @@ impl tdrawer {
     }
 
     pub fn submit_message(&mut self) {
-        add_log(&self.input_string);
+        add_log(&*format!("Player: {}", &self.input_string));
 
         if(self.input_string.clone() == "start" && *gamestate_ref().lock().unwrap() == Gamestate::home){
             *gamestate_ref().lock().unwrap() = Gamestate::run;
@@ -171,7 +174,7 @@ impl tdrawer {
 
                         }
                         KeyCode::Up => {
-                            if (10 < (self.log_index - 1)) {
+                            if (29 < (self.log_index - 1)) {
                                 self.log_index -= 1;
 
                             }
@@ -206,8 +209,8 @@ impl tdrawer {
             .margin(1)
             .constraints(
                 [
-                    Constraint::Percentage(80),
-                    Constraint::Percentage(20),
+                    Constraint::Percentage(75),
+                    Constraint::Percentage(25),
                 ]
                     .as_ref(),
             )
@@ -220,10 +223,10 @@ impl tdrawer {
 
         frame.render_widget(&input_block, main_layout[1]);
         frame.render_widget(input, input_block.inner(main_layout[1]));
-        if(read_log().len() as i8 > 14i8){
-            frame.render_widget(Self::get_specific_log((read_log().len() as i8 - self.log_index ), read_log().len() as i8), big_screen[1]);
+        if(read_log().len() as i8 > 30i8){
+            frame.render_widget(Self::get_specific_log((read_log().len() - self.log_index as usize) as i8, read_log().len() as i8), big_screen[1])
         }else {
-            frame.render_widget(Self::get_log(), big_screen[1]);
+            frame.render_widget(Self::get_log(  ),big_screen[1]);
         }
 
         if(*gamestate_ref().lock().unwrap() == Gamestate::run){
@@ -260,17 +263,9 @@ impl tdrawer {
         }
     }
     pub fn draw_help(frame: &mut Frame, container: &Block, area: &Rect) {
-        let help = "\
-        All commands avalibale / lower- or uppercase isn't important: \n
-        ~Movement: [up, down, left, right] | you can move always but for a better experience open the map \n
-        ~Map: displays the dungeonmap\n
-        ~La | Look around: displays extra information for the current room\n
-        ~inventory: todo!\n
-        ~equip: todo!\n
-        ~info: displays the character stats \n
-        ";
 
-        frame.render_widget(Paragraph::new(help), container.inner(*area))
+
+        frame.render_widget(Paragraph::new(konst::HELP), container.inner(*area))
 
     }
     pub fn draw_room(frame: &mut Frame, container: &Block, area: &Rect){
@@ -289,14 +284,29 @@ impl tdrawer {
 
         let paragraphlayout = Layout::default()
             .direction(Vertical)
-            .constraints([Constraint::Ratio(1,3),Constraint::Ratio(1,3),Constraint::Ratio(1,3)])
+            .constraints([Constraint::Percentage(30),Constraint::Percentage(70)])
             .split(roomlayout[0]);
+        let notelayout = Layout::default()
+            .direction(Vertical)
+            .constraints([Constraint::Percentage(30),Constraint::Percentage(70)])
+            .split(roomlayout[2]);
 
 
-        let test_room =Block::default().borders(Borders::ALL).title(current_room.get_room_title());
-        let des = Paragraph::new(current_room.get_des());
+        let test_room = Block::default()
+            .borders(Borders::ALL)
+            .title(current_room.get_room_title());
+
+        let des = Paragraph::new(current_room.get_des())
+            .wrap(Wrap {trim : true})
+            .alignment(Alignment::Center);
+
+        let note = Paragraph::new(format!("Here are notes:\n{}", current_room.get_note()))
+            .wrap(Wrap {trim : true})
+            .alignment(Alignment::Center);;
+
         frame.render_widget(test_room, roomlayout[1]);
-        frame.render_widget(des, paragraphlayout[2]);
+        frame.render_widget(des, paragraphlayout[1]);
+        frame.render_widget(note, notelayout[1]);
 
     }
 
@@ -327,12 +337,22 @@ impl tdrawer {
                     frame.render_widget(Block::default()
                                             .title(String::from(format!("{}: {}", "\\@/", roomtitle)))
                                             .borders(Borders::ALL)
-                                            .red()
-                                            , row_layout[j])
-                }else if(!dungeonroomrow[j].get_Type().eq("None")){
-                    frame.render_widget(Block::default()
-                                            .title(roomtitle)
-                                            .borders(Borders::ALL), row_layout[j])
+                                            .red(),
+                                        row_layout[j])
+                }
+                else if(!dungeonroomrow[j].get_Type().eq("None")){
+
+                   if(dungeonroomrow[j].get_Type().eq("Goal")){
+                       frame.render_widget(Block::default()
+                                               .title(roomtitle)
+                                               .borders(Borders::ALL)
+                                               .red(), row_layout[j])
+                   } else {
+
+                       frame.render_widget(Block::default()
+                                               .title(roomtitle)
+                                               .borders(Borders::ALL), row_layout[j])
+                   }
                 }
 
             }
@@ -343,23 +363,9 @@ impl tdrawer {
     pub fn draw_character_sheet (frame: &mut Frame, container: &Block, area: &Rect) {
         let player = Player::player_ref().lock().unwrap();
 
-        let (healt, max_health, inventory_size, armor,level,name) = player.get_stats();
-        let stat_sheet = format!("\n
-        Stats:
-        -----
-        Name: {name}
-        -----
-        Level: {level}
-        -----
-        Health:{healt}/{max_health}
-        -----
-        Armor: {armor}
-        -----
-        Inventory size: {inventory_size}
-        -----
-        ");
 
-        frame.render_widget(Paragraph::new(stat_sheet), container.inner(*area))
+        let (name, health, max_health,inv_size, armor, level, skills ) = player.get_stats();
+        frame.render_widget(Paragraph::new(konst::PLAYERINFO(name,level,health,max_health, armor, skills, inv_size)), container.inner(*area))
 
     }
 
@@ -373,32 +379,33 @@ impl tdrawer {
 
         let mapLayout = Layout::default()
             .direction(Direction::Horizontal)
-            .constraints([Constraint::Percentage(25),Constraint::Percentage(25),Constraint::Percentage(25),Constraint::Percentage(25),])
+            .constraints([Constraint::Percentage(25),Constraint::Percentage(50),Constraint::Percentage(25),])
             .split(container.inner(*area));
+        let helper_layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([Constraint::Percentage(80), Constraint::Percentage(20)])
+            .split(mapLayout[1]);
 
         let playercard = generate_Card(String::from(&player.name), *player.get_hp() as i8, *player.get_max_hp());
         let monstercard = generate_Card(String::from(&monster.name), *monster.get_hp() as i8, *monster.get_max_hp());
-
+        let help = Paragraph::new(konst::COMBATHELPERMENU).block(Block::new().borders(Borders::ALL).title("Combat Basic Commands"));
         frame.render_widget(playercard, mapLayout[0]);
-        frame.render_widget(monstercard, mapLayout[3]);
+        frame.render_widget(help, helper_layout[1]);
+        frame.render_widget(monstercard, mapLayout[2]);
     }
     fn draw_inventory(frame: &mut Frame, container: &Block, area: &Rect) {
         let player = Player::player_ref().lock().unwrap();
 
         let inventory = player.get_inventory();
-
-        let inventory_layout = Layout::default()
-            .direction(Direction::Vertical)
-            .split(container.inner(*area));
-
-        let invorty_slots = inventory.iter().map(|item|{
-
-        });
-
+        /*
+        let row = Rows::from();
+        let table = Table::new();
+        */
 
     }
 
-    pub fn get_log() ->  List<'static>{
+    pub fn get_log() -> List<'static>{
+
 
         let mut messages: Vec<ListItem> = read_log()
             .iter()
@@ -408,11 +415,11 @@ impl tdrawer {
                 ListItem::new(content)
             })
             .collect();
+            let log_block = List::new(messages).block(Block::bordered().title("Log"));
+            log_block
 
-
-        let log_block = List::new(messages).block(Block::bordered().title("Log"));
-        log_block
     }
+
 
     pub fn render_queue() -> &'static Mutex<String> {
         static QUEUE: OnceLock<Mutex<String>> = OnceLock::new();

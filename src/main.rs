@@ -2,7 +2,7 @@ use std::{io, thread, time::Duration};
 
 use crossterm::{event, execute,terminal::{self, SetSize}};
 use ratatui::Terminal;
-use gamelogic::terminaldrawer::tdrawer;
+use gamelogic::{terminaldrawer::tdrawer, postgreshandler};
 use std::io::{stderr, stdout, Stdout};
 
 
@@ -14,12 +14,12 @@ use ratatui::{text::Text, Frame};
 use std::{sync::{Mutex, OnceLock}, thread::{sleep, Thread}};
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
+use crossterm::terminal::EnterAlternateScreen;
 use ratatui::widgets::Block;
-use crate::gameobjects::dungeon::{Dungeon, DungeonHandler};
-
-#[path= "Gamehelper/Gamelogic/uidrawer.rs"]
-mod uidrawer;
-
+use crate::gamehelper::dbpaths;
+use crate::gamelogic::gamehelperfunctions::generat_random_weapon;
+use crate::gameobjects::{dungeon::{Dungeon, DungeonHandler}};
+use crate::gameobjects::item_handler::Item;
 
 #[path= "Gamelogic.rs"]
 mod gamelogic;
@@ -27,6 +27,11 @@ mod gamelogic;
 
 #[path="GameObjects.rs"]
 mod gameobjects;
+
+#[path="Gamehelper.rs"]
+mod gamehelper;
+
+
 
 
 pub fn log_ref() -> &'static Mutex<Vec<String>>{
@@ -48,19 +53,20 @@ pub fn read_log() -> Vec<String>{
 
 fn main() {
 
+    /*
     execute!(
         stdout(),
-        SetSize(100, 30) // width, height
+        SetSize(120, 40) // width, height
     );
 
     let mut terminal = ratatui::init();
 
 
     tdrawer::tdrawer_ref().lock().unwrap().deref_mut().draw(&mut terminal).unwrap();
+        */
 
-
-    
-
+    let t = generat_random_weapon();
+    println!("{}", t.get_name())
 
 }
 
@@ -82,6 +88,17 @@ impl PartialEq for Gamestate {
 }
 
 
+pub(crate) fn db_manager_ref() -> &'static Arc<Mutex<postgreshandler::PgHandler>>{
+    static MANAGER: OnceLock<Arc<Mutex<postgreshandler::PgHandler>>> = OnceLock::new();
+
+    MANAGER.get_or_init(||
+        {
+            let manager = Arc::new(Mutex::new( postgreshandler::PgHandler::new()));
+            manager
+        }
+    )
+
+}
 
 
 

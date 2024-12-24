@@ -15,7 +15,7 @@ pub(crate) struct Inventoryslot{
        Self {
             name: "Empty".into(),
             eq_slot: Equipmintslots::None,
-           rarity: Raritys::common
+           rarity: Raritys::COMMON
         }
     }
 }
