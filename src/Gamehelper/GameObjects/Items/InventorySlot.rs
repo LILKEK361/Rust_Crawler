@@ -11,6 +11,7 @@ pub(crate) struct Inventoryslot{
 
  impl Inventoryslot {
 
+
     pub fn empty()-> Self {
        Self {
             name: "Empty".into(),
@@ -27,9 +28,9 @@ impl Item for Inventoryslot {
         &self.name
     }
 
-    fn get_equipment_slot(&self) -> Vec<crate::gameobjects::item_handler::Equipmintslots> {
+    fn get_equipment_slot(&self) -> &Equipmintslots {
 
-        vec![self.eq_slot.clone()]
+        &self.eq_slot
     }
 
     fn get_des(&self) -> &str {

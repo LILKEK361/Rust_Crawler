@@ -123,9 +123,12 @@ impl DungeonHandler {
 
                         //todo
                         let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
+                        let mut player = Player::player_ref().lock().unwrap();
                         dungeon.get_current_room().set_note("".into());
                         let monster =  dungeon.get_current_room().get_Monster().unwrap();
-                        add_log(&*format!("{:?}", &monster.drop().get_name()))
+                        if(!player.add_loot(monster.drop())){
+                            add_log("Your inventory is full")
+                        }
                     }
                     else {
                         add_log("Unvaild Command")

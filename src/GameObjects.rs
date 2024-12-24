@@ -12,8 +12,8 @@ pub(crate) mod player;
 #[path= "Gamehelper/GameObjects/Dungeon.rs"]
 pub(crate) mod dungeon;
 #[path="Gamehelper/GameObjects/Items/InventorySlot.rs"]
-mod inventoryslot;
+pub(crate)mod inventoryslot;
 #[path= "Gamehelper/GameObjects/DungeonEncoutner/trap.rs"]
-mod trap;
+pub(crate)mod trap;
 #[path= "Gamehelper/GameObjects/DungeonEncoutner/monster.rs"]
-mod monster;
+pub(crate)mod monster;

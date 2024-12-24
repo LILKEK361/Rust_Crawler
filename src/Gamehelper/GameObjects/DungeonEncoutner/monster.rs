@@ -1,4 +1,5 @@
 use crossterm::style::Stylize;
+use crate::gamelogic;
 use crate::gameobjects::encounter::Encounter;
 use crate::gameobjects::item_handler::{ItemsTypes, Raritys};
 use crate::gameobjects::weaponitem::WeaponItem;
@@ -29,7 +30,7 @@ impl Monster {
             hp: 100,
             max_hp: 100,
             dmg: 10,
-            loot: vec![ItemsTypes::WeaponItem(WeaponItem::new("Dagger".into(),"A Dagger".into(), Raritys::COMMON, 10))]
+            loot: vec![gamelogic::gamehelperfunctions::generat_random_weapon()]
         }
     }
 
@@ -64,9 +65,9 @@ impl Monster {
         self.name = format!("Dead {monster}")
     }
 
-    pub fn drop(&mut self) -> &ItemsTypes{
+    pub fn drop(&mut self) -> ItemsTypes{
         //todo
-        &self.loot.get(0).unwrap()
+        self.loot.get(0).unwrap().to_owned()
     }
 
 

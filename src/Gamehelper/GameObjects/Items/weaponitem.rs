@@ -6,7 +6,7 @@ pub(crate) struct WeaponItem {
 
     //Common stats for item
     name: String,
-    equip_slot: Vec<Equipmintslots>,
+    equip_slot: Equipmintslots,
     des: String,
     rarity: Raritys,
     //Specific WeaponItem stats:
@@ -19,7 +19,7 @@ impl WeaponItem {
 
         Self {
             name,
-            equip_slot: vec![Equipmintslots::Hands],
+            equip_slot: Equipmintslots::Hands,
             des,
             rarity,
             dmg_bonus
@@ -40,8 +40,8 @@ impl Item for WeaponItem {
         &self.name
     }
 
-    fn get_equipment_slot(&self) -> Vec<crate::gameobjects::item_handler::Equipmintslots> {
-        self.equip_slot.clone()
+    fn get_equipment_slot(&self) -> &Equipmintslots{
+        &self.equip_slot
     }
 
     fn get_des(&self) -> &str {

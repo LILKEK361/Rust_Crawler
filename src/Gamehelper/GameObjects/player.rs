@@ -1,14 +1,16 @@
 use std::collections::hash_map::IntoValues;
 use std::sync::{Mutex, OnceLock};
-use crate::add_log;
+use crate::{add_log, gameobjects};
 use crate::gameobjects::inventoryslot;
 use crate::gameobjects::inventoryslot::Inventoryslot;
 use crate::gameobjects::item_handler::{Item, ItemsTypes};
 
 
+
 pub(crate) struct Player {
     pub name: String,
-    inventory: [ItemsTypes;10],
+    inventory: Vec<ItemsTypes>,
+    inventory_size: u8,
     health: u8,
     attack: i8,
 
@@ -31,7 +33,7 @@ impl Player{
 
         Self {
             name,
-            inventory: [
+            inventory: vec![
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
@@ -47,7 +49,7 @@ impl Player{
             alive: true,
             attack: 50,
             skillmod: 0,
-
+            inventory_size: 10,
             level: 0,
             max_hp: 100,
             in_inventory: false,
@@ -96,14 +98,19 @@ impl Player{
     }
     
     //Loot to inventory
-    fn add_loot(&mut self, inventory_slot: i8, item: ItemsTypes){
-        if(inventory_slot <= self.inventory.len() as i8){
+    pub fn add_loot(&mut self, item: ItemsTypes ) -> bool{
+        let mut added = false;
+        for slot in &mut self.inventory  {
 
-            self.inventory[inventory_slot as usize] = item;
-
-        }else {
-            add_log("Inventory Slot doesn't exist")
+            if(slot.get_name().to_ascii_lowercase().eq("empty")){
+                add_log(&*format!("{} was added",item.get_name()));
+                *slot = item;
+                added = true;
+                break
+            }
         }
+
+        added
     }
 
     pub fn is_in_inventory(&self) -> &bool{

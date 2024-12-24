@@ -8,7 +8,7 @@ pub(crate) struct EquipItem{
     des: String,
 
     //Stats of the item
-    equip_slot: Vec<Equipmintslots>,
+    equip_slot: Equipmintslots,
     armor_buff: i8,
     dmg_buff: i8,
     rarity: Raritys
@@ -30,8 +30,8 @@ impl Item for EquipItem {
         &self.name
     }
 
-    fn get_equipment_slot(&self) -> Vec<crate::gameobjects::item_handler::Equipmintslots> {
-        self.equip_slot.clone()
+    fn get_equipment_slot(&self) -> &Equipmintslots {
+       &self.equip_slot
     }
 
     fn get_des(&self) -> &str {

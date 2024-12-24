@@ -53,7 +53,7 @@ pub fn read_log() -> Vec<String>{
 
 fn main() {
 
-    /*
+
     execute!(
         stdout(),
         SetSize(120, 40) // width, height
@@ -63,10 +63,9 @@ fn main() {
 
 
     tdrawer::tdrawer_ref().lock().unwrap().deref_mut().draw(&mut terminal).unwrap();
-        */
 
-    let t = generat_random_weapon();
-    println!("{}", t.get_name())
+
+
 
 }
 

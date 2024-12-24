@@ -1,3 +1,4 @@
+use crate::gameobjects::item_handler::Raritys::{BROKEN, DEMONIC, GODLY, RARE};
 
 enum ItemTypes{
 
@@ -35,6 +36,18 @@ impl Raritys {
         }
     }
 
+    pub fn to_string(&self) -> &str {
+        match &self {
+            Raritys::TRASH => "trash",
+            Raritys::COMMON => "common",
+            RARE => "rare",
+            GODLY => "godly",
+            BROKEN => "broken",
+            DEMONIC => "demonic",
+            _ => "Mh bug"
+        }
+    }
+
 
 }
 
@@ -47,6 +60,20 @@ pub(crate) enum Equipmintslots {
     Pants,
     Shoes,
     None,
+}
+
+impl Equipmintslots {
+    pub fn to_string(&self) -> & str {
+        match self {
+            Equipmintslots::Head => "Head",
+            Equipmintslots::Torso => "Torso",
+            Equipmintslots::Hands => "Hands",
+            Equipmintslots::Weapeon => "Weapon",
+            Equipmintslots::Pants => "Pants",
+            Equipmintslots::Shoes => "Shoes",
+            Equipmintslots::None => "None",
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -69,7 +96,7 @@ impl Item for ItemsTypes {
         }
     }
 
-    fn get_equipment_slot(&self) -> Vec<Equipmintslots> {
+    fn get_equipment_slot(&self) -> &Equipmintslots {
         match self {
             ItemsTypes::EquipItem(item) => item.get_equipment_slot(),
             ItemsTypes::InventorySlot(item) => item.get_equipment_slot(),
@@ -92,11 +119,13 @@ impl Item for ItemsTypes {
             ItemsTypes::WeaponItem(item) => item.get_rarity(),
         }
     }
+
+
 }
 
 pub trait Item: Sync + Send + Clone {
     fn get_name(&self) -> &str;
-    fn get_equipment_slot(&self) -> Vec<crate::gameobjects::item_handler::Equipmintslots>;
+    fn get_equipment_slot(&self) -> &Equipmintslots;
     fn get_des(&self) -> &str;
     fn get_rarity(&self) -> &Raritys;
 

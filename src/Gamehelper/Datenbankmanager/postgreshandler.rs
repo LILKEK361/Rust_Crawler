@@ -27,7 +27,7 @@ impl PgHandler {
     }
 
     pub fn search(&mut self, search: &str) -> Vec<Row> {
-        println!("{}", search);
+
         let mut rows: Vec<Row> = self.client.query(search, &[]).unwrap();
         rows
 

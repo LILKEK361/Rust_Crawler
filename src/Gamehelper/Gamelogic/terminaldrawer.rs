@@ -397,11 +397,28 @@ impl tdrawer {
         let player = Player::player_ref().lock().unwrap();
 
         let inventory = player.get_inventory();
-        /*
-        let row = Rows::from();
-        let table = Table::new();
-        */
 
+        let mut to_display: Vec<Row> = inventory.iter().map(|item|{
+
+            Row::new(vec![
+                Cell::from(item.get_name()),
+                Cell::from(item.get_rarity().to_string()),
+                Cell::from(item.get_equipment_slot().to_string()),
+
+                Cell::from(item.get_des()),
+
+            ])
+
+        }).collect::<Vec<Row>>();
+
+
+
+
+
+        let table = Table::new(to_display, inventory.iter().map(|_|{Constraint::Ratio(1, inventory.len() as u32)}).collect::<Vec<Constraint>>())
+            .header(Row::new(vec![Cell::new("Name"),Cell::new("Rarity"),Cell::new("EquipmentSlot"),Cell::from("Description")]));
+
+        frame.render_widget(table, container.inner(*area))
     }
 
     pub fn get_log() -> List<'static>{
