@@ -13,6 +13,7 @@ use crossterm::event::read;
 
 use ratatui::widgets::{BorderType, Borders, Row, Table, Cell, Wrap};
 use log::log;
+use ratatui::layout::Constraint::Ratio;
 use ratatui::layout::Direction::{Horizontal, Vertical};
 use ratatui::prelude::Stylize;
 use ratatui::style::{Color, Style};
@@ -365,7 +366,7 @@ impl tdrawer {
 
 
         let (name, health, max_health,inv_size, armor, level, skills ) = player.get_stats();
-        frame.render_widget(Paragraph::new(konst::PLAYERINFO(name,level,health,max_health, armor, skills, inv_size)), container.inner(*area))
+        frame.render_widget(Paragraph::new(konst::PLAYERINFO(name, level, health, max_health, armor, skills, inv_size)), container.inner(*area))
 
     }
 
@@ -398,27 +399,93 @@ impl tdrawer {
 
         let inventory = player.get_inventory();
 
-        let mut to_display: Vec<Row> = inventory.iter().map(|item|{
+        let inventory_layout = Layout::default()
+            .constraints([Constraint::Percentage(70), Constraint::Percentage(30)])
+            .direction(Horizontal)
+            .split(container.inner(*area));
 
-            Row::new(vec![
-                Cell::from(item.get_name()),
-                Cell::from(item.get_rarity().to_string()),
-                Cell::from(item.get_equipment_slot().to_string()),
-
-                Cell::from(item.get_des()),
-
-            ])
-
-        }).collect::<Vec<Row>>();
+        let display_layout = Layout::default()
+            .direction(Vertical)
+            .constraints([Constraint::Percentage(70),Constraint::Percentage(30)])
+            .split(inventory_layout[0]);
 
 
 
 
 
-        let table = Table::new(to_display, inventory.iter().map(|_|{Constraint::Ratio(1, inventory.len() as u32)}).collect::<Vec<Constraint>>())
-            .header(Row::new(vec![Cell::new("Name"),Cell::new("Rarity"),Cell::new("EquipmentSlot"),Cell::from("Description")]));
+        let items_layout = Layout::default()
+            .constraints((0..(inventory.len() + 1)).map(|_| {
+                Constraint::Percentage((100 /(inventory.len() + 1)) as u16)
+            }).collect::<Vec<Constraint>>())
+            .direction(Vertical)
+            .split(display_layout[0]);
 
-        frame.render_widget(table, container.inner(*area))
+        for i in 0..(inventory.len() + 1) {
+
+            let row_layout = Layout::default().direction(Horizontal).constraints([Constraint::Ratio(1,4); 4]).split(items_layout[i]);
+
+            if( i == 0) {
+
+                frame.render_widget(Paragraph::new("Index"), row_layout[0]);
+                frame.render_widget(Paragraph::new("Name"), row_layout[1]);
+
+                frame.render_widget(Paragraph::new("Rarity"), row_layout[2]);
+                frame.render_widget(Paragraph::new("Value"), row_layout[3]);
+
+            }else  {
+
+                frame.render_widget(Paragraph::new((i - 1).to_string()), row_layout[0]);
+                frame.render_widget(Paragraph::new(inventory.get(i - 1).unwrap().get_name()), row_layout[1]);
+                frame.render_widget(Paragraph::new(inventory.get(i - 1).unwrap().get_rarity().to_string()), row_layout[2]);
+                frame.render_widget(Paragraph::new("0"), row_layout[3]);
+            }
+
+        }
+
+        let help = Paragraph::new(
+            Text::from(konst::INVENTORYHELP.split("\n").map(|txt|{
+            Line::from(Span::from(txt))
+        }).collect::<Vec<Line>>())).block(Block::new().title("Inventory Help").borders(Borders::ALL));
+
+        let equipment_display = Block::new().borders(Borders::ALL);
+
+        let mut equipment_layout = Layout::default()
+            .constraints([Constraint::Percentage(25),Constraint::Percentage(25),Constraint::Percentage(25),Constraint::Percentage(25)])
+            .direction(Vertical)
+            .split(equipment_display.inner(inventory_layout[1]));
+
+        if(player.get_inspect().0) {
+
+            let itemdes = inventory.get(player.get_inspect().1 as usize).unwrap().get_des().split("\\").map(|line| {
+               Line::from(Span::from(line))
+            }).collect::<Vec<Line>>();
+
+
+
+            frame.render_widget(equipment_display.title(format!("Item: {}",inventory.get(player.get_inspect().1 as usize).unwrap().get_name())), inventory_layout[1]);
+            frame.render_widget(Paragraph::new(Text::from(itemdes)).wrap(Wrap {trim: true}),equipment_layout[1])
+
+
+        }else {
+
+
+
+
+
+
+            frame.render_widget( equipment_display.title("Equipment"), inventory_layout[1]);
+            frame.render_widget(Paragraph::new("a"),equipment_layout[0]);
+            frame.render_widget(Paragraph::new("a"),equipment_layout[1]);
+            frame.render_widget(Paragraph::new("a"),equipment_layout[2]);
+            frame.render_widget(Paragraph::new("a"),equipment_layout[3]);
+        }
+
+
+
+
+
+        frame.render_widget(help, display_layout[1]);
+
     }
 
     pub fn get_log() -> List<'static>{

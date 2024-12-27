@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use crate::gameobjects::item_handler::Raritys::{BROKEN, DEMONIC, GODLY, RARE};
 
 enum ItemTypes{
@@ -23,16 +24,17 @@ pub enum Raritys {
 }
 
 impl Raritys {
-    pub fn from(s: String) -> Option<Self> {
+    pub fn from(s: String) ->Self {
         match s.to_lowercase().as_str() {
-            "trash" => Some(Raritys::TRASH),
-            "common" => Some(Raritys::COMMON),
-            "rare" => Some(Raritys::RARE),
-            "godly" => Some(Raritys::GODLY),
-            "shizo" => Some(Raritys::SHIZO),
-            "broken" => Some(Raritys::BROKEN),
-            "demonic" => Some(Raritys::DEMONIC),
-            _ => None, // Return None for invalid inputs
+            "trash" => Raritys::TRASH,
+            "common" => Raritys::COMMON,
+            "rare" => Raritys::RARE,
+            "godly" => Raritys::GODLY,
+            "shizo" => Raritys::SHIZO,
+            "broken" => Raritys::BROKEN,
+            "demonic" => Raritys::DEMONIC,
+             // Return None for invalid inputs
+            _ => {Raritys::TRASH}
         }
     }
 
@@ -51,12 +53,11 @@ impl Raritys {
 
 }
 
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq, Hash)]
 pub(crate) enum Equipmintslots {
     Head,
     Torso,
     Hands,
-    Weapeon,
     Pants,
     Shoes,
     None,
@@ -68,7 +69,6 @@ impl Equipmintslots {
             Equipmintslots::Head => "Head",
             Equipmintslots::Torso => "Torso",
             Equipmintslots::Hands => "Hands",
-            Equipmintslots::Weapeon => "Weapon",
             Equipmintslots::Pants => "Pants",
             Equipmintslots::Shoes => "Shoes",
             Equipmintslots::None => "None",
@@ -82,6 +82,7 @@ pub(crate) enum ItemsTypes {
     EquipItem(crate::gameobjects::equip_item::EquipItem),
     WeaponItem(crate::gameobjects::weaponitem::WeaponItem),
     InventorySlot(crate::gameobjects::inventoryslot::Inventoryslot),
+    TreasureItem(crate::gameobjects::treasure_item::TreasureItem)
 
 }
 
@@ -92,7 +93,8 @@ impl Item for ItemsTypes {
         match self {
             ItemsTypes::EquipItem(item) => item.get_name(),
             ItemsTypes::WeaponItem(item) => item.get_name(),
-            ItemsTypes::InventorySlot(item) => item.get_name()
+            ItemsTypes::InventorySlot(item) => item.get_name(),
+            ItemsTypes::TreasureItem(item) => item.get_name(),
         }
     }
 
@@ -100,7 +102,9 @@ impl Item for ItemsTypes {
         match self {
             ItemsTypes::EquipItem(item) => item.get_equipment_slot(),
             ItemsTypes::InventorySlot(item) => item.get_equipment_slot(),
-            ItemsTypes::WeaponItem(item) => item.get_equipment_slot()
+            ItemsTypes::WeaponItem(item) => item.get_equipment_slot(),
+            ItemsTypes::TreasureItem(item) => item.get_equipment_slot(),
+
         }
     }
 
@@ -108,7 +112,9 @@ impl Item for ItemsTypes {
         match self {
             ItemsTypes::EquipItem(item) => item.get_des(),
             ItemsTypes::InventorySlot(item) => item.get_des(),
-            ItemsTypes::WeaponItem(item) => item.get_des()
+            ItemsTypes::WeaponItem(item) => item.get_des(),
+            ItemsTypes::TreasureItem(item) => item.get_des(),
+
         }
     }
     
@@ -117,6 +123,8 @@ impl Item for ItemsTypes {
             ItemsTypes::EquipItem(item) => item.get_rarity(),
             ItemsTypes::InventorySlot(item) => item.get_rarity(),
             ItemsTypes::WeaponItem(item) => item.get_rarity(),
+            ItemsTypes::TreasureItem(item) => item.get_rarity(),
+
         }
     }
 

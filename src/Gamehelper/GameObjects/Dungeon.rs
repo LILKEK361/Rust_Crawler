@@ -15,6 +15,7 @@ use crate::gameobjects::encounter::EncounterTypes::Empty;
 use crate::gameobjects::item_handler::{Item, ItemsTypes, Raritys};
 use crate::gameobjects::player::Player;
 use crate::gameobjects::trap::Trap;
+use crate::gameobjects::treasure::Treasure;
 use crate::gameobjects::weaponitem::WeaponItem;
 
 pub struct DungeonHandler {
@@ -81,11 +82,30 @@ impl DungeonHandler {
 
 
                 } else if(*Player::player_ref().lock().unwrap().is_in_inventory()){
-
                     if(action.eq("close".into())){
                         Player::player_ref().lock().unwrap().set_inventory(false);
                         tdrawer::set_render_queue("look".into())
-                    }else {
+                    }else if(action.contains("drop")){
+                        match &action.split(" ").collect::<Vec<_>>()[1].parse::<usize>() {
+                            Ok(index) => {                        Player::player_ref().lock().unwrap().drop_item_from_inventory(*index);
+                            }
+                            Err(..) => {add_log("You're a funny one aren't you?")}
+                        }
+
+
+
+                    }else if(action.contains("inspect")) {
+                        match &action.split(" ").collect::<Vec<_>>()[1].parse::<usize>() {
+                            Ok(index) => {
+                                Player::player_ref().lock().unwrap().inspect(*index as u8);
+                            }
+                            Err(..) => { add_log("You're a funny one aren't you?") }
+                        }
+                    } else if(action.eq("stop")){
+                        Player::player_ref().lock().unwrap().stop_inspect();
+
+                    }
+                    else {
                         add_log("Dungeon: Type close to leave")
                     }
                 }
@@ -106,29 +126,28 @@ impl DungeonHandler {
                         } else if action.eq(&movment[3]) {
                             Dungeon::dungeon_ref().lock().unwrap().move_player("right");
                         }
-                    } else if(action.to_ascii_lowercase().eq("inventory".into())){
+                    } else if(action.to_ascii_lowercase().eq("inventory".into()) || action.to_ascii_lowercase().eq("i".into())){
                         tdrawer::set_render_queue("inventory".into());
                         Player::player_ref().lock().unwrap().set_inventory(true);
+
                     }else if(action.to_ascii_lowercase().eq("look around".into()) || action.to_ascii_lowercase().eq("la".into())) {
                         tdrawer::set_render_queue("look".into());
+
                     } else if(action.eq("help".into())){
                         tdrawer::set_render_queue("help".into())
+
                     } else if(action.eq("info".into())){
                         tdrawer::set_render_queue("info".into())
+
                     }else if(action.eq("clear".into()) && Dungeon::dungeon_ref().lock().unwrap().get_current_room().get_Type().eq("Goal")){
                         add_log("Dungeon: Yppi you found the goal.");
                         add_log("If you type clear again you will");
                         add_log("procced...")
-                    } else if (action.eq("loot".into()) && !Dungeon::dungeon_ref().lock().unwrap().get_current_room().get_Monster().unwrap().is_alive()){
+                    } else if (action.eq("loot".into())){
 
                         //todo
                         let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
-                        let mut player = Player::player_ref().lock().unwrap();
-                        dungeon.get_current_room().set_note("".into());
-                        let monster =  dungeon.get_current_room().get_Monster().unwrap();
-                        if(!player.add_loot(monster.drop())){
-                            add_log("Your inventory is full")
-                        }
+                        dungeon.get_current_room().handleLoot()
                     }
                     else {
                         add_log("Unvaild Command")
@@ -174,11 +193,11 @@ pub(crate) struct Dungeon {
 
 impl Dungeon {
     pub fn new() -> Self {
-        let testing = false;
+        let testing = true;
         let mut rooms = if !testing {
             Self::generator_maze(10,10)
         } else {
-            vec![vec![Dungeonroom::EmptyRoom("E"), Dungeonroom::MonsterRoom("Skeleton".into()),Dungeonroom::TrapRoom()]]
+            vec![vec![Dungeonroom::TreaureRoom(),Dungeonroom::EmptyRoom("E"), Dungeonroom::MonsterRoom("Skeleton".into()),Dungeonroom::TrapRoom()]]
         };
 
 
@@ -243,7 +262,7 @@ impl Dungeon {
                     counter = counter + 1;
                     none_rooms.push((i-1,j))
                 }
-                if(i==0 && j==0 || i== 0 || i == maze.len()){
+                if(j==0 || i== 0 || j == maze[i].len() || i == maze.len() ){
                     if(counter >= 2){
                         let random_number = rand::rng().random_range(0..=(counter - 1));
                         maze[none_rooms[random_number].0][none_rooms[random_number].1] = Dungeonroom::EmptyRoom("Empty")
@@ -433,13 +452,14 @@ impl Dungeonroom {
     pub fn randomRoom() -> Self{
 
 
-            let random_number = rand::rng().random_range(0..=3);
+            let random_number = rand::rng().random_range(0..=4);
 
             match random_number {
                 0 => { Dungeonroom::MonsterRoom("Goblin".into()) }
                 1 => { Dungeonroom::EmptyRoom("E") }
                 2 => { Dungeonroom::TrapRoom() }
                 3 => { Dungeonroom::None() }
+                4 => { Dungeonroom::TreaureRoom() }
                 _ => { Dungeonroom::None() }
             }
 
@@ -486,6 +506,15 @@ impl Dungeonroom {
             encoutner: EncounterTypes::Empty,
             visited: false, //todo! change after testing
             note: String::new()
+        }
+    }
+
+    pub fn TreaureRoom() -> Self {
+        Self {
+            enterable: true,
+            encoutner: EncounterTypes::Treasure(Treasure::new()),
+            note: String::new(),
+            visited: false,
         }
     }
 
@@ -556,6 +585,29 @@ impl Dungeonroom {
         }
 
 
+    }
+
+    pub fn handleLoot(&mut self ) {
+        let mut player = Player::player_ref().lock().unwrap();
+        match &mut self.encoutner {
+            EncounterTypes::Monster(monster) => {
+
+                for item in monster.drop() {
+                    if (!player.add_loot(item)) {
+                        add_log("Your inventory is full")
+                    }else {
+                        self.note = "".parse().unwrap();
+                    }
+                }
+            }
+            EncounterTypes::Treasure(treaure) => {
+                if(!player.add_loot(treaure.take())){
+
+                }
+            }
+
+            _ => {}
+        }
     }
 
 }

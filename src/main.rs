@@ -31,6 +31,9 @@ mod gameobjects;
 #[path="Gamehelper.rs"]
 mod gamehelper;
 
+#[path="Gamehelper/tests/test.rs"]
+mod test;
+
 
 
 

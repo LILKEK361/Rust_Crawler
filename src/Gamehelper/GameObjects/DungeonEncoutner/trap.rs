@@ -19,7 +19,7 @@ impl Trap {
             t_type: "Empty".into(),
             des: "Somthings different to the other rooms.\nYou can't quite say what it is.\nBut there is something\nMaybe just you paranoire or maybe something else".into(),
             skillcheck: 10,
-            dmg: 1,
+            dmg: 2,
             spotted: false,
             disarmed: false,
        }

@@ -36,9 +36,19 @@ All commands avalibale / lower- or uppercase isn't important: \n
 ~Movement: [up, down, left, right] | you can move always but for a better experience open the map \n
 ~Map: displays the dungeonmap\n
 ~La | Look around: displays extra information for the current room\n
-~inventory: todo!\n
-~equip: todo!\n
+~inventory: opens the inventory\n
 ~info: displays the character stats \n
 ~loot: loots a corpse todo
 ";
+
+pub const INVENTORYHELP: &str = "\n
+~close: to close the inventoy
+~drop [index]: drops the item / carefull you cant pick it up again
+~equip [index] [slot]: equips an item to th given slot
+";
+
+
+
+
+
 

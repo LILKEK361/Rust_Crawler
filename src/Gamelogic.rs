@@ -1,6 +1,6 @@
 #[path="Gamehelper/Gamelogic/terminaldrawer.rs"]
 pub(crate) mod terminaldrawer;
-#[path="Gamehelper/Gamelogic/Konst.rs"]
+#[path= "Gamehelper/Gamelogic/GameStrings/Konst.rs"]
 pub(crate) mod konst;
 #[path="Gamehelper/Gamelogic/mazegenerator.rs"]
 pub(crate) mod mazegenerator;
@@ -8,3 +8,5 @@ pub(crate) mod mazegenerator;
 pub(crate) mod postgreshandler;
 #[path="Gamehelper/Gamelogic/gamehelperfunctions.rs"]
 pub(crate) mod gamehelperfunctions;
+#[path= "Gamehelper/Gamelogic/GameStrings/room_descriptions.rs"]
+pub(crate) mod room_descriptions;

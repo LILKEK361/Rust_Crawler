@@ -1,11 +1,11 @@
 use std::collections::hash_map::IntoValues;
+use std::collections::HashMap;
 use std::sync::{Mutex, OnceLock};
 use crate::{add_log, gameobjects};
 use crate::gameobjects::inventoryslot;
 use crate::gameobjects::inventoryslot::Inventoryslot;
-use crate::gameobjects::item_handler::{Item, ItemsTypes};
-
-
+use crate::gameobjects::item_handler::{Equipmintslots, Item, ItemsTypes};
+use crate::gameobjects::passiv_handler::PassivTypes;
 
 pub(crate) struct Player {
     pub name: String,
@@ -13,14 +13,15 @@ pub(crate) struct Player {
     inventory_size: u8,
     health: u8,
     attack: i8,
-
+    equipmentslots: HashMap<Equipmintslots, Option<ItemsTypes>>,
     level: i8,
     pub alive: bool,
     max_hp: i8,
     in_inventory: bool,
     armor: i8,
     skillmod: i8,
-    skills: Vec<String> //todo
+    skills: Vec<String>, //todo
+    inspecting: (bool, u8)
 }
 
 
@@ -39,7 +40,8 @@ impl Player{
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
-                ItemsTypes::InventorySlot(Inventoryslot::empty()),
+
+            ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
@@ -47,14 +49,23 @@ impl Player{
             ],
             health: 100,
             alive: true,
-            attack: 50,
+            attack: 5,
             skillmod: 0,
             inventory_size: 10,
             level: 0,
             max_hp: 100,
             in_inventory: false,
             armor: 5,
-            skills: vec!["Todo".into()]
+            skills: vec!["Todo".into()],
+            equipmentslots: HashMap::from([
+                (Equipmintslots::Head, Option::None),
+                (Equipmintslots::Torso, Option::None),
+                (Equipmintslots::Hands, Option::None),
+                (Equipmintslots::Pants, Option::None),
+                (Equipmintslots::Shoes, Option::None),
+
+            ]),
+            inspecting: (false, 0)
 
         }
     }
@@ -69,7 +80,7 @@ impl Player{
     }
     
     pub fn take_dmg(&mut self, dmg: i8){
-        self.health = self.health - dmg as u8;
+        self.health = self.health -  (dmg as u8 - (self.armor / 2) as u8);
         if(self.health <= 0){
             self.alive = false;
         }
@@ -84,7 +95,7 @@ impl Player{
     }
 
     pub fn defend(&mut self, dmg: i8){
-        if(dmg - self.armor > 0){
+        if(dmg - (self.armor * 2) > 0){
             self.health = self.health - ((dmg - self.armor) as u8)
         }
 
@@ -111,6 +122,30 @@ impl Player{
         }
 
         added
+    }
+
+    pub fn apply_passiv(passiv: PassivTypes){
+
+    }
+
+    pub fn inspect(&mut self, slot: u8){
+        if(slot <= self.inventory_size - 1) {
+            self.inspecting = (true, slot)
+        }
+    }
+    pub fn stop_inspect(&mut self) {
+        self.inspecting = (false, 0)
+    }
+    pub fn get_inspect(&self) -> &(bool, u8) {
+        &self.inspecting
+    }
+    pub fn drop_item_from_inventory(&mut self, index: usize){
+       if(index <= self.inventory.len() - 1 && !self.inventory.get(index).unwrap().get_name().to_ascii_lowercase().eq("empty")){
+
+            self.inventory[index] = ItemsTypes::InventorySlot(Inventoryslot::empty());
+       }else {
+           add_log("Dungeon: You are a funny one aren't you?")
+       }
     }
 
     pub fn is_in_inventory(&self) -> &bool{

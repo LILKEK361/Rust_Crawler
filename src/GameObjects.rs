@@ -17,3 +17,9 @@ pub(crate)mod inventoryslot;
 pub(crate)mod trap;
 #[path= "Gamehelper/GameObjects/DungeonEncoutner/monster.rs"]
 pub(crate)mod monster;
+#[path="Gamehelper/GameObjects/DungeonEncoutner/treasure.rs"]
+pub(crate) mod treasure;
+#[path="Gamehelper/GameObjects/Items/treasure_item.rs"]
+pub(crate) mod treasure_item;
+#[path="Gamehelper/GameObjects/Items/passiv_handler.rs"]
+pub(crate) mod passiv_handler;

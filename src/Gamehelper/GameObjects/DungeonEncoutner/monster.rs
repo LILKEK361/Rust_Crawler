@@ -29,7 +29,7 @@ impl Monster {
             alvie: true,
             hp: 100,
             max_hp: 100,
-            dmg: 10,
+            dmg: 2,
             loot: vec![gamelogic::gamehelperfunctions::generat_random_weapon()]
         }
     }
@@ -65,9 +65,9 @@ impl Monster {
         self.name = format!("Dead {monster}")
     }
 
-    pub fn drop(&mut self) -> ItemsTypes{
+    pub fn drop(&mut self) -> Vec<ItemsTypes>{
         //todo
-        self.loot.get(0).unwrap().to_owned()
+        self.loot.to_owned()
     }
 
 

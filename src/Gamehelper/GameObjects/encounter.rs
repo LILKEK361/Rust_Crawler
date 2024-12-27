@@ -5,6 +5,7 @@ pub(crate) enum EncounterTypes{
     Empty,
     None,
     Goal,
+    Treasure(crate::gameobjects::treasure::Treasure)
 }
 
 
@@ -17,6 +18,7 @@ impl Encounter for EncounterTypes {
             EncounterTypes::Empty => "Empty",
             EncounterTypes::None => "None",
             EncounterTypes::Goal => "Goal",
+            EncounterTypes::Treasure(treasure) => treasure.get_Name(),
         }
     }
 
@@ -27,6 +29,7 @@ impl Encounter for EncounterTypes {
             EncounterTypes::Empty => "Empty",
             EncounterTypes::None => "None",
             EncounterTypes::Goal => "Goal",
+            EncounterTypes::Treasure(treasure) => "Treasure",
         }
     }
 
@@ -37,6 +40,7 @@ impl Encounter for EncounterTypes {
             EncounterTypes::Empty => "A Empty room or is it?",
             EncounterTypes::None => "None",
             EncounterTypes::Goal => "Goal",
+            EncounterTypes::Treasure(treasure) => treasure.get_description(),
         }
     }
 }
