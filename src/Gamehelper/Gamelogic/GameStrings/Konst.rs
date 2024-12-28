@@ -6,9 +6,9 @@ pub const MAINMENU: &str = "Welcome to the game! \n
                         2. Exit Game \n
                         ";
 
-pub const COMBATHELPERMENU: &str = "attack: to attack\ndefend: to defend\nskills:todo\npassiv:todo\n";
+pub const COMBATHELPERMENU: &str = "attack: to attack\ndefend: to defend\npassiv:todo\n";
 
-pub const PLAYERINFO: fn(name: &str, level: i8, health: u8, max_health: i8, armor: i8, skills: &Vec<String>, inventory_size: i8) -> String = |name, level, health,max_health, armor, skills, inventory_size | {
+pub const PLAYERINFO: fn(name: &str, level: i8, health: u8, max_health: i8, armor: i8, inventory_size: i8) -> String = |name, level, health,max_health, armor, inventory_size | {
     let INFO = format!("\n
         Stats:
         -----
@@ -20,12 +20,10 @@ pub const PLAYERINFO: fn(name: &str, level: i8, health: u8, max_health: i8, armo
         -----
         Armor: {armor}
         -----
-        Skills: {}
-        -----
         Inventory size: {inventory_size}
         -----
 
-    ",skills[0]);
+    ");
     INFO
 
 
@@ -45,6 +43,9 @@ pub const INVENTORYHELP: &str = "\n
 ~close: to close the inventoy
 ~drop [index]: drops the item / carefull you cant pick it up again
 ~equip [index] [slot]: equips an item to th given slot
+~unequip [slot]: unequipts an item / carefull it is delete after
+~inspect [slot]: inspect a give item
+
 ";
 
 

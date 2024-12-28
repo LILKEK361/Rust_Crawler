@@ -12,7 +12,7 @@ use std::sync::{mpsc, Arc, Mutex, OnceLock};
 use std::thread;
 use rand::Rng;
 use crate::gameobjects::encounter::EncounterTypes::Empty;
-use crate::gameobjects::item_handler::{Item, ItemsTypes, Raritys};
+use crate::gameobjects::item_handler::{Equipmintslots, Item, ItemsTypes, Raritys};
 use crate::gameobjects::player::Player;
 use crate::gameobjects::trap::Trap;
 use crate::gameobjects::treasure::Treasure;
@@ -61,7 +61,7 @@ impl DungeonHandler {
                         let mut player = Player::player_ref().lock().unwrap();
 
                         if(action.eq(&combat_action[0]/*attack*/)){
-                            dungeonroom.get_Monster().unwrap().take_dmg(*player.attack());
+                            dungeonroom.get_Monster().unwrap().take_dmg((player.attack()));
 
                             if(!dungeonroom.get_Monster().unwrap().is_alive()){
                                 dungeonroom.clearMonsterRoom(&player);
@@ -85,7 +85,7 @@ impl DungeonHandler {
                     if(action.eq("close".into())){
                         Player::player_ref().lock().unwrap().set_inventory(false);
                         tdrawer::set_render_queue("look".into())
-                    }else if(action.contains("drop")){
+                    }else if(action.trim().contains("drop" ) && !action.eq("drop") ){
                         match &action.split(" ").collect::<Vec<_>>()[1].parse::<usize>() {
                             Ok(index) => {                        Player::player_ref().lock().unwrap().drop_item_from_inventory(*index);
                             }
@@ -104,6 +104,33 @@ impl DungeonHandler {
                     } else if(action.eq("stop")){
                         Player::player_ref().lock().unwrap().stop_inspect();
 
+                    } else if((action.contains("equip") && !action.eq("equip") && !action.contains("unequip"))){
+
+                        match &action.split(" ").collect::<Vec<_>>()[1].parse::<usize>() {
+                            Ok(index) => {
+                                match &action.split(" ").collect::<Vec<_>>()[2].parse::<String>(){
+                                    Ok(e_slot) => {
+                                        Player::player_ref().lock().unwrap().equip_item(*index, Equipmintslots::from_string(String::from(e_slot)))
+                                    }
+                                    Err(..)  => {add_log("You're a funny one aren't you?")}
+                                }
+                            },
+                            Err(..) => {add_log("You're a funny one aren't you?")}
+                        };
+
+                    } else if(action.contains("unequip") && !action.eq("unequip")) {
+                        if(action.split(" ").collect::<Vec<_>>().len() > 1) {
+                            match &action.split(" ").collect::<Vec<_>>()[1].parse::<String>() {
+                                Ok(slot) => Player::player_ref().lock().unwrap().unequip(Equipmintslots::from_string(String::from(slot))),
+                                Err(..) => {
+                                    add_log("Dungeon: Pls use your brain");
+                                    add_log("because I dont")
+                                }
+                            }
+                        } else {
+                            add_log("Dungeon: Pls use your brain");
+                            add_log("because I dont")
+                        }
                     }
                     else {
                         add_log("Dungeon: Type close to leave")
@@ -193,7 +220,7 @@ pub(crate) struct Dungeon {
 
 impl Dungeon {
     pub fn new() -> Self {
-        let testing = true;
+        let testing = false;
         let mut rooms = if !testing {
             Self::generator_maze(10,10)
         } else {
@@ -423,9 +450,8 @@ impl Dungeon {
 
 
                 } else {
-                    Player::player_ref().lock().unwrap().take_dmg(*trap.get_dmg());
-                    add_log("Dungeon: You feel a sudden sting.");
-                    add_log("Are thoose the bug they talked about?")
+                    Player::player_ref().lock().unwrap().take_true_dmg(*trap.get_dmg());
+
                 }
             }
             _ => {}

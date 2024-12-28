@@ -27,9 +27,9 @@ impl Monster {
             m_type: "Monster".into(),
             des: format!("A {name} is viben in the room. Oh no it attacks").into(),
             alvie: true,
-            hp: 100,
-            max_hp: 100,
-            dmg: 2,
+            hp: 25,
+            max_hp: 25,
+            dmg: 3,
             loot: vec![gamelogic::gamehelperfunctions::generat_random_weapon()]
         }
     }
@@ -40,10 +40,16 @@ impl Monster {
     pub fn is_alive(&self) -> bool {
         self.alvie
     }
-    pub fn take_dmg(&mut self, dmg: i8) {
-        self.hp = self.hp - dmg as u8;
-        if(self.hp <= 0){
+    pub fn take_dmg(&mut self, dmg: u8) {
+        if(!(dmg > self.hp)){
+            self.hp = self.hp - dmg;
+            if(self.hp <= 0){
+                self.alvie = false;
+            }
+        } else {
+            self.hp = self.hp - self.hp;
             self.alvie = false;
+
         }
     }
     pub fn get_dmg(&self) -> &i8{

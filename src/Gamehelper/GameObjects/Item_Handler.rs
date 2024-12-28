@@ -74,6 +74,17 @@ impl Equipmintslots {
             Equipmintslots::None => "None",
         }
     }
+
+    pub fn from_string(input: String) -> Self {
+        match input.to_ascii_lowercase().as_str() {
+            "head" => Equipmintslots::Head,
+            "torso" => Equipmintslots::Torso,
+            "hands" => Equipmintslots::Hands,
+            "pants" => Equipmintslots::Pants,
+            "shoes" => Equipmintslots::Shoes,
+            _ => Equipmintslots::None
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -128,6 +139,26 @@ impl Item for ItemsTypes {
         }
     }
 
+     fn get_value(&self) -> &i8 {
+        match self {
+            ItemsTypes::EquipItem(item) => item.get_value(),
+            ItemsTypes::InventorySlot(item) => item.get_value(),
+            ItemsTypes::WeaponItem(item) => item.get_value(),
+            ItemsTypes::TreasureItem(item) => item.get_value(),
+
+        }
+    }
+
+    fn get_bonus_dmg(&self) -> &u8 {
+        match self {
+            ItemsTypes::EquipItem(item) => item.get_bonus_dmg(),
+            ItemsTypes::InventorySlot(item) => &0u8,
+            ItemsTypes::WeaponItem(item) => item.get_bonus_dmg(),
+            ItemsTypes::TreasureItem(item) => item.get_bonus_dmg(),
+
+        }
+    }
+
 
 }
 
@@ -136,6 +167,9 @@ pub trait Item: Sync + Send + Clone {
     fn get_equipment_slot(&self) -> &Equipmintslots;
     fn get_des(&self) -> &str;
     fn get_rarity(&self) -> &Raritys;
+    fn get_value(&self) -> &i8;
+
+    fn get_bonus_dmg(&self) -> &u8;
 
 
 

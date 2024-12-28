@@ -10,18 +10,19 @@ pub(crate) struct EquipItem{
     //Stats of the item
     equip_slot: Equipmintslots,
     armor_buff: i8,
-    dmg_buff: i8,
-    rarity: Raritys
+    dmg_buff: u8,
+    rarity: Raritys,
+
+    value: i8
 
 }
 
 impl EquipItem {
+
     fn get_armor_buff(&self) -> &i8{
         &self.armor_buff
     }
-    fn get_dmg_buff(&self) -> &i8{
-        &self.dmg_buff
-    }
+    
     
 }
 
@@ -40,5 +41,12 @@ impl Item for EquipItem {
 
     fn get_rarity(&self) -> &Raritys {
         &self.rarity
+    }
+
+    fn get_value(&self) -> &i8 {
+        &self.value
+    }
+    fn get_bonus_dmg(&self) -> &u8{
+        &self.dmg_buff
     }
 }

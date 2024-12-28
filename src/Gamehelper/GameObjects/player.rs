@@ -1,5 +1,7 @@
+use std::ascii::AsciiExt;
 use std::collections::hash_map::IntoValues;
 use std::collections::HashMap;
+use std::mem::forget;
 use std::sync::{Mutex, OnceLock};
 use crate::{add_log, gameobjects};
 use crate::gameobjects::inventoryslot;
@@ -12,8 +14,8 @@ pub(crate) struct Player {
     inventory: Vec<ItemsTypes>,
     inventory_size: u8,
     health: u8,
-    attack: i8,
-    equipmentslots: HashMap<Equipmintslots, Option<ItemsTypes>>,
+    attack: u8,
+    equipmentslots: HashMap<Equipmintslots, ItemsTypes>,
     level: i8,
     pub alive: bool,
     max_hp: i8,
@@ -58,11 +60,11 @@ impl Player{
             armor: 5,
             skills: vec!["Todo".into()],
             equipmentslots: HashMap::from([
-                (Equipmintslots::Head, Option::None),
-                (Equipmintslots::Torso, Option::None),
-                (Equipmintslots::Hands, Option::None),
-                (Equipmintslots::Pants, Option::None),
-                (Equipmintslots::Shoes, Option::None),
+                (Equipmintslots::Head, ItemsTypes::InventorySlot(Inventoryslot::empty())),
+                (Equipmintslots::Torso, ItemsTypes::InventorySlot(Inventoryslot::empty())),
+                (Equipmintslots::Hands, ItemsTypes::InventorySlot(Inventoryslot::empty())),
+                (Equipmintslots::Pants, ItemsTypes::InventorySlot(Inventoryslot::empty())),
+                (Equipmintslots::Shoes, ItemsTypes::InventorySlot(Inventoryslot::empty())),
 
             ]),
             inspecting: (false, 0)
@@ -74,13 +76,27 @@ impl Player{
     fn display_inventory(&self){todo!()}
 
     //Functions for combat of the player
-    pub fn attack(&self) -> &i8{
+    pub fn attack(&self) -> u8{
         //todo: Check for equipment
-        &self.attack
+        let dmg = &self.attack + self.check_equipment_bonus_dmg();
+        dmg
     }
     
     pub fn take_dmg(&mut self, dmg: i8){
-        self.health = self.health -  (dmg as u8 - (self.armor / 2) as u8);
+        let taken_dmg =  (dmg as u8 - (self.armor / 2) as u8);
+        add_log(&*format!("You took {} dmg,", taken_dmg));
+
+        self.health = self.health - taken_dmg;
+
+        if(self.health <= 0){
+            self.alive = false;
+        }
+    }
+
+    pub fn take_true_dmg(&mut self, dmg: i8){
+        add_log(&*format!("You took {} dmg,", dmg as u8));
+        self.health = self.health - dmg as u8;
+
         if(self.health <= 0){
             self.alive = false;
         }
@@ -90,13 +106,23 @@ impl Player{
         &self.health
     }
 
+    pub fn check_equipment_bonus_dmg(&self) -> u8{
+        let mut dmg_bonus = 0;
+        for (k,v) in &self.equipmentslots {
+            if(!v.get_name().eq("empty")){
+                dmg_bonus = dmg_bonus + v.get_bonus_dmg()
+            }
+        };
+        dmg_bonus
+    }
+
     pub fn get_max_hp(&self) -> &i8{
         &self.max_hp
     }
 
     pub fn defend(&mut self, dmg: i8){
         if(dmg - (self.armor * 2) > 0){
-            self.health = self.health - ((dmg - self.armor) as u8)
+            self.health = self.health - ((dmg as i8 - self.armor as i8) as u8)
         }
 
         if(self.health <= 0){
@@ -177,6 +203,38 @@ impl Player{
             player
         })
 
+    }
+
+    pub fn equip_item(&mut self, item_index: usize, slot: Equipmintslots){
+
+        if(item_index <= (self.inventory_size - 1) as usize) {
+
+            if(self.equipmentslots.get(&slot).unwrap().get_name().to_ascii_lowercase().eq("empty") && slot == *self.inventory.get(item_index).unwrap().get_equipment_slot() && slot != Equipmintslots::None){
+
+                self.equipmentslots.insert(slot,self.inventory.get(item_index).unwrap().to_owned());
+
+
+                self.inventory[item_index] = ItemsTypes::InventorySlot(Inventoryslot::empty())
+
+            } else if(!self.equipmentslots.get(&slot).unwrap().get_name().to_ascii_lowercase().eq("empty")){
+                add_log("You already have something equipt ");
+                add_log("on that slot");
+            } else {
+                add_log("You fool :)")
+            }
+        }
+    }
+
+    pub fn get_equipment_from_slot(&self, slot: String) -> &ItemsTypes {
+        &self.equipmentslots.get(&Equipmintslots::from_string(slot)).unwrap()
+    }
+
+    pub fn unequip(&mut self, slot: Equipmintslots) {
+        if(slot != Equipmintslots::None && !self.equipmentslots.get(&slot).unwrap().get_name().to_ascii_lowercase().eq("empty")){
+                self.equipmentslots.insert(slot, ItemsTypes::InventorySlot(Inventoryslot::empty()));
+        }else {
+            add_log("Dungeon: Pls dont be weird")
+        }
     }
     
     

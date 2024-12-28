@@ -13,6 +13,7 @@ use crossterm::event::read;
 
 use ratatui::widgets::{BorderType, Borders, Row, Table, Cell, Wrap};
 use log::log;
+use ratatui::layout::Alignment::Center;
 use ratatui::layout::Constraint::Ratio;
 use ratatui::layout::Direction::{Horizontal, Vertical};
 use ratatui::prelude::Stylize;
@@ -366,7 +367,7 @@ impl tdrawer {
 
 
         let (name, health, max_health,inv_size, armor, level, skills ) = player.get_stats();
-        frame.render_widget(Paragraph::new(konst::PLAYERINFO(name, level, health, max_health, armor, skills, inv_size)), container.inner(*area))
+        frame.render_widget(Paragraph::new(konst::PLAYERINFO(name, level, health, max_health, armor, inv_size)), container.inner(*area))
 
     }
 
@@ -437,7 +438,7 @@ impl tdrawer {
                 frame.render_widget(Paragraph::new((i - 1).to_string()), row_layout[0]);
                 frame.render_widget(Paragraph::new(inventory.get(i - 1).unwrap().get_name()), row_layout[1]);
                 frame.render_widget(Paragraph::new(inventory.get(i - 1).unwrap().get_rarity().to_string()), row_layout[2]);
-                frame.render_widget(Paragraph::new("0"), row_layout[3]);
+                frame.render_widget(Paragraph::new(inventory.get(i - 1).unwrap().get_value().to_string()), row_layout[3]);
             }
 
         }
@@ -468,16 +469,20 @@ impl tdrawer {
 
         }else {
 
+            let equipment_list = List::new(vec![
+
+                ListItem::from(Line::from(Span::from(format!("Head: {}", player.get_equipment_from_slot("head".into()).get_name())))),
+                ListItem::from(Line::from(Span::from(format!("Torso: {}", player.get_equipment_from_slot("Torso".into()).get_name())))),
+                ListItem::from(Line::from(Span::from(format!("Hands: {}", player.get_equipment_from_slot("Hands".into()).get_name())))),
+                ListItem::from(Line::from(Span::from(format!("Pants: {}", player.get_equipment_from_slot("Pants".into()).get_name())))),
+                ListItem::from(Line::from(Span::from(format!("Shoes: {}", player.get_equipment_from_slot("Shoes".into()).get_name())))),
 
 
+            ]);
 
+            frame.render_widget(equipment_list, equipment_display.inner(inventory_layout[1]));
 
-
-            frame.render_widget( equipment_display.title("Equipment"), inventory_layout[1]);
-            frame.render_widget(Paragraph::new("a"),equipment_layout[0]);
-            frame.render_widget(Paragraph::new("a"),equipment_layout[1]);
-            frame.render_widget(Paragraph::new("a"),equipment_layout[2]);
-            frame.render_widget(Paragraph::new("a"),equipment_layout[3]);
+            frame.render_widget( equipment_display.title("Equipment").title_position(Position::Top), inventory_layout[1]);
         }
 
 
