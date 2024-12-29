@@ -7,7 +7,7 @@ pub(crate) struct Inventoryslot{
     name: String,
     eq_slot:  Equipmintslots,
     rarity: Raritys,
-    value: i8
+
 }
 
  impl Inventoryslot {
@@ -18,7 +18,7 @@ pub(crate) struct Inventoryslot{
             name: "Empty".into(),
             eq_slot: Equipmintslots::None,
             rarity: Raritys::COMMON,
-            value: 0
+
         }
     }
 }
@@ -42,8 +42,8 @@ impl Item for Inventoryslot {
     fn get_rarity(&self) -> &Raritys {
         &self.rarity
     }
-    fn get_value(&self) -> &i8 {
-        &self.value
+    fn get_value(&self) -> &u8 {
+        &0
     }
 
     fn get_bonus_dmg(&self) -> &u8 {

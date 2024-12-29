@@ -11,12 +11,12 @@ pub(crate) struct WeaponItem {
     rarity: Raritys,
     //Specific WeaponItem stats:
     dmg_bonus: u8,
-    value: i8,
+    value: u8,
 }
 
 impl WeaponItem {
 
-    pub fn new(name: String, des: String, rarity: Raritys, dmg_bonus: u8, value: i8) -> Self {
+    pub fn new(name: String, des: String, rarity: Raritys, dmg_bonus: u8, value: u8) -> Self {
 
         Self {
             name,
@@ -50,7 +50,7 @@ impl Item for WeaponItem {
     fn get_rarity(&self) -> &Raritys {
         &self.rarity
     }
-    fn get_value(&self) -> &i8 {
+    fn get_value(&self) -> &u8 {
         &self.value
     }
 

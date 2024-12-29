@@ -10,12 +10,12 @@ pub struct TreasureItem {
     des: String,
     passiv: PassivTypes,
     rarity: Raritys,
-    value: i8,
+    value: u8,
     bonus_dmg: u8
 }
 
 impl TreasureItem {
-    pub fn new(name: String, equipmintslots: Equipmintslots, des:String, passiv: String, rarity: Raritys, value: i8) -> Self {
+    pub fn new(name: String, equipmintslots: Equipmintslots, des:String, passiv: String, rarity: Raritys, value: u8) -> Self {
         Self {
             name,
             equipmintslots,
@@ -27,7 +27,14 @@ impl TreasureItem {
 
         }
     }
+
+    pub fn get_passiv(&self) -> &PassivTypes {
+        &self.passiv
+    }
+
 }
+
+
 
 impl Item for TreasureItem {
     fn get_name(&self) -> &str {
@@ -46,7 +53,7 @@ impl Item for TreasureItem {
         &self.rarity
     }
 
-    fn get_value(&self) -> &i8 {
+    fn get_value(&self) -> &u8 {
         &self.value
     }
 

@@ -93,19 +93,25 @@ pub(crate) enum ItemsTypes {
     EquipItem(crate::gameobjects::equip_item::EquipItem),
     WeaponItem(crate::gameobjects::weaponitem::WeaponItem),
     InventorySlot(crate::gameobjects::inventoryslot::Inventoryslot),
-    TreasureItem(crate::gameobjects::treasure_item::TreasureItem)
+    TreasureItem(crate::gameobjects::treasure_item::TreasureItem),
+    ConsumableItem(crate::gameobjects::consumable_item::Consumable)
 
 }
 
 
 
+
+
 impl Item for ItemsTypes {
+
+
     fn get_name(&self) -> &str {
         match self {
             ItemsTypes::EquipItem(item) => item.get_name(),
             ItemsTypes::WeaponItem(item) => item.get_name(),
             ItemsTypes::InventorySlot(item) => item.get_name(),
             ItemsTypes::TreasureItem(item) => item.get_name(),
+            ItemsTypes::ConsumableItem(item) => item.get_name(),
         }
     }
 
@@ -115,6 +121,8 @@ impl Item for ItemsTypes {
             ItemsTypes::InventorySlot(item) => item.get_equipment_slot(),
             ItemsTypes::WeaponItem(item) => item.get_equipment_slot(),
             ItemsTypes::TreasureItem(item) => item.get_equipment_slot(),
+            ItemsTypes::ConsumableItem(item) => item.get_equipment_slot(),
+
 
         }
     }
@@ -125,6 +133,8 @@ impl Item for ItemsTypes {
             ItemsTypes::InventorySlot(item) => item.get_des(),
             ItemsTypes::WeaponItem(item) => item.get_des(),
             ItemsTypes::TreasureItem(item) => item.get_des(),
+            ItemsTypes::ConsumableItem(item) => item.get_des(),
+
 
         }
     }
@@ -135,16 +145,20 @@ impl Item for ItemsTypes {
             ItemsTypes::InventorySlot(item) => item.get_rarity(),
             ItemsTypes::WeaponItem(item) => item.get_rarity(),
             ItemsTypes::TreasureItem(item) => item.get_rarity(),
+            ItemsTypes::ConsumableItem(item) => item.get_rarity(),
+
 
         }
     }
 
-     fn get_value(&self) -> &i8 {
+     fn get_value(&self) -> &u8 {
         match self {
             ItemsTypes::EquipItem(item) => item.get_value(),
             ItemsTypes::InventorySlot(item) => item.get_value(),
             ItemsTypes::WeaponItem(item) => item.get_value(),
             ItemsTypes::TreasureItem(item) => item.get_value(),
+            ItemsTypes::ConsumableItem(item) => item.get_value(),
+
 
         }
     }
@@ -155,6 +169,8 @@ impl Item for ItemsTypes {
             ItemsTypes::InventorySlot(item) => &0u8,
             ItemsTypes::WeaponItem(item) => item.get_bonus_dmg(),
             ItemsTypes::TreasureItem(item) => item.get_bonus_dmg(),
+            ItemsTypes::ConsumableItem(item) => item.get_bonus_dmg(),
+
 
         }
     }
@@ -167,11 +183,8 @@ pub trait Item: Sync + Send + Clone {
     fn get_equipment_slot(&self) -> &Equipmintslots;
     fn get_des(&self) -> &str;
     fn get_rarity(&self) -> &Raritys;
-    fn get_value(&self) -> &i8;
-
+    fn get_value(&self) -> &u8;
     fn get_bonus_dmg(&self) -> &u8;
-
-
 
 
 }

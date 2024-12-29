@@ -105,21 +105,25 @@ impl DungeonHandler {
                         Player::player_ref().lock().unwrap().stop_inspect();
 
                     } else if((action.contains("equip") && !action.eq("equip") && !action.contains("unequip"))){
-
-                        match &action.split(" ").collect::<Vec<_>>()[1].parse::<usize>() {
-                            Ok(index) => {
-                                match &action.split(" ").collect::<Vec<_>>()[2].parse::<String>(){
-                                    Ok(e_slot) => {
-                                        Player::player_ref().lock().unwrap().equip_item(*index, Equipmintslots::from_string(String::from(e_slot)))
+                        if(action.split(" ").collect::<Vec<_>>().len() == 3) {
+                            match &action.split(" ").collect::<Vec<_>>()[1].parse::<usize>() {
+                                Ok(index) => {
+                                    match &action.split(" ").collect::<Vec<_>>()[2].parse::<String>() {
+                                        Ok(e_slot) => {
+                                            Player::player_ref().lock().unwrap().equip_item(*index, Equipmintslots::from_string(String::from(e_slot)))
+                                        }
+                                        Err(..) => { add_log("You're a funny one aren't you?") }
                                     }
-                                    Err(..)  => {add_log("You're a funny one aren't you?")}
                                 }
-                            },
-                            Err(..) => {add_log("You're a funny one aren't you?")}
-                        };
+                                Err(..) => { add_log("You're a funny one aren't you?") }
+                            };
+                        }else {
+                            add_log("Dungeon: Pls use your brain");
+                            add_log("because I dont")
+                        }
 
                     } else if(action.contains("unequip") && !action.eq("unequip")) {
-                        if(action.split(" ").collect::<Vec<_>>().len() > 1) {
+                        if(action.split(" ").collect::<Vec<_>>().len() == 2) {
                             match &action.split(" ").collect::<Vec<_>>()[1].parse::<String>() {
                                 Ok(slot) => Player::player_ref().lock().unwrap().unequip(Equipmintslots::from_string(String::from(slot))),
                                 Err(..) => {
@@ -130,6 +134,16 @@ impl DungeonHandler {
                         } else {
                             add_log("Dungeon: Pls use your brain");
                             add_log("because I dont")
+                        }
+                    } else if(action.contains("use") && !action.eq("use")){
+                        if(action.split(" ").collect::<Vec<_>>().len() == 2){
+                            match &action.split(" ").collect::<Vec<_>>()[1].parse::<u8>() {
+                                Ok(slot) => Player::player_ref().lock().unwrap().use_item(*slot),
+                                Err(..) => {
+                                    add_log("Dungeon: Pls use your brain");
+                                    add_log("because I dont")
+                                }
+                            }
                         }
                     }
                     else {

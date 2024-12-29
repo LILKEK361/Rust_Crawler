@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::mem::forget;
 use std::sync::{Mutex, OnceLock};
 use crate::{add_log, gameobjects};
+use crate::gamelogic::gamehelperfunctions::{generate_random_equip, generate_random_weapon};
 use crate::gameobjects::inventoryslot;
 use crate::gameobjects::inventoryslot::Inventoryslot;
 use crate::gameobjects::item_handler::{Equipmintslots, Item, ItemsTypes};
@@ -18,7 +19,7 @@ pub(crate) struct Player {
     equipmentslots: HashMap<Equipmintslots, ItemsTypes>,
     level: i8,
     pub alive: bool,
-    max_hp: i8,
+    max_hp: u8,
     in_inventory: bool,
     armor: i8,
     skillmod: i8,
@@ -37,8 +38,8 @@ impl Player{
         Self {
             name,
             inventory: vec![
-                ItemsTypes::InventorySlot(Inventoryslot::empty()),
-                ItemsTypes::InventorySlot(Inventoryslot::empty()),
+                generate_random_equip(),
+                generate_random_weapon(),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
@@ -116,7 +117,7 @@ impl Player{
         dmg_bonus
     }
 
-    pub fn get_max_hp(&self) -> &i8{
+    pub fn get_max_hp(&self) -> &u8{
         &self.max_hp
     }
 
@@ -190,8 +191,36 @@ impl Player{
         &self
     }
 
-    pub fn get_stats(&self) -> (&str,u8,i8,i8,i8,i8, &Vec<String>) {
+    pub fn get_stats(&self) -> (&str,u8,u8,i8,i8,i8, &Vec<String>) {
         (&self.name, self.health, self.max_hp, self.inventory.len() as i8, self.armor, self.level, &self.skills  )
+    }
+
+    pub fn use_item(mut self, item_slot: u8) {
+        if(item_slot <= self.inventory_size - 1) {
+            match &mut self.inventory.get(item_slot as usize).unwrap() {
+                ItemsTypes::ConsumableItem(item) => {
+                    if(item.get_name().to_ascii_lowercase().contains("heal")){
+                        if((self.health + item.heal()) > self.max_hp){
+                            add_log(&*format!("Dungeon: Healed for {}", item.heal()));
+                            self.health = self.max_hp;
+
+                        } else {
+                            self.health = self.health + item.heal()
+                        }
+
+
+
+                        if(*item.get_uses() == 0){
+                            self.inventory[item_slot as usize]  = ItemsTypes::InventorySlot(Inventoryslot::empty())
+                        }
+
+                    }
+                }
+                _ => {add_log("Dungeon: cant use this item")}
+            }
+        }else {
+            add_log("Dungeon: Pls use something that");
+            add_log("actually exists")}
     }
 
     
@@ -211,8 +240,19 @@ impl Player{
 
             if(self.equipmentslots.get(&slot).unwrap().get_name().to_ascii_lowercase().eq("empty") && slot == *self.inventory.get(item_index).unwrap().get_equipment_slot() && slot != Equipmintslots::None){
 
-                self.equipmentslots.insert(slot,self.inventory.get(item_index).unwrap().to_owned());
+                match &self.inventory.get(item_index).unwrap() {
+                    ItemsTypes::EquipItem(eq) => {
+                        let amrmor_bevor = self.armor;
+                        self.armor = self.armor + *eq.get_armor_buff() as i8;
+                        add_log(&*format!("Dungeon: {} -> {}", amrmor_bevor, self.armor));
 
+                        self.equipmentslots.insert(slot,self.inventory.get(item_index).unwrap().to_owned());
+
+                    }
+                    _ => {
+                        self.equipmentslots.insert(slot,self.inventory.get(item_index).unwrap().to_owned());
+                    }
+                }
 
                 self.inventory[item_index] = ItemsTypes::InventorySlot(Inventoryslot::empty())
 
@@ -225,13 +265,42 @@ impl Player{
         }
     }
 
+    pub fn has_free_slot(&self) -> bool{
+        let mut  si = false;
+        for slot in &self.inventory  {
+            if(slot.get_name().to_ascii_lowercase().eq("empty")){
+                si =  true
+            }
+        }
+        si
+    }
+
     pub fn get_equipment_from_slot(&self, slot: String) -> &ItemsTypes {
         &self.equipmentslots.get(&Equipmintslots::from_string(slot)).unwrap()
     }
 
     pub fn unequip(&mut self, slot: Equipmintslots) {
         if(slot != Equipmintslots::None && !self.equipmentslots.get(&slot).unwrap().get_name().to_ascii_lowercase().eq("empty")){
-                self.equipmentslots.insert(slot, ItemsTypes::InventorySlot(Inventoryslot::empty()));
+            if(self.has_free_slot()) {
+                match self.equipmentslots.get(&slot).unwrap() {
+                    ItemsTypes::EquipItem(eq) => {
+                        let amrmor_bevor = self.armor;
+                        self.armor = self.armor - *eq.get_armor_buff() as i8;
+                        add_log(&*format!("Dungeon: {} -> {}", amrmor_bevor, self.armor));
+                        self.add_loot(ItemsTypes::EquipItem(eq.to_owned()));
+                        self.equipmentslots.insert(slot, ItemsTypes::InventorySlot(Inventoryslot::empty()));
+                    }
+
+                    (item) => {
+                        self.add_loot(item.to_owned());
+                        self.equipmentslots.insert(slot, ItemsTypes::InventorySlot(Inventoryslot::empty()));
+                    }
+
+                    _ => {}
+                }
+            }else {
+                add_log("Dungeon: No space in inventory")
+            }
         }else {
             add_log("Dungeon: Pls dont be weird")
         }

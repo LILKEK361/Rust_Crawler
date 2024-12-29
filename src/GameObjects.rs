@@ -5,8 +5,6 @@ mod encounter;
 pub(crate) mod item_handler;
 #[path= "Gamehelper/GameObjects/Items/weaponitem.rs"]
 pub(crate) mod weaponitem;
-#[path= "Gamehelper/GameObjects/Items/equip_item.rs"]
-mod equip_item;
 #[path = "Gamehelper/GameObjects/player.rs"]
 pub(crate) mod player;
 #[path= "Gamehelper/GameObjects/Dungeon.rs"]
@@ -23,3 +21,8 @@ pub(crate) mod treasure;
 pub(crate) mod treasure_item;
 #[path="Gamehelper/GameObjects/Items/passiv_handler.rs"]
 pub(crate) mod passiv_handler;
+#[path="Gamehelper/GameObjects/Items/equip_item.rs"]
+pub(crate) mod equip_item;
+#[path="Gamehelper/GameObjects/Items/consumable_item.rs"]
+pub(crate) mod consumable_item;
+

@@ -22,6 +22,7 @@ use ratatui::style::{Color, Style};
 use ratatui::widgets::block::Position;
 use crate::gameobjects::dungeon::{Dungeon, DungeonHandler, Dungeonroom};
 use crate::{add_log, gamestate_ref, read_log, Gamestate};
+use crate::gameobjects::item_handler::ItemsTypes;
 
 use crate::gameobjects::player;
 use crate::gameobjects::player::Player;
@@ -388,7 +389,7 @@ impl tdrawer {
             .constraints([Constraint::Percentage(80), Constraint::Percentage(20)])
             .split(mapLayout[1]);
 
-        let playercard = generate_Card(String::from(&player.name), *player.get_hp() as i8, *player.get_max_hp());
+        let playercard = generate_Card(String::from(&player.name), *player.get_hp() as i8, *player.get_max_hp() as i8);
         let monstercard = generate_Card(String::from(&monster.name), *monster.get_hp() as i8, *monster.get_max_hp());
         let help = Paragraph::new(konst::COMBATHELPERMENU).block(Block::new().borders(Borders::ALL).title("Combat Basic Commands"));
         frame.render_widget(playercard, mapLayout[0]);
@@ -429,16 +430,51 @@ impl tdrawer {
 
                 frame.render_widget(Paragraph::new("Index"), row_layout[0]);
                 frame.render_widget(Paragraph::new("Name"), row_layout[1]);
-
                 frame.render_widget(Paragraph::new("Rarity"), row_layout[2]);
-                frame.render_widget(Paragraph::new("Value"), row_layout[3]);
+                frame.render_widget(Paragraph::new("Notes"), row_layout[2]);
+
 
             }else  {
 
-                frame.render_widget(Paragraph::new((i - 1).to_string()), row_layout[0]);
-                frame.render_widget(Paragraph::new(inventory.get(i - 1).unwrap().get_name()), row_layout[1]);
-                frame.render_widget(Paragraph::new(inventory.get(i - 1).unwrap().get_rarity().to_string()), row_layout[2]);
-                frame.render_widget(Paragraph::new(inventory.get(i - 1).unwrap().get_value().to_string()), row_layout[3]);
+                let mut name = String::new();
+                let mut note = String::new();
+                let mut rarity = String::new();
+
+                match inventory.get(i-1).unwrap() {
+                    ItemsTypes::EquipItem(item) => {
+                        name = item.get_name().parse().unwrap();
+                        rarity = item.get_rarity().to_string().parse().unwrap();
+                        note = format!("+{} AD",item.get_armor_buff())
+                    }
+                    ItemsTypes::WeaponItem(item) => {
+                        name = item.get_name().parse().unwrap();
+                        rarity = item.get_rarity().to_string().parse().unwrap();
+                        note = format!("+{} DMG",item.get_bonus_dmg())
+                    }
+                    ItemsTypes::ConsumableItem(item) =>{
+                        name = item.get_name().parse().unwrap();
+                        rarity = item.get_rarity().to_string().parse().unwrap();
+                        note = format!("+{} Healing",item.heal())
+                    }
+                    ItemsTypes::TreasureItem(item) => {
+                        name = item.get_name().parse().unwrap();
+                        rarity = item.get_rarity().to_string().parse().unwrap();
+                        note = format!("+{} AD",item.get_passiv().to_string())
+                    }
+
+                    ItemsTypes::InventorySlot(item) => {
+                        name = item.get_name().parse().unwrap();
+                        rarity = item.get_rarity().to_string().parse().unwrap();
+                        note = item.get_des().parse().unwrap();
+
+                    }
+                }
+
+                frame.render_widget(Paragraph::new(format!("{}",i - 1)) , row_layout[0]);
+                frame.render_widget(Paragraph::new(name) , row_layout[1]);
+                frame.render_widget(Paragraph::new(rarity), row_layout[2]);
+                frame.render_widget(Paragraph::new(note), row_layout[2]);
+
             }
 
         }
@@ -456,25 +492,39 @@ impl tdrawer {
             .split(equipment_display.inner(inventory_layout[1]));
 
         if(player.get_inspect().0) {
-
-            let itemdes = inventory.get(player.get_inspect().1 as usize).unwrap().get_des().split("\\").map(|line| {
+            let item = inventory.get(player.get_inspect().1 as usize).unwrap();
+            let itemdes = item.get_des().split("\\").map(|line| {
                Line::from(Span::from(line))
             }).collect::<Vec<Line>>();
+            
+            let item_list = List::new(vec![
+                ListItem::from(Line::from("")),
+                ListItem::from(Line::from(Span::from(format!("Name: {}",item.get_name())))),
+                ListItem::from(Line::from("")),
+                ListItem::from(Line::from("Des:")),
+                ListItem::from(itemdes),
+                ListItem::from(Line::from("")),
+                ListItem::from(Line::from(format!("Rarity: {}", item.get_rarity().to_string()))),
+            ]);
 
 
 
+            frame.render_widget(item_list,equipment_display.inner(inventory_layout[1]));
             frame.render_widget(equipment_display.title(format!("Item: {}",inventory.get(player.get_inspect().1 as usize).unwrap().get_name())), inventory_layout[1]);
-            frame.render_widget(Paragraph::new(Text::from(itemdes)).wrap(Wrap {trim: true}),equipment_layout[1])
 
 
         }else {
 
             let equipment_list = List::new(vec![
-
+                ListItem::from(Line::from("")),
                 ListItem::from(Line::from(Span::from(format!("Head: {}", player.get_equipment_from_slot("head".into()).get_name())))),
+                ListItem::from(Line::from("")),
                 ListItem::from(Line::from(Span::from(format!("Torso: {}", player.get_equipment_from_slot("Torso".into()).get_name())))),
+                ListItem::from(Line::from("")),
                 ListItem::from(Line::from(Span::from(format!("Hands: {}", player.get_equipment_from_slot("Hands".into()).get_name())))),
+                ListItem::from(Line::from("")),
                 ListItem::from(Line::from(Span::from(format!("Pants: {}", player.get_equipment_from_slot("Pants".into()).get_name())))),
+                ListItem::from(Line::from("")),
                 ListItem::from(Line::from(Span::from(format!("Shoes: {}", player.get_equipment_from_slot("Shoes".into()).get_name())))),
 
 

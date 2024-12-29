@@ -30,7 +30,7 @@ impl Monster {
             hp: 25,
             max_hp: 25,
             dmg: 3,
-            loot: vec![gamelogic::gamehelperfunctions::generat_random_weapon()]
+            loot: vec![gamelogic::gamehelperfunctions::generate_random_drop()]
         }
     }
 

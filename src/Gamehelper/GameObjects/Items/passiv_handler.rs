@@ -19,6 +19,14 @@ impl PassivTypes {
             PassivTypes::None
         }
     }
+
+    pub fn to_string(&self) -> String{
+        match (self) {
+            PassivTypes::HP(v) => format!("+ {v} HP"),
+            PassivTypes::AD(v) => format!("+ {v} AD"),
+            _ => {String::from("None")}
+        }
+    }
 }
 
 

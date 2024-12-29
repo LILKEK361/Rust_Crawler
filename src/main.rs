@@ -17,7 +17,7 @@ use std::sync::Arc;
 use crossterm::terminal::EnterAlternateScreen;
 use ratatui::widgets::Block;
 use crate::gamehelper::dbpaths;
-use crate::gamelogic::gamehelperfunctions::generat_random_weapon;
+use crate::gamelogic::gamehelperfunctions::generate_random_weapon;
 use crate::gameobjects::{dungeon::{Dungeon, DungeonHandler}};
 use crate::gameobjects::item_handler::Item;
 
