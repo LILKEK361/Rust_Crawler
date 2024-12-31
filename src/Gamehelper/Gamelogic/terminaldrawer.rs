@@ -41,6 +41,7 @@ pub struct tdrawer {
     input_mode: InputMode,
     dislay: Block<'static>,
     log_index: i8,
+    show_spoiler: bool,
 
 
 
@@ -67,6 +68,7 @@ impl tdrawer {
             character_index: 0,
             dislay: Block::default().borders(Borders::ALL).title("Placeholder").title_position(ratatui::widgets::block::Position::Top),
             log_index: 30,
+            show_spoiler: false,
 
 
         }
@@ -137,6 +139,8 @@ impl tdrawer {
         }
         else if(*gamestate_ref().lock().unwrap() == Gamestate::run){
             DungeonHandler::dungeon_handler_ref().lock().unwrap().send_action(self.input_string.clone());
+        } else if(self.input_string.clone().to_ascii_lowercase().eq("spoiler") && !(*gamestate_ref().lock().unwrap() == Gamestate::run)){
+            self.show_spoiler = true;
         }
 
 
@@ -241,7 +245,15 @@ impl tdrawer {
 
         } else {
             let big_container = Block::default().borders(Borders::ALL).title("Menu").title_position(ratatui::widgets::block::Position::Top);
-            frame.render_widget(big_container, big_screen[0])
+            let main_menu_text = if (self.show_spoiler) {
+
+                Paragraph::new(konst::SPOILER).block(big_container).alignment(Center).wrap(Wrap{trim:true})
+
+            }else{
+
+                Paragraph::new(konst::MAINMENU).block(big_container).alignment(Center).wrap(Wrap{trim:true})
+            };
+            frame.render_widget(main_menu_text, big_screen[0])
         };
 
     }

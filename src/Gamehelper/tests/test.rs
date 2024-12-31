@@ -7,9 +7,9 @@ pub mod tests {
     #[test]
     pub fn write_to_db(){
 
-        //write_treasure_table();
-        //write_weapon_table();
-        //write_equip_table();
+        write_treasure_table();
+        write_weapon_table();
+        write_equip_table();
         write_consumable_table();
     }
 

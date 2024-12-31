@@ -73,7 +73,9 @@ impl Monster {
 
     pub fn drop(&mut self) -> Vec<ItemsTypes>{
         //todo
-        self.loot.to_owned()
+        let items = self.loot.to_owned();
+        self.loot = vec![];
+        items
     }
 
 

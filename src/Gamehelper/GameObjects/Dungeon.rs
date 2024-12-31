@@ -136,7 +136,9 @@ impl DungeonHandler {
                             add_log("because I dont")
                         }
                     } else if(action.contains("use") && !action.eq("use")){
+
                         if(action.split(" ").collect::<Vec<_>>().len() == 2){
+
                             match &action.split(" ").collect::<Vec<_>>()[1].parse::<u8>() {
                                 Ok(slot) => Player::player_ref().lock().unwrap().use_item(*slot),
                                 Err(..) => {
@@ -145,6 +147,7 @@ impl DungeonHandler {
                                 }
                             }
                         }
+
                     }
                     else {
                         add_log("Dungeon: Type close to leave")
@@ -265,11 +268,6 @@ impl Dungeon {
         }).collect::<Vec<Vec<Dungeonroom>>>();
 
         let starting_point = (0,0);
-
-
-
-
-
 
         for i in 0..maze.len() {
             for j in 0..maze[i].len() {

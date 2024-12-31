@@ -6,7 +6,10 @@ pub(crate) enum EncounterTypes{
     None,
     Goal,
     Treasure(crate::gameobjects::treasure::Treasure)
+
 }
+
+
 
 
 

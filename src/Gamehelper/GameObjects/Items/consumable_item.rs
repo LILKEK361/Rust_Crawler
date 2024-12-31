@@ -11,7 +11,7 @@ pub struct Consumable {
 impl Consumable {
     pub fn new(name: String, des: String, rarity: Raritys, uses: u8, value: u8) -> Self{
         Self {
-                name,
+            name,
             des,
             rarity,
             uses,
@@ -25,7 +25,7 @@ impl Consumable {
     }
 
     pub fn used(&mut self) {
-        self.uses = &self.uses - 1;
+        self.uses = self.uses - 1;
     }
     pub fn get_uses(&self) -> &u8{
         &self.uses

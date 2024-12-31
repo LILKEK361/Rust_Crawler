@@ -5,9 +5,10 @@ use std::mem::forget;
 use std::sync::{Mutex, OnceLock};
 use crate::{add_log, gameobjects};
 use crate::gamelogic::gamehelperfunctions::{generate_random_equip, generate_random_weapon};
+use crate::gameobjects::consumable_item::Consumable;
 use crate::gameobjects::inventoryslot;
 use crate::gameobjects::inventoryslot::Inventoryslot;
-use crate::gameobjects::item_handler::{Equipmintslots, Item, ItemsTypes};
+use crate::gameobjects::item_handler::{Equipmintslots, Item, ItemsTypes, Raritys};
 use crate::gameobjects::passiv_handler::PassivTypes;
 
 pub(crate) struct Player {
@@ -40,11 +41,11 @@ impl Player{
             inventory: vec![
                 generate_random_equip(),
                 generate_random_weapon(),
-                ItemsTypes::InventorySlot(Inventoryslot::empty()),
+                ItemsTypes::ConsumableItem(Consumable::new("Healing Potion".into(), "A healing Potion".to_string(), Raritys::TRASH, 1, 0)),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
 
-            ItemsTypes::InventorySlot(Inventoryslot::empty()),
+                ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
@@ -79,8 +80,7 @@ impl Player{
     //Functions for combat of the player
     pub fn attack(&self) -> u8{
         //todo: Check for equipment
-        let dmg = &self.attack + self.check_equipment_bonus_dmg();
-        dmg
+        self.attack
     }
     
     pub fn take_dmg(&mut self, dmg: i8){
@@ -151,10 +151,6 @@ impl Player{
         added
     }
 
-    pub fn apply_passiv(passiv: PassivTypes){
-
-    }
-
     pub fn inspect(&mut self, slot: u8){
         if(slot <= self.inventory_size - 1) {
             self.inspecting = (true, slot)
@@ -195,15 +191,16 @@ impl Player{
         (&self.name, self.health, self.max_hp, self.inventory.len() as i8, self.armor, self.level, &self.skills  )
     }
 
-    pub fn use_item(mut self, item_slot: u8) {
-        if(item_slot <= self.inventory_size - 1) {
-            match &mut self.inventory.get(item_slot as usize).unwrap() {
-                ItemsTypes::ConsumableItem(item) => {
+    pub fn use_item(&mut self, item_slot: u8) {
+        if(item_slot <= &self.inventory_size - 1) {
+
+            match self.inventory.get_mut(item_slot as usize).unwrap() {
+               ItemsTypes::ConsumableItem(item ) => {
                     if(item.get_name().to_ascii_lowercase().contains("heal")){
                         if((self.health + item.heal()) > self.max_hp){
-                            add_log(&*format!("Dungeon: Healed for {}", item.heal()));
+                            add_log(&*format!("Dungeon: Healed for {} HP", item.heal()));
                             self.health = self.max_hp;
-
+                            item.used()
                         } else {
                             self.health = self.health + item.heal()
                         }
@@ -244,10 +241,17 @@ impl Player{
                     ItemsTypes::EquipItem(eq) => {
                         let amrmor_bevor = self.armor;
                         self.armor = self.armor + *eq.get_armor_buff() as i8;
-                        add_log(&*format!("Dungeon: {} -> {}", amrmor_bevor, self.armor));
+                        add_log(&*format!("Dungeon: {} AD -> {} AD", amrmor_bevor, self.armor));
 
                         self.equipmentslots.insert(slot,self.inventory.get(item_index).unwrap().to_owned());
 
+                    }
+                    ItemsTypes::WeaponItem(weapeon) => {
+                        let amrmor_bevor = self.attack;
+                        self.attack = self.attack + *weapeon.get_bonus_dmg();
+                        add_log(&*format!("Dungeon: {} DMG -> {} DMG", amrmor_bevor, self.attack));
+
+                        self.equipmentslots.insert(slot,self.inventory.get(item_index).unwrap().to_owned());
                     }
                     _ => {
                         self.equipmentslots.insert(slot,self.inventory.get(item_index).unwrap().to_owned());

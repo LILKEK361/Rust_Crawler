@@ -41,7 +41,7 @@ pub const CREATEBASICEQUIPTABLE: &str = r#"INSERT into equip (name, des,slot, ra
 ('Iron Helm','a broken Iron Helm.\Kinda crusty on the edges','head', 'common',2,5)
 ;"#;
 
-pub(crate) const CONSUMABLESTABLECREATIONQUERY: &str ="Create Table if not exists consumables (id SERIAL PRIMARY KEY, name TEXT NOT NULL, des TEXT NOT NULL,rarity TEXT NOT NULL, uses INT NOT NULL, value INT NOT NULL)";
+pub(crate) const CONSUMABLESTABLECREATIONQUERY: &str ="Create Table if not exists consumables (id SERIAL PRIMARY KEY, name TEXT NOT NULL, des TEXT NOT NULL,rarity TEXT NOT NULL, uses INT NOT NULL, value INT NOT NULL);";
 
 pub(crate) const CREATEBASICCONSUMABLES: &str = r#" INSERT into consumables (name, des, rarity,uses, value) VALUES
 ('Healing Potion', 'A strange looking liquid.\The smell remindes you of\something. Where have you smelled it before?','common', 3, 0);

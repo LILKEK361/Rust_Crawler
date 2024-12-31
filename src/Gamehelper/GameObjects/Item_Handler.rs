@@ -1,4 +1,5 @@
 use std::ops::Deref;
+use crate::gameobjects::consumable_item::Consumable;
 use crate::gameobjects::item_handler::Raritys::{BROKEN, DEMONIC, GODLY, RARE};
 
 enum ItemTypes{
@@ -99,11 +100,21 @@ pub(crate) enum ItemsTypes {
 }
 
 
+impl ItemsTypes {
+    pub fn get_consumable_item(&mut self) -> Result<&mut Consumable, String> {
+        match self {
+            ItemsTypes::ConsumableItem(item) => {
+                Ok(item)
+            }
+            _=> {Err("Not an usable item".into())}
+        }
+    }
+}
+
 
 
 
 impl Item for ItemsTypes {
-
 
     fn get_name(&self) -> &str {
         match self {
@@ -174,7 +185,6 @@ impl Item for ItemsTypes {
 
         }
     }
-
 
 }
 
