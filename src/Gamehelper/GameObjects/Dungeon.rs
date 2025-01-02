@@ -466,6 +466,12 @@ impl Dungeon {
 
                 }
             }
+            EncounterTypes::Goal(monster) => {
+                if(monster.is_alive()){
+                    self.combat = true;
+                    tdrawer::set_render_queue("comat".parse().unwrap())
+                }
+            }
             _ => {}
         }
         self.get_current_room().visited = true
@@ -513,7 +519,7 @@ impl Dungeonroom {
 
     pub fn GoalRoom() -> Self {
         Self {
-            encoutner: EncounterTypes::Goal,
+            encoutner: EncounterTypes::Goal(Monster::new_Boss("Olaf".into())),
             visited: true, //todo change
             enterable: true,
             note: String::new()

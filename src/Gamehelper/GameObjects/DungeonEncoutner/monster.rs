@@ -9,10 +9,10 @@ pub(crate) struct Monster {
     pub name: String,
     m_type: String,
     des: String,
-    alvie: bool,
+    alive: bool,
     hp: u8,
     dmg: i8,
-    max_hp: i8,
+    max_hp: u8,
     loot: Vec<ItemsTypes>,
 
 
@@ -26,7 +26,7 @@ impl Monster {
             name: String::from(&name),
             m_type: "Monster".into(),
             des: format!("A {name} is viben in the room. Oh no it attacks").into(),
-            alvie: true,
+            alive: true,
             hp: 25,
             max_hp: 25,
             dmg: 3,
@@ -34,21 +34,34 @@ impl Monster {
         }
     }
 
+   pub fn new_Boss(name : String) -> Self {
+        Self {
+            name: String::from(&name),
+            m_type: "Boss".into(),
+            des: format!("A big, chunky {name} is viben. Looks like its attacking.").into(),
+            alive: true,
+            hp: 255,
+            max_hp: 255,
+            dmg: 15,
+            loot: vec![],
 
+        }
+
+    }
 
 
     pub fn is_alive(&self) -> bool {
-        self.alvie
+        self.alive
     }
     pub fn take_dmg(&mut self, dmg: u8) {
         if(!(dmg > self.hp)){
             self.hp = self.hp - dmg;
             if(self.hp <= 0){
-                self.alvie = false;
+                self.alive = false;
             }
         } else {
             self.hp = self.hp - self.hp;
-            self.alvie = false;
+            self.alive = false;
 
         }
     }
@@ -60,7 +73,7 @@ impl Monster {
         &self.hp
     }
 
-    pub fn get_max_hp(&self) -> &i8 {
+    pub fn get_max_hp(&self) -> &u8 {
         &self.max_hp
     }
 

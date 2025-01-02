@@ -401,8 +401,8 @@ impl tdrawer {
             .constraints([Constraint::Percentage(80), Constraint::Percentage(20)])
             .split(mapLayout[1]);
 
-        let playercard = generate_Card(String::from(&player.name), *player.get_hp() as i8, *player.get_max_hp() as i8);
-        let monstercard = generate_Card(String::from(&monster.name), *monster.get_hp() as i8, *monster.get_max_hp());
+        let playercard = generate_Card(String::from(&player.name), *player.get_hp() , *player.get_max_hp() );
+        let monstercard = generate_Card(String::from(&monster.name), *monster.get_hp(), *monster.get_max_hp());
         let help = Paragraph::new(konst::COMBATHELPERMENU).block(Block::new().borders(Borders::ALL).title("Combat Basic Commands"));
         frame.render_widget(playercard, mapLayout[0]);
         frame.render_widget(help, helper_layout[1]);
@@ -621,7 +621,7 @@ impl tdrawer {
 
 }
 
-pub  fn generate_Card(name: String, hp: i8, max_hp: i8) -> Paragraph<'static>{
+pub  fn generate_Card(name: String, hp: u8, max_hp: u8) -> Paragraph<'static>{
     let card = Block::default()
         .title(name)
         .borders(Borders::ALL)
