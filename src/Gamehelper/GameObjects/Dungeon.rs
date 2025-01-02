@@ -613,6 +613,9 @@ impl Dungeonroom {
             EncounterTypes::Monster(monster) => {
                 Some(monster)
             }
+            EncounterTypes::Goal(monster) => {
+                Some(monster)
+            }
             _ => None
         }
     }
