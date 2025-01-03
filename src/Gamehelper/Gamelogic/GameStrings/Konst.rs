@@ -22,6 +22,7 @@ The enemy type is a basic Goblin todo :(\n
 Your goal in the dungeon is to reach the final boss and defeat it. Be carefully the Boss ain't that weak.\n
 You can find different item in the dungeon, some are usefull others aren't.\n
 The rest should be self explaining, but if you are lost or encounter a bug you can create a new ticket on Github.\n
+Type [menu] to see the menu text again.\n
 ";
 
 pub const COMBATHELPERMENU: &str = "attack: to attack\ndefend: to defend\npassiv:todo\n";

@@ -1,4 +1,4 @@
-use crate::{add_log};
+use crate::{add_log, gamestate_ref, Gamestate};
 use crate::gamelogic::terminaldrawer::tdrawer;
 use crate::gameobjects::encounter::{Encounter, EncounterTypes};
 use crate::gameobjects::monster::Monster;
@@ -74,6 +74,10 @@ impl DungeonHandler {
 
                         }else if(action.eq(&combat_action[1] /*Defend*/)){
                             player.defend(*dungeonroom.get_Monster().unwrap().get_dmg());
+                        }
+
+                        if(!player.alive){
+                            *gamestate_ref().lock().unwrap() = Gamestate::home;
                         }
 
                     }else {
@@ -237,11 +241,12 @@ pub(crate) struct Dungeon {
 
 impl Dungeon {
     pub fn new() -> Self {
-        let testing = false;
+        let testing = true;
         let mut rooms = if !testing {
             Self::generator_maze(10,10)
         } else {
-            vec![vec![Dungeonroom::TreaureRoom(),Dungeonroom::EmptyRoom("E"), Dungeonroom::MonsterRoom("Skeleton".into()),Dungeonroom::TrapRoom()]]
+            //vec![vec![Dungeonroom::TreaureRoom(),Dungeonroom::EmptyRoom("E"), Dungeonroom::MonsterRoom("Skeleton".into()),Dungeonroom::TrapRoom()]]
+            vec![vec![Dungeonroom::EmptyRoom("Empty"), Dungeonroom::GoalRoom()]]
         };
 
 
@@ -469,7 +474,7 @@ impl Dungeon {
             EncounterTypes::Goal(monster) => {
                 if(monster.is_alive()){
                     self.combat = true;
-                    tdrawer::set_render_queue("comat".parse().unwrap())
+                    tdrawer::set_render_queue("combat".parse().unwrap())
                 }
             }
             _ => {}

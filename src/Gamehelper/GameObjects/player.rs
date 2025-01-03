@@ -87,10 +87,12 @@ impl Player{
         let taken_dmg =  (dmg as u8 - (self.armor / 2) as u8);
         add_log(&*format!("You took {} dmg,", taken_dmg));
 
-        self.health = self.health - taken_dmg;
-
-        if(self.health <= 0){
+        if(taken_dmg > self.health){
+            self.health = 0;
             self.alive = false;
+        }else {
+            self.health = self.health - taken_dmg;
+
         }
     }
 
@@ -197,15 +199,24 @@ impl Player{
             match self.inventory.get_mut(item_slot as usize).unwrap() {
                ItemsTypes::ConsumableItem(item ) => {
                     if(item.get_name().to_ascii_lowercase().contains("heal")){
+                        let healt_before = self.health;
+
                         if((self.health + item.heal()) > self.max_hp){
+
                             add_log(&*format!("Dungeon: Healed for {} HP", item.heal()));
                             self.health = self.max_hp;
-                            item.used()
+                            add_log(&*format!("Dungeon: {healt_before} HP -> {} HP",self.health));
+
+
                         } else {
-                            self.health = self.health + item.heal()
+                            add_log(&*format!("Dungeon: Healed for {} HP", item.heal()));
+                            self.health = self.health + item.heal();
+                            add_log(&*format!("Dungeon: {healt_before} HP -> {} HP",self.health));
+
                         }
 
 
+                        item.used();
 
                         if(*item.get_uses() == 0){
                             self.inventory[item_slot as usize]  = ItemsTypes::InventorySlot(Inventoryslot::empty())
