@@ -29,7 +29,7 @@ impl Monster {
             alive: true,
             hp: 25,
             max_hp: 25,
-            dmg: 3,
+            dmg: 6,
             loot: vec![gamelogic::gamehelperfunctions::generate_random_drop()]
         }
     }

@@ -242,6 +242,12 @@ impl Player{
 
     }
 
+    pub fn create_new_player(){
+        let mut player = Self::player_ref().lock().expect("That shoudn't happend. Pls create a ticket on Github");
+        *player = Self::new("Olaf".into());
+    }
+
+
     pub fn equip_item(&mut self, item_index: usize, slot: Equipmintslots){
 
         if(item_index <= (self.inventory_size - 1) as usize) {

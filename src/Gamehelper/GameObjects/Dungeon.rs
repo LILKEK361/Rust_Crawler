@@ -241,9 +241,9 @@ pub(crate) struct Dungeon {
 
 impl Dungeon {
     pub fn new() -> Self {
-        let testing = true;
+        let testing = false;
         let mut rooms = if !testing {
-            Self::generator_maze(10,10)
+            Self::generator_maze(10,15)
         } else {
             //vec![vec![Dungeonroom::TreaureRoom(),Dungeonroom::EmptyRoom("E"), Dungeonroom::MonsterRoom("Skeleton".into()),Dungeonroom::TrapRoom()]]
             vec![vec![Dungeonroom::EmptyRoom("Empty"), Dungeonroom::GoalRoom()]]

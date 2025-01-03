@@ -132,6 +132,7 @@ impl tdrawer {
         add_log(&*format!("Player: {}", &self.input_string));
 
         if(self.input_string.clone() == "start" && *gamestate_ref().lock().unwrap() == Gamestate::home){
+            Player::create_new_player();
             *gamestate_ref().lock().unwrap() = Gamestate::run;
             DungeonHandler::dungeon_handler_ref().lock().unwrap().send_action("map".into());
         }else if((self.input_string.clone() == "exit" || self.input_string.clone() == "end") && *gamestate_ref().lock().unwrap() == Gamestate::run){
