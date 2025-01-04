@@ -8,7 +8,7 @@ use crate::gameobjects::treasure_item::TreasureItem;
 pub struct Treasure {
     name: String,
     des: String,
-    treasure: ItemsTypes,
+    treasure: Vec<ItemsTypes>,
     t_type: String,
 }
 
@@ -18,13 +18,15 @@ impl Treasure {
         Self {
             name: String::from(room_descriptions::TREASURETITLE),
             des: String::from(room_descriptions::TREASUREDES),
-            treasure: gamelogic::gamehelperfunctions::generate_random_treaure(),
+            treasure: vec![gamelogic::gamehelperfunctions::generate_random_treaure()],
             t_type: String::from("Chest") ,
         }
     }
 
-    pub fn take(&mut self) -> ItemsTypes{
-        self.treasure.to_owned()
+    pub fn take(&mut self) -> Vec<ItemsTypes>{
+        let treasure = self.treasure.to_owned();
+        self.treasure = vec![];
+        treasure
     }
  }
 

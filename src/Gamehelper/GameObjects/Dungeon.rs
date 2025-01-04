@@ -76,9 +76,7 @@ impl DungeonHandler {
                             player.defend(*dungeonroom.get_Monster().unwrap().get_dmg());
                         }
 
-                        if(!player.alive){
-                            *gamestate_ref().lock().unwrap() = Gamestate::home;
-                        }
+
 
                     }else {
                         add_log("You can't use this action in combat");
@@ -282,7 +280,7 @@ impl Dungeon {
         }
 
         let gh = rand::rng().random_range((h / 2) as usize..=maze.len());
-        let gw =  rand::rng().random_range((w / 2) as usize..=maze.len());
+        let gw =  rand::rng().random_range((w / 2) as usize..=maze[0].len());
         maze[starting_point.0][starting_point.1] = Dungeonroom::StartingRoom();
         maze[gh - 1][gw - 1] = Dungeonroom::GoalRoom();
 
@@ -481,6 +479,11 @@ impl Dungeon {
         }
         self.get_current_room().visited = true
     }
+
+    pub fn generate_new_dungeon() {
+        let mut dungeon = Self::dungeon_ref().lock().unwrap();
+        *dungeon = Self::new();
+    }
 }
 
 pub struct Dungeonroom {
@@ -653,8 +656,12 @@ impl Dungeonroom {
                 }
             }
             EncounterTypes::Treasure(treaure) => {
-                if(!player.add_loot(treaure.take())){
-
+                for item in treaure.take() {
+                    if (!player.add_loot(item)) {
+                        add_log("Your inventory is full")
+                    }else {
+                        self.note = "".parse().unwrap();
+                    }
                 }
             }
 

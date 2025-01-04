@@ -22,7 +22,13 @@ impl Encounter for EncounterTypes {
             EncounterTypes::Trap(trap) => trap.get_Name(),
             EncounterTypes::Empty => "Empty",
             EncounterTypes::None => "None",
-            EncounterTypes::Goal(monster) => "Goal",
+            EncounterTypes::Goal(monster) => {
+                if(monster.is_alive()){
+                    &monster.name
+                } else {
+                    "Goal"
+                }
+            },
             EncounterTypes::Treasure(treasure) => treasure.get_Name(),
         }
     }

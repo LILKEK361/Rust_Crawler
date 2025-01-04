@@ -3,8 +3,9 @@ use std::collections::hash_map::IntoValues;
 use std::collections::HashMap;
 use std::mem::forget;
 use std::sync::{Mutex, OnceLock};
-use crate::{add_log, gameobjects};
+use crate::{add_log, gameobjects, gamestate_ref, Gamestate};
 use crate::gamelogic::gamehelperfunctions::{generate_random_equip, generate_random_weapon};
+use crate::gamelogic::terminaldrawer::tdrawer;
 use crate::gameobjects::consumable_item::Consumable;
 use crate::gameobjects::inventoryslot;
 use crate::gameobjects::inventoryslot::Inventoryslot;
@@ -41,7 +42,7 @@ impl Player{
             inventory: vec![
                 generate_random_equip(),
                 generate_random_weapon(),
-                ItemsTypes::ConsumableItem(Consumable::new("Healing Potion".into(), "A healing Potion".to_string(), Raritys::TRASH, 1, 0)),
+                ItemsTypes::ConsumableItem(Consumable::new("Healing Potion".into(), "A healing Potion".to_string(), Raritys::TRASH, 1, 20, 0)),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
 
@@ -51,7 +52,7 @@ impl Player{
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
             ],
-            health: 100,
+            health: 5,
             alive: true,
             attack: 5,
             skillmod: 0,
@@ -90,6 +91,7 @@ impl Player{
         if(taken_dmg > self.health){
             self.health = 0;
             self.alive = false;
+            Self::player_died()
         }else {
             self.health = self.health - taken_dmg;
 
@@ -98,10 +100,13 @@ impl Player{
 
     pub fn take_true_dmg(&mut self, dmg: i8){
         add_log(&*format!("You took {} dmg,", dmg as u8));
-        self.health = self.health - dmg as u8;
 
-        if(self.health <= 0){
+        if(dmg as u8 >= self.health){
+            self.health = 0;
             self.alive = false;
+            Self::player_died()
+        }else {
+            self.health = self.health - dmg as u8;
         }
     }
 
@@ -124,13 +129,16 @@ impl Player{
     }
 
     pub fn defend(&mut self, dmg: i8){
+        
+        if ((dmg - (self.armor * 2)) as u8 > self.health) {
+            self.alive = false;
+            Self::player_died()
+        }
+        
         if(dmg - (self.armor * 2) > 0){
-            self.health = self.health - ((dmg as i8 - self.armor as i8) as u8)
+            self.health = self.health - ((dmg - (self.armor * 2) ) as u8)
         }
 
-        if(self.health <= 0){
-            self.alive = false;
-        }
     }
 
     pub fn get_skill(&self) -> &i8{
@@ -201,16 +209,16 @@ impl Player{
                     if(item.get_name().to_ascii_lowercase().contains("heal")){
                         let healt_before = self.health;
 
-                        if((self.health + item.heal()) > self.max_hp){
+                        if((self.health + item.get_buf()) > self.max_hp){
 
-                            add_log(&*format!("Dungeon: Healed for {} HP", item.heal()));
+                            add_log(&*format!("Dungeon: Healed for {} HP", item.get_buf()));
                             self.health = self.max_hp;
                             add_log(&*format!("Dungeon: {healt_before} HP -> {} HP",self.health));
 
 
                         } else {
-                            add_log(&*format!("Dungeon: Healed for {} HP", item.heal()));
-                            self.health = self.health + item.heal();
+                            add_log(&*format!("Dungeon: Healed for {} HP", item.get_buf()));
+                            self.health = self.health + item.get_buf();
                             add_log(&*format!("Dungeon: {healt_before} HP -> {} HP",self.health));
 
                         }
@@ -326,7 +334,11 @@ impl Player{
             add_log("Dungeon: Pls dont be weird")
         }
     }
-    
+
+    pub fn player_died(){
+        tdrawer::set_render_queue("death".into());
+        //*gamestate_ref().lock().unwrap() = Gamestate::home;
+    }
     
     
     

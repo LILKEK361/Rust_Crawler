@@ -49,7 +49,7 @@ pub fn generate_random_consumable() -> ItemsTypes {
 
     let con = consumables.get(random_number).unwrap();
 
-    ItemsTypes::ConsumableItem(Consumable::new(con.get::<_,String>(1),con.get::<_,String>(2), Raritys::from(con.get::<_,String>(3)), con.get::<_,i32>(4) as u8, con.get::<_,i32>(5) as u8 ))
+    ItemsTypes::ConsumableItem(Consumable::new(con.get::<_,String>(1),con.get::<_,String>(2), Raritys::from(con.get::<_,String>(3)), con.get::<_,i32>(4) as u8, con.get::<_,i32>(5) as u8 ,con.get::<_,i32>(6) as u8 ))
 }
 
 pub fn generate_random_drop() -> ItemsTypes {

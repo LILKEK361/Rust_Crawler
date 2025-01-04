@@ -5,23 +5,24 @@ pub struct Consumable {
     des: String,
     value: u8,
     uses: u8,
-    rarity: Raritys
+    rarity: Raritys,
+    buf: u8
 }
 
 impl Consumable {
-    pub fn new(name: String, des: String, rarity: Raritys, uses: u8, value: u8) -> Self{
+    pub fn new(name: String, des: String, rarity: Raritys, uses: u8, buf: u8 ,value: u8) -> Self{
         Self {
             name,
             des,
             rarity,
             uses,
+            buf,
             value
         }
     }
 
-    pub fn heal(&self) -> u8 {
-
-        15
+    pub fn get_buf(&self) -> &u8 {
+        &self.buf
     }
 
     pub fn used(&mut self) {

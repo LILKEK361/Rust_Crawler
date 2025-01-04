@@ -1,5 +1,6 @@
 //In this file there will be story elements and string relations for the game
 
+use crossterm::style::Stylize;
 
 pub const MAINMENU: &str = "
     Welcome to the shizo decend. This game was forged by me Lemmings.\n
@@ -24,6 +25,23 @@ You can find different item in the dungeon, some are usefull others aren't.\n
 The rest should be self explaining, but if you are lost or encounter a bug you can create a new ticket on Github.\n
 Type [menu] to see the menu text again.\n
 ";
+
+pub const DEATHMESSAGE: &str = "\n
+    YOU DIED\n
+To be honest, I didn't expect anything else.\n
+Type [exit] to return to the home screen.
+";
+
+pub const VICOTRYMESSAGE: &str ="\n
+    Nice One.\n
+    You really slayed the final boss.\n
+    Good Job.\n
+    Feel free to write a rating about the game or dont.\n
+    Type [exit] to return to the home screen.\n
+
+";
+
+
 
 pub const COMBATHELPERMENU: &str = "attack: to attack\ndefend: to defend\npassiv:todo\n";
 
