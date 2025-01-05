@@ -25,4 +25,6 @@ pub(crate) mod passiv_handler;
 pub(crate) mod equip_item;
 #[path="Gamehelper/GameObjects/Items/consumable_item.rs"]
 pub(crate) mod consumable_item;
+#[path= "Gamehelper/GameObjects/DungeonEncoutner/empty.rs"]
+pub(crate) mod empty;
 

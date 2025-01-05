@@ -46,3 +46,10 @@ pub(crate) const CONSUMABLESTABLECREATIONQUERY: &str ="Create Table if not exist
 pub(crate) const CREATEBASICCONSUMABLES: &str = r#" INSERT into consumables (name, des, rarity,uses, buf, value) VALUES
 ('Healing Potion', 'A strange looking liquid.\The smell remindes you of\something. Where have you smelled it before?','common', 3, 15 ,0);
 "#;
+
+pub const ROOMTABLECREATINQUERY: &str = r#"CREATE TABLE if not exists rooms (id SERIAL PRIMARY KEY, roomname TEXT NOT NULL, roomdes TEXT NOT NULL);"#;
+
+pub(crate) const CREATEBASICROOMS: &str = r#"INSERT into rooms (roomname, roomdes) VALUES
+('Empty', 'This room looks empty. Just like my mind'),
+('Laboretory', 'A big desk at the right side of the room. Some flask lie around on and under the table. Strange... '),
+('Dirty Room', 'A dirty room. You never saw so much rubbish before.');"#;

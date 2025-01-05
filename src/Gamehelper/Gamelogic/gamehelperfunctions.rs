@@ -2,11 +2,13 @@ use rand::Rng;
 use crate::db_manager_ref;
 use crate::gamehelper::dbpaths;
 use crate::gameobjects::consumable_item::Consumable;
+use crate::gameobjects::dungeon::Dungeonroom;
 use crate::gameobjects::equip_item::EquipItem;
 use crate::gameobjects::inventoryslot::Inventoryslot;
 use crate::gameobjects::item_handler::{Equipmintslots, ItemsTypes, Raritys};
 use crate::gameobjects::treasure_item::TreasureItem;
 use crate::gameobjects::weaponitem::WeaponItem;
+use crate::gameobjects::
 
 //This function returns a random weapon without specified attributes
 pub fn generate_random_weapon() -> ItemsTypes{
@@ -52,14 +54,23 @@ pub fn generate_random_consumable() -> ItemsTypes {
     ItemsTypes::ConsumableItem(Consumable::new(con.get::<_,String>(1),con.get::<_,String>(2), Raritys::from(con.get::<_,String>(3)), con.get::<_,i32>(4) as u8, con.get::<_,i32>(5) as u8 ,con.get::<_,i32>(6) as u8 ))
 }
 
+pub fn generate_random_empty_room() -> En {
+    let rooms = db_manager_ref().lock().unwrap().search("Select * from rooms");
+    let random_number = rand::rng().random_range(0..=rooms.len() - 1);
+
+    let room = rooms.get(random_number).unwrap();
+
+    Dungeonroom::EmptyRoom()
+}
+
 pub fn generate_random_drop() -> ItemsTypes {
 
     let mut loot: Vec<ItemsTypes> = vec![];
 
     for i in 0..3 {
         loot.push(generate_random_consumable());
-        //loot.push(generate_random_equip());
-        //loot.push(generate_random_weapon());
+        loot.push(generate_random_equip());
+        loot.push(generate_random_weapon());
     }
 
     let random_number = rand::rng().random_range(0..=loot.len() - 1);
