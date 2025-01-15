@@ -11,6 +11,7 @@ use std::sync::mpsc::Sender;
 use std::sync::{mpsc, Arc, Mutex, OnceLock};
 use std::thread;
 use rand::Rng;
+use crate::gamelogic::gamehelperfunctions;
 use crate::gameobjects::encounter::EncounterTypes::Empty;
 use crate::gameobjects::item_handler::{Equipmintslots, Item, ItemsTypes, Raritys};
 use crate::gameobjects::player::Player;
@@ -63,7 +64,10 @@ impl DungeonHandler {
                         if(action.eq(&combat_action[0]/*attack*/)){
                             dungeonroom.get_Monster().unwrap().take_dmg((player.attack()));
 
-                            if(!dungeonroom.get_Monster().unwrap().is_alive()){
+                            if (dungeonroom.encoutner.get_Type().eq("Goal") && !dungeonroom.get_Monster().unwrap().is_alive()){
+                                tdrawer::set_render_queue("victory".parse().unwrap());
+
+                            } else if(!dungeonroom.get_Monster().unwrap().is_alive()){
                                 dungeonroom.clearMonsterRoom(&player);
                                 &dungeon.set_combat(false);
                                 tdrawer::set_render_queue("look".into())
@@ -239,7 +243,7 @@ pub(crate) struct Dungeon {
 
 impl Dungeon {
     pub fn new() -> Self {
-        let testing = false;
+        let testing = true;
         let mut rooms = if !testing {
             Self::generator_maze(10,15)
         } else {
@@ -528,7 +532,7 @@ impl Dungeonroom {
     pub fn GoalRoom() -> Self {
         Self {
             encoutner: EncounterTypes::Goal(Monster::new_Boss("Olaf".into())),
-            visited: true, //todo change
+            visited: false, //todo change
             enterable: true,
             note: String::new()
         }
@@ -545,7 +549,7 @@ impl Dungeonroom {
 
     pub fn StartingRoom() -> Self {
         Self{
-            encoutner: EncounterTypes::Empty,
+            encoutner: gamehelperfunctions::generate_random_empty_room(),
             visited:true,
             enterable: true,
             note: String::new()
@@ -555,7 +559,7 @@ impl Dungeonroom {
     pub fn EmptyRoom(name: &str) -> Self {
         Self {
             enterable: true,
-            encoutner: EncounterTypes::Empty,
+            encoutner: gamehelperfunctions::generate_random_empty_room(),
             visited: false, //todo! change after testing
             note: String::new()
         }

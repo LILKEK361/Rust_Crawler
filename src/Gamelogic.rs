@@ -10,3 +10,5 @@ pub(crate) mod postgreshandler;
 pub(crate) mod gamehelperfunctions;
 #[path= "Gamehelper/Gamelogic/GameStrings/room_descriptions.rs"]
 pub(crate) mod room_descriptions;
+#[path="Gamehelper/Gamelogic/arghandler.rs"]
+pub(crate) mod arghandler;

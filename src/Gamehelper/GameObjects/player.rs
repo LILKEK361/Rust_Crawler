@@ -52,7 +52,7 @@ impl Player{
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
             ],
-            health: 5,
+            health: 100,
             alive: true,
             attack: 5,
             skillmod: 0,

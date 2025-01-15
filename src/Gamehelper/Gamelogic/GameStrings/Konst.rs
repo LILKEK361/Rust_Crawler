@@ -2,6 +2,21 @@
 
 use crossterm::style::Stylize;
 
+
+pub const TOMANYARGUMENTS: &str = "You have supplyed to many arguments.\nPls use [filename] -- help to get help";
+
+pub const ARGUMENTHELP: &str =r#"
+
+Usage: [filename][EXE] -- <arg>
+
+Options:
+  --help           Print help
+  --setup          Starts the db setup for the game
+  --start          Starts the game, if there is a db connection
+"#;
+
+pub const UNKONWCMD: &str = "Unkown argument. Pls use -- help to see help";
+
 pub const MAINMENU: &str = "
     Welcome to the shizo decend. This game was forged by me Lemmings.\n
     I may not be perfect, but it is...\n

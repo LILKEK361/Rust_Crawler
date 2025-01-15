@@ -20,7 +20,7 @@ impl Encounter for EncounterTypes {
         match self {
             EncounterTypes::Monster(monster) => monster.get_Name(),
             EncounterTypes::Trap(trap) => trap.get_Name(),
-            EncounterTypes::Empty(em) => em.get_name(),
+            EncounterTypes::Empty(em) => em.get_Name(),
             EncounterTypes::None => "None",
             EncounterTypes::Goal(monster) => {
                 if(monster.is_alive()){
@@ -37,7 +37,7 @@ impl Encounter for EncounterTypes {
         match self {
             EncounterTypes::Monster(monster) => "Monster",
             EncounterTypes::Trap(trap) => "Trap",
-            EncounterTypes::Empty(em) => em.get_type(),
+            EncounterTypes::Empty(em) => em.get_Type(),
             EncounterTypes::None => "None",
             EncounterTypes::Goal(monster) => "Goal",
             EncounterTypes::Treasure(treasure) => "Treasure",
@@ -48,7 +48,7 @@ impl Encounter for EncounterTypes {
         match self {
             EncounterTypes::Monster(monster) => monster.get_description(),
             EncounterTypes::Trap(trap) => trap.get_description(),
-            EncounterTypes::Empty(em) => em.get_des(),
+            EncounterTypes::Empty(em) => em.get_description(),
             EncounterTypes::None => "None",
             EncounterTypes::Goal(monster) => "Goal",
             EncounterTypes::Treasure(treasure) => treasure.get_description(),

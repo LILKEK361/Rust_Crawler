@@ -1,5 +1,5 @@
 #[path="Gamehelper/GameObjects/encounter.rs"]
-mod encounter;
+pub(crate) mod encounter;
 
 #[path= "Gamehelper/GameObjects/Item_Handler.rs"]
 pub(crate) mod item_handler;

@@ -40,7 +40,7 @@ impl Monster {
             m_type: "Boss".into(),
             des: format!("A big, chunky {name} is viben. Looks like its attacking.").into(),
             alive: true,
-            hp: 255,
+            hp: 2,
             max_hp: 255,
             dmg: 15,
             loot: vec![],
