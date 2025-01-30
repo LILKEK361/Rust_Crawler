@@ -12,3 +12,7 @@ pub(crate) mod gamehelperfunctions;
 pub(crate) mod room_descriptions;
 #[path="Gamehelper/Gamelogic/arghandler.rs"]
 pub(crate) mod arghandler;
+#[path= "Gamehelper/Gamelogic/game_screens.rs"]
+pub(crate) mod game_screens;
+#[path="Gamehelper/Gamelogic/draw_functions.rs"]
+pub(crate) mod draw_functions;

@@ -19,6 +19,7 @@ use ratatui::widgets::Block;
 use crate::gamehelper::dbpaths;
 use crate::gamelogic::{arghandler, konst};
 use crate::gamelogic::gamehelperfunctions::generate_random_weapon;
+use crate::gamelogic::terminaldrawer::drawer;
 use crate::gameobjects::{dungeon::{Dungeon, DungeonHandler}};
 use crate::gameobjects::item_handler::Item;
 
@@ -80,21 +81,15 @@ fn main() {
 
     } else if((args.get(0).unwrap().to_ascii_lowercase().eq("help"))){
         println!("{}", konst::ARGUMENTHELP)
+    } else if args.get(0).unwrap().to_ascii_lowercase().eq("debug") {
+
+        let mut terminal = ratatui::init();
+        let mut drawer = drawer::new();
+        drawer.draw_screen(&mut terminal).expect("TODO: panic message");
     }
     else {
         println!("{}", konst::UNKONWCMD)
     }
-
-
-    execute!(
-            stdout(),
-            SetSize(120, 40) // width, height
-        );
-
-    let mut terminal = ratatui::init();
-
-
-    tdrawer::tdrawer_ref().lock().unwrap().deref_mut().draw(&mut terminal).unwrap();
 
 
 
