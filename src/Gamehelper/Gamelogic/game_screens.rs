@@ -4,15 +4,16 @@ use ratatui::{layout, Frame};
 use ratatui::layout::{Constraint, Direction, Layout};
 use ratatui::layout::Alignment::Center;
 use ratatui::layout::Direction::Horizontal;
+use ratatui::text::Text;
 use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
 
-use crate::gamelogic::game_screens::WindowContents::INVENTORY;
+use crate::gamelogic::game_screens::WindowContents::{INVENTORY, MAPSCREEN};
 use crate::gamelogic::{draw_functions, gamehelperfunctions, konst};
 
 pub enum WindowContents {
     INVENTORY(GameScreen),
     COMBAT(GameScreen),
-    MAP(GameScreen),
+    MAPSCREEN(GameScreen),
     ROOM(GameScreen),
     VIC(GameScreen),
     DEATH(GameScreen),
@@ -31,6 +32,18 @@ impl WindowContents {
                                       .direction(Horizontal)),
         })
     }
+
+    pub fn new_map_screen() -> Self {
+        MAPSCREEN(GameScreen{
+            layout: Layout::new(Direction::Vertical,[Constraint::Percentage(90), Constraint::Percentage(10)]),
+            content_layout: Layout::default()
+                .direction(Direction::Horizontal)
+                .margin(1)
+                .constraints([Constraint::Percentage(75), Constraint::Percentage(25)]),
+            content: None,
+
+        })
+    }
 }
 
 impl Drawable for WindowContents{
@@ -40,9 +53,26 @@ impl Drawable for WindowContents{
 
                 //draw_functions::draw_inventory(frame, screen)
 
+            },
+            MAPSCREEN(screen)=>{
+
+                draw_functions::draw_map(frame, screen.content_layout.split(screen.layout.split(frame.area())[0])[0]);
+
+                //TODO Make Log block
+                frame.render_widget(draw_functions::create_log(log, screen.content_layout.split(screen.layout.split(frame.area())[0])[1].height as usize), screen.content_layout.split( screen.layout.split(frame.area())[0])[1]);
+
+
+                frame.render_widget(Paragraph::new(input_string).block(Block::default()
+                    .borders(Borders::ALL)
+                    .title("Input")
+                    .title_position(ratatui::widgets::block::Position::Top)), screen.layout.split(frame.area())[1]);
+
             }
+
             _ => {}
         }
+
+
     }
 }
 
@@ -70,8 +100,7 @@ impl MainScreen {
 
 impl Drawable for MainScreen {
     fn draw(&self, mut frame: &mut Frame, input_string: &str, log: Vec<String>) {
-        let frame_layout = &self.layout.split(frame.area());
-        let content_window = &self.content_layout.split( *&self.layout.split(frame.area())[0]);
+
 
         if *&self.show {
             frame.render_widget(Paragraph::new(konst::SPOILER).block(Block::default().borders(Borders::ALL))
@@ -85,7 +114,7 @@ impl Drawable for MainScreen {
 
 
         //TODO Make Log block
-        frame.render_widget(draw_functions::create_log(log), *&self.content_layout.split( *&self.layout.split(frame.area())[0])[1]);
+        frame.render_widget(draw_functions::create_log(log, *&self.content_layout.split(*&self.layout.split(frame.area())[0])[1].height as usize), *&self.content_layout.split( *&self.layout.split(frame.area())[0])[1]);
 
 
         frame.render_widget(Paragraph::new(input_string).block(Block::default()

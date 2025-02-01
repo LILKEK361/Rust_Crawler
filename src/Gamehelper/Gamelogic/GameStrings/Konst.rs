@@ -100,7 +100,7 @@ pub const INVENTORYHELP: &str = "\n
 
 ";
 
-pub const LOGLENGTH: usize = 15;
+pub const LOGBUFFER: usize = 5;
 
 
 

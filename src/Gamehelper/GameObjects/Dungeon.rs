@@ -1,5 +1,5 @@
 use crate::{add_log, gamestate_ref, Gamestate};
-use crate::gamelogic::terminaldrawer::tdrawer;
+use crate::gamelogic::terminaldrawer::{drawer, tdrawer};
 use crate::gameobjects::encounter::{Encounter, EncounterTypes};
 use crate::gameobjects::monster::Monster;
 use std::any::Any;
@@ -11,6 +11,8 @@ use std::sync::mpsc::Sender;
 use std::sync::{mpsc, Arc, Mutex, OnceLock};
 use std::thread;
 use rand::Rng;
+use ratatui::DefaultTerminal;
+use crate::gamelogic::game_screens::WindowContents;
 use crate::gamelogic::gamehelperfunctions;
 use crate::gameobjects::encounter::EncounterTypes::Empty;
 use crate::gameobjects::item_handler::{Equipmintslots, Item, ItemsTypes, Raritys};
@@ -25,7 +27,7 @@ pub struct DungeonHandler {
     action_queue: Arc<Mutex<VecDeque<String>>>,
 
 }
-
+/*
 impl DungeonHandler {
     pub fn new() -> Self {
         let (tx, rx) = mpsc::channel();
@@ -52,158 +54,7 @@ impl DungeonHandler {
                 let action = action_queue.pop_front().unwrap();
 
 
-                if (dungeon_clone.lock().unwrap().is_combat() == &true) {
-                    if(cmd_map.get("combat").unwrap().contains(&action.to_ascii_lowercase())){
 
-                        let combat_action = cmd_map.get("combat").unwrap();
-                        let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
-                        let mut dungeonroom = dungeon.get_current_room();
-
-                        let mut player = Player::player_ref().lock().unwrap();
-
-                        if(action.eq(&combat_action[0]/*attack*/)){
-                            dungeonroom.get_Monster().unwrap().take_dmg((player.attack()));
-
-                            if (dungeonroom.encoutner.get_Type().eq("Goal") && !dungeonroom.get_Monster().unwrap().is_alive()){
-                                tdrawer::set_render_queue("victory".parse().unwrap());
-
-                            } else if(!dungeonroom.get_Monster().unwrap().is_alive()){
-                                dungeonroom.clearMonsterRoom(&player);
-                                &dungeon.set_combat(false);
-                                tdrawer::set_render_queue("look".into())
-
-                            }else {
-                                player.take_dmg(*(dungeonroom.get_Monster().unwrap().get_dmg()));
-                            }
-
-                        }else if(action.eq(&combat_action[1] /*Defend*/)){
-                            player.defend(*dungeonroom.get_Monster().unwrap().get_dmg());
-                        }
-
-
-
-                    }else {
-                        add_log("You can't use this action in combat");
-                    }
-
-
-                } else if(*Player::player_ref().lock().unwrap().is_in_inventory()){
-                    if(action.eq("close".into())){
-                        Player::player_ref().lock().unwrap().set_inventory(false);
-                        tdrawer::set_render_queue("look".into())
-                    }else if(action.trim().contains("drop" ) && !action.eq("drop") ){
-                        match &action.split(" ").collect::<Vec<_>>()[1].parse::<usize>() {
-                            Ok(index) => {                        Player::player_ref().lock().unwrap().drop_item_from_inventory(*index);
-                            }
-                            Err(..) => {add_log("You're a funny one aren't you?")}
-                        }
-
-
-
-                    }else if(action.contains("inspect")) {
-                        match &action.split(" ").collect::<Vec<_>>()[1].parse::<usize>() {
-                            Ok(index) => {
-                                Player::player_ref().lock().unwrap().inspect(*index as u8);
-                            }
-                            Err(..) => { add_log("You're a funny one aren't you?") }
-                        }
-                    } else if(action.eq("stop")){
-                        Player::player_ref().lock().unwrap().stop_inspect();
-
-                    } else if((action.contains("equip") && !action.eq("equip") && !action.contains("unequip"))){
-                        if(action.split(" ").collect::<Vec<_>>().len() == 3) {
-                            match &action.split(" ").collect::<Vec<_>>()[1].parse::<usize>() {
-                                Ok(index) => {
-                                    match &action.split(" ").collect::<Vec<_>>()[2].parse::<String>() {
-                                        Ok(e_slot) => {
-                                            Player::player_ref().lock().unwrap().equip_item(*index, Equipmintslots::from_string(String::from(e_slot)))
-                                        }
-                                        Err(..) => { add_log("You're a funny one aren't you?") }
-                                    }
-                                }
-                                Err(..) => { add_log("You're a funny one aren't you?") }
-                            };
-                        }else {
-                            add_log("Dungeon: Pls use your brain");
-                            add_log("because I dont")
-                        }
-
-                    } else if(action.contains("unequip") && !action.eq("unequip")) {
-                        if(action.split(" ").collect::<Vec<_>>().len() == 2) {
-                            match &action.split(" ").collect::<Vec<_>>()[1].parse::<String>() {
-                                Ok(slot) => Player::player_ref().lock().unwrap().unequip(Equipmintslots::from_string(String::from(slot))),
-                                Err(..) => {
-                                    add_log("Dungeon: Pls use your brain");
-                                    add_log("because I dont")
-                                }
-                            }
-                        } else {
-                            add_log("Dungeon: Pls use your brain");
-                            add_log("because I dont")
-                        }
-                    } else if(action.contains("use") && !action.eq("use")){
-
-                        if(action.split(" ").collect::<Vec<_>>().len() == 2){
-
-                            match &action.split(" ").collect::<Vec<_>>()[1].parse::<u8>() {
-                                Ok(slot) => Player::player_ref().lock().unwrap().use_item(*slot),
-                                Err(..) => {
-                                    add_log("Dungeon: Pls use your brain");
-                                    add_log("because I dont")
-                                }
-                            }
-                        }
-
-                    }
-                    else {
-                        add_log("Dungeon: Type close to leave")
-                    }
-                }
-
-                else {
-                    if (action.to_ascii_lowercase().eq("map".into())) {
-                        tdrawer::set_render_queue("map".into());
-
-                    } else if cmd_map.get("movement").unwrap().contains(&action) {
-                        let movment = &cmd_map.get("movement").unwrap();
-
-                        if action.eq(&movment[0]) {
-                            Dungeon::dungeon_ref().lock().unwrap().move_player("up");
-                        } else if action.eq(&movment[1]) {
-                            Dungeon::dungeon_ref().lock().unwrap().move_player("down");
-                        } else if action.eq(&movment[2]) {
-                            Dungeon::dungeon_ref().lock().unwrap().move_player("left");
-                        } else if action.eq(&movment[3]) {
-                            Dungeon::dungeon_ref().lock().unwrap().move_player("right");
-                        }
-                    } else if(action.to_ascii_lowercase().eq("inventory".into()) || action.to_ascii_lowercase().eq("i".into())){
-                        tdrawer::set_render_queue("inventory".into());
-                        Player::player_ref().lock().unwrap().set_inventory(true);
-
-                    }else if(action.to_ascii_lowercase().eq("look around".into()) || action.to_ascii_lowercase().eq("la".into())) {
-                        tdrawer::set_render_queue("look".into());
-
-                    } else if(action.eq("help".into())){
-                        tdrawer::set_render_queue("help".into())
-
-                    } else if(action.eq("info".into())){
-                        tdrawer::set_render_queue("info".into())
-
-                    }else if(action.eq("clear".into()) && Dungeon::dungeon_ref().lock().unwrap().get_current_room().get_Type().eq("Goal")){
-                        add_log("Dungeon: Yppi you found the goal.");
-                        add_log("If you type clear again you will");
-                        add_log("procced...")
-                    } else if (action.eq("loot".into())){
-
-                        //todo
-                        let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
-                        dungeon.get_current_room().handleLoot()
-                    }
-                    else {
-                        add_log("Unvaild Command")
-                    }
-                }
-            }
         });
 
         drop(handle);
@@ -223,6 +74,12 @@ impl DungeonHandler {
         }
     }
 
+    pub fn start_game(){
+        Player::create_new_player();
+        Dungeon::generate_new_dungeon();
+        drawer::drawer_static_ref().lock().unwrap().draw(WindowContents::new_map_screen()).expect("TODO: panic message");
+    }
+
     pub fn dungeon_handler_ref() -> &'static Mutex<DungeonHandler> {
         static DUNGEONHANDLER: OnceLock<Mutex<DungeonHandler>> = OnceLock::new();
 
@@ -232,7 +89,7 @@ impl DungeonHandler {
         })
     }
 }
-
+*/
 //This clase will handle the gameloop and all the game mechanics
 pub(crate) struct Dungeon {
     rooms: Vec<Vec<Dungeonroom>>,
@@ -491,7 +348,7 @@ impl Dungeon {
 }
 
 pub struct Dungeonroom {
-    encoutner: EncounterTypes,
+    pub(crate) encoutner: EncounterTypes,
     visited: bool,
     enterable: bool,
     note: String

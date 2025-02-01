@@ -1,31 +1,89 @@
+use std::fmt::Alignment;
 use ratatui::Frame;
-use ratatui::layout::{Constraint, Layout, Rect};
+use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::layout::Direction::{Horizontal, Vertical};
-use ratatui::prelude::{Line, Span, Text};
+use ratatui::prelude::{Line, Span, Stylize, Text};
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 use ratatui::widgets::block::Position;
+
 use crate::gamelogic::game_screens::GameScreen;
 use crate::gamelogic::konst;
+use crate::gameobjects::dungeon::Dungeon;
 use crate::gameobjects::item_handler::{Item, ItemsTypes};
 use crate::gameobjects::player::Player;
 
 
 
-pub(crate) fn create_log(log: Vec<String>) -> List<'static>{
-    if(log.len() <= konst::LOGLENGTH) {
-       List::new(log)
+pub(crate) fn create_log(log: Vec<String>, size: usize) -> List<'static>{
+    if(log.len() <=(size - konst::LOGBUFFER) ) {
+       List::new(log.into_iter().map(|mes|{
+           ListItem::new(Line::from(mes).centered())
+       })).block(Block::new().title("Game Log").borders(Borders::ALL))
     } else {
-       List::new( log[(log.len() - konst::LOGLENGTH)..log.len()]
-                      .iter()
-                      .cloned())
+       List::new(log[(log.len()-(size - konst::LOGBUFFER))..log.len()].into_iter().map(|mes| {
+           ListItem::new(Line::from(mes.clone()).left_aligned())
+       })).block(Block::new().title("Game Log").borders(Borders::ALL))
     }
 
+}
 
+pub fn draw_map(frame: &mut Frame, rect: Rect) {
+    let dungeon = Dungeon::dungeon_ref().lock().unwrap();
+    let dungeonrooms = dungeon.get_all_rooms();
+    let pp = dungeon.get_player_position();
 
+    let mapLayout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(
+            (&dungeonrooms)
+                .iter()
+                .map(|_| Constraint::Ratio(1, dungeonrooms.len() as u32)),
+        )
+        .split(rect);
 
+    let rows = dungeonrooms.len();
 
-} 
+    for i in 0..rows {
+        let dungeonroomrow = &dungeonrooms[i];
+        let row_size = &dungeonrooms[i].len();
+        let row_layout = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints(
+                dungeonrooms[i]
+                    .iter()
+                    .map(|_| Constraint::Ratio(1, dungeonroomrow.len() as u32)),
+            )
+            .split(mapLayout[i]);
 
+        for j in 0..*row_size {
+            let mut roomtitle = dungeonroomrow[j].get_room_title();
+            if (i == pp[0] as usize && j == pp[1] as usize) {
+                frame.render_widget(
+                    Block::default()
+                        .title(String::from(format!("{}: {}", "\\@/", roomtitle)))
+                        .borders(Borders::ALL)
+                        .red(),
+                    row_layout[j],
+                )
+            } else if (!dungeonroomrow[j].get_Type().eq("None")) {
+                if (dungeonroomrow[j].get_Type().eq("Goal")) {
+                    frame.render_widget(
+                        Block::default()
+                            .title(roomtitle)
+                            .borders(Borders::ALL)
+                            .red(),
+                        row_layout[j],
+                    )
+                } else {
+                    frame.render_widget(
+                        Block::default().title(roomtitle).borders(Borders::ALL),
+                        row_layout[j],
+                    )
+                }
+            }
+        }
+    }
+}
 
 /*
 pub(crate) fn draw_inventory(frame: &mut Frame, game_screen: &GameScreen) {

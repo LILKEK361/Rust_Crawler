@@ -18,6 +18,7 @@ use crossterm::terminal::EnterAlternateScreen;
 use ratatui::widgets::Block;
 use crate::gamehelper::dbpaths;
 use crate::gamelogic::{arghandler, konst};
+use crate::gamelogic::game_screens::MainScreen;
 use crate::gamelogic::gamehelperfunctions::generate_random_weapon;
 use crate::gamelogic::terminaldrawer::drawer;
 use crate::gameobjects::{dungeon::{Dungeon, DungeonHandler}};
@@ -82,10 +83,7 @@ fn main() {
     } else if((args.get(0).unwrap().to_ascii_lowercase().eq("help"))){
         println!("{}", konst::ARGUMENTHELP)
     } else if args.get(0).unwrap().to_ascii_lowercase().eq("debug") {
-
-        let mut terminal = ratatui::init();
-        let mut drawer = drawer::new();
-        drawer.draw_screen(&mut terminal).expect("TODO: panic message");
+        drawer::drawer_static_ref().lock().unwrap().deref_mut().draw(MainScreen::new()).expect("TODO: panic message");
     }
     else {
         println!("{}", konst::UNKONWCMD)
