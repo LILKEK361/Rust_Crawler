@@ -1,30 +1,62 @@
-use std::fmt::Alignment;
-use ratatui::Frame;
-use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::layout::Direction::{Horizontal, Vertical};
+use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::prelude::{Line, Span, Stylize, Text};
-use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 use ratatui::widgets::block::Position;
+use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph, Wrap};
+use ratatui::Frame;
+use std::fmt::Alignment;
 
 use crate::gamelogic::game_screens::GameScreen;
-use crate::gamelogic::konst;
+use crate::gamelogic::{draw_functions, konst};
 use crate::gameobjects::dungeon::Dungeon;
 use crate::gameobjects::item_handler::{Item, ItemsTypes};
 use crate::gameobjects::player::Player;
 
-
-
-pub(crate) fn create_log(log: Vec<String>, size: usize) -> List<'static>{
-    if(log.len() <=(size - konst::LOGBUFFER) ) {
-       List::new(log.into_iter().map(|mes|{
-           ListItem::new(Line::from(mes).centered())
-       })).block(Block::new().title("Game Log").borders(Borders::ALL))
+pub(crate) fn create_log(log: Vec<String>, size: usize) -> List<'static> {
+    if (log.len() <= (size - konst::LOGBUFFER)) {
+        List::new(
+            log.into_iter()
+                .map(|mes| ListItem::new(Line::from(mes).centered())),
+        )
+        .block(Block::new().title("Game Log").borders(Borders::ALL))
     } else {
-       List::new(log[(log.len()-(size - konst::LOGBUFFER))..log.len()].into_iter().map(|mes| {
-           ListItem::new(Line::from(mes.clone()).left_aligned())
-       })).block(Block::new().title("Game Log").borders(Borders::ALL))
+        List::new(
+            log[(log.len() - (size - konst::LOGBUFFER))..log.len()]
+                .into_iter()
+                .map(|mes| ListItem::new(Line::from(mes.clone()).centered())),
+        )
+        .block(Block::new().title("Game Log").borders(Borders::ALL))
     }
+}
 
+pub fn draw_log_and_input(
+    frame: &mut Frame,
+    log: Vec<String>,
+    input_string: &str,
+    screen: &GameScreen,
+) {
+    frame.render_widget(
+        draw_functions::create_log(
+            log,
+            screen
+                .content_layout
+                .split(screen.layout.split(frame.area())[0])[1]
+                .height as usize,
+        ),
+        screen
+            .content_layout
+            .split(screen.layout.split(frame.area())[0])[1],
+    );
+
+    frame.render_widget(
+        Paragraph::new(input_string).block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Input")
+                .title_position(ratatui::widgets::block::Position::Top),
+        ),
+        screen.layout.split(frame.area())[1],
+    );
 }
 
 pub fn draw_map(frame: &mut Frame, rect: Rect) {
@@ -83,6 +115,45 @@ pub fn draw_map(frame: &mut Frame, rect: Rect) {
             }
         }
     }
+}
+
+pub fn draw_room(frame: &mut Frame, rect: Rect) {
+    let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
+    let current_room = dungeon.get_current_room();
+
+    let roomlayout = Layout::default()
+        .direction(Vertical)
+        .constraints([
+            Constraint::Ratio(1, 3),
+            Constraint::Ratio(1, 3),
+            Constraint::Ratio(1, 3),
+        ])
+        .split(rect);
+
+    let paragraphlayout = Layout::default()
+        .direction(Vertical)
+        .constraints([Constraint::Percentage(30), Constraint::Percentage(70)])
+        .split(roomlayout[0]);
+    let notelayout = Layout::default()
+        .direction(Vertical)
+        .constraints([Constraint::Percentage(30), Constraint::Percentage(70)])
+        .split(roomlayout[2]);
+
+    let test_room = Block::default()
+        .borders(Borders::ALL)
+        .title(current_room.get_room_title());
+
+    let des = Paragraph::new(current_room.get_des())
+        .wrap(Wrap { trim: true })
+        .alignment(ratatui::layout::Alignment::Center);
+
+    let note = Paragraph::new(format!("Here are notes:\n{}", current_room.get_note()))
+        .wrap(Wrap { trim: true })
+        .alignment(ratatui::layout::Alignment::Center);
+
+    frame.render_widget(test_room, roomlayout[1]);
+    frame.render_widget(des, paragraphlayout[1]);
+    frame.render_widget(note, notelayout[1]);
 }
 
 /*

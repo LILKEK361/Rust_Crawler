@@ -1,7 +1,17 @@
-use crate::{add_log, gamestate_ref, Gamestate};
+use crate::gamelogic::game_screens::WindowContents;
+use crate::gamelogic::gamehelperfunctions;
 use crate::gamelogic::terminaldrawer::{drawer, tdrawer};
+use crate::gameobjects::encounter::EncounterTypes::Empty;
 use crate::gameobjects::encounter::{Encounter, EncounterTypes};
+use crate::gameobjects::item_handler::{Equipmintslots, Item, ItemsTypes, Raritys};
 use crate::gameobjects::monster::Monster;
+use crate::gameobjects::player::Player;
+use crate::gameobjects::trap::Trap;
+use crate::gameobjects::treasure::Treasure;
+use crate::gameobjects::weaponitem::WeaponItem;
+use crate::{add_log, gamestate_ref, Gamestate};
+use rand::Rng;
+use ratatui::DefaultTerminal;
 use std::any::Any;
 use std::collections::{HashMap, VecDeque};
 use std::fmt::format;
@@ -10,22 +20,10 @@ use std::ptr::eq;
 use std::sync::mpsc::Sender;
 use std::sync::{mpsc, Arc, Mutex, OnceLock};
 use std::thread;
-use rand::Rng;
-use ratatui::DefaultTerminal;
-use crate::gamelogic::game_screens::WindowContents;
-use crate::gamelogic::gamehelperfunctions;
-use crate::gameobjects::encounter::EncounterTypes::Empty;
-use crate::gameobjects::item_handler::{Equipmintslots, Item, ItemsTypes, Raritys};
-use crate::gameobjects::player::Player;
-use crate::gameobjects::trap::Trap;
-use crate::gameobjects::treasure::Treasure;
-use crate::gameobjects::weaponitem::WeaponItem;
 
 pub struct DungeonHandler {
-
     tx: Sender<()>,
     action_queue: Arc<Mutex<VecDeque<String>>>,
-
 }
 /*
 impl DungeonHandler {
@@ -95,53 +93,49 @@ pub(crate) struct Dungeon {
     rooms: Vec<Vec<Dungeonroom>>,
     player_position: Vec<i8>,
     combat: bool,
-
 }
 
 impl Dungeon {
     pub fn new() -> Self {
-        let testing = true;
+        let testing = false;
         let mut rooms = if !testing {
-            Self::generator_maze(10,15)
+            Self::generator_maze(10, 15)
         } else {
-            //vec![vec![Dungeonroom::TreaureRoom(),Dungeonroom::EmptyRoom("E"), Dungeonroom::MonsterRoom("Skeleton".into()),Dungeonroom::TrapRoom()]]
-            vec![vec![Dungeonroom::EmptyRoom("Empty"), Dungeonroom::GoalRoom()]]
+            vec![vec![
+                Dungeonroom::EmptyRoom("Empty"),
+                Dungeonroom::GoalRoom(),
+            ]]
         };
-
-
 
         let dungeon = Self {
             rooms,
             player_position: vec![0, 0],
             combat: false,
-
         };
 
         dungeon
     }
 
+    pub fn generator_maze(w: i8, h: i8) -> Vec<Vec<Dungeonroom>> {
+        let mut maze: Vec<Vec<Dungeonroom>> = (0..h)
+            .map(|height| {
+                let Dungeonrow = (0..w)
+                    .map(|width| Dungeonroom::None())
+                    .collect::<Vec<Dungeonroom>>();
+                Dungeonrow
+            })
+            .collect::<Vec<Vec<Dungeonroom>>>();
 
-    pub fn generator_maze(w: i8, h: i8) -> Vec<Vec<Dungeonroom>>{
-
-
-        let mut maze: Vec<Vec<Dungeonroom>> = (0..h).map(|height|{
-            let Dungeonrow = (0..w).map(|width|{
-                Dungeonroom::None()
-            }).collect::<Vec<Dungeonroom>>();
-            Dungeonrow
-        }).collect::<Vec<Vec<Dungeonroom>>>();
-
-        let starting_point = (0,0);
+        let starting_point = (0, 0);
 
         for i in 0..maze.len() {
             for j in 0..maze[i].len() {
                 maze[i][j] = Dungeonroom::randomRoom();
-
             }
         }
 
         let gh = rand::rng().random_range((h / 2) as usize..=maze.len());
-        let gw =  rand::rng().random_range((w / 2) as usize..=maze[0].len());
+        let gw = rand::rng().random_range((w / 2) as usize..=maze[0].len());
         maze[starting_point.0][starting_point.1] = Dungeonroom::StartingRoom();
         maze[gh - 1][gw - 1] = Dungeonroom::GoalRoom();
 
@@ -149,55 +143,51 @@ impl Dungeon {
             for j in 0..maze[i].len() {
                 let mut counter = 0;
                 let mut none_rooms = vec![];
-                if( j + 1 < maze[i].len() && maze[i][j+1].encoutner.get_Type().eq("None")){
+                if (j + 1 < maze[i].len() && maze[i][j + 1].encoutner.get_Type().eq("None")) {
                     counter = counter + 1;
-                    none_rooms.push((i,j+1))
+                    none_rooms.push((i, j + 1))
                 }
-                if( j as i8 - 1 >= 0 && maze[i][j -1].encoutner.get_Type().eq("None")){
+                if (j as i8 - 1 >= 0 && maze[i][j - 1].encoutner.get_Type().eq("None")) {
                     counter = counter + 1;
-                    none_rooms.push((i,j-1))
+                    none_rooms.push((i, j - 1))
                 }
-                if( i + 1 < maze.len() && maze[i + 1][j].encoutner.get_Type().eq("None")){
+                if (i + 1 < maze.len() && maze[i + 1][j].encoutner.get_Type().eq("None")) {
                     counter = counter + 1;
-                    none_rooms.push((i+1,j))
+                    none_rooms.push((i + 1, j))
                 }
-                if( i as i8 -1 >= 0 && maze[i - 1][j].encoutner.get_Type().eq("None")){
+                if (i as i8 - 1 >= 0 && maze[i - 1][j].encoutner.get_Type().eq("None")) {
                     counter = counter + 1;
-                    none_rooms.push((i-1,j))
+                    none_rooms.push((i - 1, j))
                 }
-                if(j==0 || i== 0 || j == maze[i].len() || i == maze.len() ){
-                    if(counter >= 2){
+                if (j == 0 || i == 0 || j == maze[i].len() || i == maze.len()) {
+                    if (counter >= 2) {
                         let random_number = rand::rng().random_range(0..=(counter - 1));
-                        maze[none_rooms[random_number].0][none_rooms[random_number].1] = Dungeonroom::EmptyRoom("Empty")
-
+                        maze[none_rooms[random_number].0][none_rooms[random_number].1] =
+                            Dungeonroom::EmptyRoom("Empty")
                     }
                 }
-                if(counter >= 3){
+                if (counter >= 3) {
                     let random_number = rand::rng().random_range(0..=(counter - 1));
-                    maze[none_rooms[random_number].0][none_rooms[random_number].1] = Dungeonroom::EmptyRoom("Empty")
-
+                    maze[none_rooms[random_number].0][none_rooms[random_number].1] =
+                        Dungeonroom::EmptyRoom("Empty")
                 }
-
             }
         }
 
-
-
         maze
-
-
     }
 
-    pub fn set_combat(&mut self, combat:bool){
+    pub fn set_combat(&mut self, combat: bool) {
         self.combat = combat
     }
     pub fn generat_generate_dungeon_rooms(width: i8, height: i8) -> Vec<Vec<Dungeonroom>> {
-
-        let rooms = (0..height).map(|row|  {
-            (0..width).map(|roomnumber|{
-                Dungeonroom::randomRoom()
-            }).collect::<Vec<Dungeonroom>>()
-        }).collect::<Vec<Vec<Dungeonroom>>>();
+        let rooms = (0..height)
+            .map(|row| {
+                (0..width)
+                    .map(|roomnumber| Dungeonroom::randomRoom())
+                    .collect::<Vec<Dungeonroom>>()
+            })
+            .collect::<Vec<Vec<Dungeonroom>>>();
         rooms
     }
 
@@ -207,37 +197,6 @@ impl Dungeon {
         DUNGEON.get_or_init(|| {
             let dungeon = Arc::new(Mutex::new(Dungeon::new()));
             dungeon
-        })
-    }
-
-
-
-    pub fn dugeon_cmd_ref() -> &'static Arc<Mutex<HashMap<String, Vec<String>>>> {
-        static CMD_MAP: OnceLock<Arc<Mutex<HashMap<String, Vec<String>>>>> = OnceLock::new();
-
-        CMD_MAP.get_or_init(|| {
-            let cmd_map = Arc::new(Mutex::new(HashMap::from([
-                (
-                   "movement".to_string(),
-                    vec![
-                        "up".to_string(),
-                        "down".to_string(),
-                        "left".to_string(),
-                        "right".to_string(),
-                    ],
-                ),
-                (
-                    "combat".to_string(),
-                    vec![
-                        "attack".to_string(),
-                        "defend".to_string(),
-
-                    ]
-
-                ),
-
-            ])));
-            cmd_map
         })
     }
 
@@ -267,9 +226,11 @@ impl Dungeon {
                     self.player_position = vec![pp[0] - 1, pp[1]];
                     self.check_room();
                 } else {
-                    add_log("Dungeon: You ran into a wall");                }
+                    add_log("Dungeon: You ran into a wall")
+                }
             } else {
-                add_log("Dungeon: You ran into a wall");            }
+                add_log("Dungeon: You ran into a wall");
+            }
         } else if (direction.eq("down")) {
             if pp[0] + 1 <= (self.rooms.len() - 1) as i8 {
                 let next_room: &Dungeonroom = &self.rooms[(pp[0] + 1) as usize][pp[1] as usize];
@@ -278,10 +239,11 @@ impl Dungeon {
                     self.player_position = vec![pp[0] + 1, pp[1]];
                     self.check_room();
                 } else {
-                    add_log("Dungeon: You ran into a wall");("wall");
+                    add_log("Dungeon: You ran into a wall");
                 }
             } else {
-                add_log("Dungeon: You ran into a wall");            }
+                add_log("Dungeon: You ran into a wall");
+            }
         } else if (direction.eq("left")) {
             if let Some(index) = (pp[1] as usize).checked_sub(1) {
                 let next_room: &Dungeonroom = &self.rooms[pp[0] as usize][(pp[1] - 1) as usize];
@@ -311,34 +273,35 @@ impl Dungeon {
         }
     }
     pub fn check_room(&mut self) {
-
         let room = self.get_current_room();
-        match &mut room.encoutner  {
+
+        match &mut room.encoutner {
             EncounterTypes::Monster(monster) => {
-                if(monster.is_alive()){
+                if (monster.is_alive()) {
                     self.combat = true;
-                    tdrawer::set_render_queue("combat".parse().unwrap());
+                    //add_log(&*format!("A strange looking {} attacks", monster.get_Name()));
                 }
-            },
+            }
             EncounterTypes::Trap(trap) => {
-                if trap.make_skillcheck(*Player::player_ref().lock().unwrap().get_skill()){
-                    trap.is_spotted()
-
-
+                if trap.make_skillcheck(*Player::player_ref().lock().unwrap().get_skill()) {
+                    trap.is_spotted();
                 } else {
-                    Player::player_ref().lock().unwrap().take_true_dmg(*trap.get_dmg());
-
+                    Player::player_ref()
+                        .lock()
+                        .unwrap()
+                        .take_true_dmg(*trap.get_dmg());
                 }
             }
             EncounterTypes::Goal(monster) => {
-                if(monster.is_alive()){
+                if (monster.is_alive()) {
                     self.combat = true;
-                    tdrawer::set_render_queue("combat".parse().unwrap())
+                    //tdrawer::set_render_queue("combat".parse().unwrap())
                 }
             }
             _ => {}
         }
-        self.get_current_room().visited = true
+
+        self.get_current_room().visited = true;
     }
 
     pub fn generate_new_dungeon() {
@@ -351,7 +314,7 @@ pub struct Dungeonroom {
     pub(crate) encoutner: EncounterTypes,
     visited: bool,
     enterable: bool,
-    note: String
+    note: String,
 }
 
 impl Dungeonroom {
@@ -362,27 +325,24 @@ impl Dungeonroom {
             self.encoutner.get_Name().to_string()
         }
     }
-    pub fn randomRoom() -> Self{
+    pub fn randomRoom() -> Self {
+        let random_number = rand::rng().random_range(0..=4);
 
-
-            let random_number = rand::rng().random_range(0..=4);
-
-            match random_number {
-                0 => { Dungeonroom::MonsterRoom("Goblin".into()) }
-                1 => { Dungeonroom::EmptyRoom("E") }
-                2 => { Dungeonroom::TrapRoom() }
-                3 => { Dungeonroom::None() }
-                4 => { Dungeonroom::TreaureRoom() }
-                _ => { Dungeonroom::None() }
-            }
-
+        match random_number {
+            0 => Dungeonroom::MonsterRoom("Goblin".into()),
+            1 => Dungeonroom::EmptyRoom("E"),
+            2 => Dungeonroom::TrapRoom(),
+            3 => Dungeonroom::None(),
+            4 => Dungeonroom::TreaureRoom(),
+            _ => Dungeonroom::None(),
+        }
     }
     pub fn MonsterRoom(name: String) -> Self {
         Self {
             encoutner: EncounterTypes::Monster(Monster::new(name)),
             visited: false, //todo change
             enterable: true,
-            note: String::new()
+            note: String::new(),
         }
     }
 
@@ -391,25 +351,25 @@ impl Dungeonroom {
             encoutner: EncounterTypes::Goal(Monster::new_Boss("Olaf".into())),
             visited: false, //todo change
             enterable: true,
-            note: String::new()
+            note: String::new(),
         }
     }
 
     pub fn TrapRoom() -> Self {
         Self {
             enterable: true,
-            visited: false, //change
+            visited: true, //change
             encoutner: EncounterTypes::Trap(Trap::new()),
-            note: String::new()
+            note: String::new(),
         }
     }
 
     pub fn StartingRoom() -> Self {
-        Self{
+        Self {
             encoutner: gamehelperfunctions::generate_random_empty_room(),
-            visited:true,
+            visited: true,
             enterable: true,
-            note: String::new()
+            note: String::new(),
         }
     }
 
@@ -418,7 +378,7 @@ impl Dungeonroom {
             enterable: true,
             encoutner: gamehelperfunctions::generate_random_empty_room(),
             visited: false, //todo! change after testing
-            note: String::new()
+            note: String::new(),
         }
     }
 
@@ -432,11 +392,11 @@ impl Dungeonroom {
     }
 
     pub fn None() -> Self {
-        Self{
+        Self {
             enterable: false,
             encoutner: EncounterTypes::None,
             visited: true,
-            note: String::new()
+            note: String::new(),
         }
     }
 
@@ -444,7 +404,7 @@ impl Dungeonroom {
         self.visited = true;
     }
 
-    pub fn set_note(&mut self, note: String){
+    pub fn set_note(&mut self, note: String) {
         self.note = note
     }
 
@@ -460,58 +420,43 @@ impl Dungeonroom {
         &self.encoutner.get_Type()
     }
 
-    pub fn get_des(&self) -> &str{
+    pub fn get_des(&self) -> &str {
         &self.encoutner.get_description()
     }
 
-
-
-    pub fn get_dmg_from_Monster(&self) -> &i8{
+    pub fn get_dmg_from_Monster(&self) -> &i8 {
         match &self.encoutner {
-            EncounterTypes::Monster(Monster) => {
-                Monster.get_dmg()
-            },
-            _ => {
-                &0
-            }
+            EncounterTypes::Monster(Monster) => Monster.get_dmg(),
+            _ => &0,
         }
     }
 
-    pub fn get_Monster(&mut self) -> Option<&mut Monster>{
+    pub fn get_Monster(&mut self) -> Option<&mut Monster> {
+        match &mut self.encoutner {
+            EncounterTypes::Monster(monster) => Some(monster),
+            EncounterTypes::Goal(monster) => Some(monster),
+            _ => None,
+        }
+    }
+
+    pub fn clearMonsterRoom(&mut self, player: &Player) {
+        self.note = "A unlooted corpse lays on the ground.\n Looks yummy\n".into();
         match &mut self.encoutner {
             EncounterTypes::Monster(monster) => {
-                Some(monster)
-            }
-            EncounterTypes::Goal(monster) => {
-                Some(monster)
-            }
-            _ => None
-        }
-    }
-
-    pub fn clearMonsterRoom(&mut self, player: &Player){
-        self.note = "A unlooted corpse lays on the ground.\n Looks yummy\n".into();
-        match &mut self.encoutner{
-            EncounterTypes::Monster(monster) => {
-
                 monster.dead();
-
             }
             _ => {}
         }
-
-
     }
 
-    pub fn handleLoot(&mut self ) {
+    pub fn handleLoot(&mut self) {
         let mut player = Player::player_ref().lock().unwrap();
         match &mut self.encoutner {
             EncounterTypes::Monster(monster) => {
-
                 for item in monster.drop() {
                     if (!player.add_loot(item)) {
                         add_log("Your inventory is full")
-                    }else {
+                    } else {
                         self.note = "".parse().unwrap();
                     }
                 }
@@ -520,7 +465,7 @@ impl Dungeonroom {
                 for item in treaure.take() {
                     if (!player.add_loot(item)) {
                         add_log("Your inventory is full")
-                    }else {
+                    } else {
                         self.note = "".parse().unwrap();
                     }
                 }
@@ -529,5 +474,4 @@ impl Dungeonroom {
             _ => {}
         }
     }
-
 }

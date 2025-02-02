@@ -1,8 +1,8 @@
-use crossterm::style::Stylize;
 use crate::gamelogic;
 use crate::gameobjects::encounter::Encounter;
 use crate::gameobjects::item_handler::{ItemsTypes, Raritys};
 use crate::gameobjects::weaponitem::WeaponItem;
+use crossterm::style::Stylize;
 
 #[derive(Clone)]
 pub(crate) struct Monster {
@@ -14,14 +14,10 @@ pub(crate) struct Monster {
     dmg: i8,
     max_hp: u8,
     loot: Vec<ItemsTypes>,
-
-
-
 }
 
 impl Monster {
     pub fn new(name: String) -> Self {
-
         Self {
             name: String::from(&name),
             m_type: "Monster".into(),
@@ -30,11 +26,11 @@ impl Monster {
             hp: 25,
             max_hp: 25,
             dmg: 6,
-            loot: vec![gamelogic::gamehelperfunctions::generate_random_drop()]
+            loot: vec![gamelogic::gamehelperfunctions::generate_random_drop()],
         }
     }
 
-   pub fn new_Boss(name : String) -> Self {
+    pub fn new_Boss(name: String) -> Self {
         Self {
             name: String::from(&name),
             m_type: "Boss".into(),
@@ -44,32 +40,28 @@ impl Monster {
             max_hp: 255,
             dmg: 15,
             loot: vec![],
-
         }
-
     }
-
 
     pub fn is_alive(&self) -> bool {
         self.alive
     }
     pub fn take_dmg(&mut self, dmg: u8) {
-        if(!(dmg > self.hp)){
+        if (!(dmg > self.hp)) {
             self.hp = self.hp - dmg;
-            if(self.hp <= 0){
+            if (self.hp <= 0) {
                 self.alive = false;
             }
         } else {
             self.hp = self.hp - self.hp;
             self.alive = false;
-
         }
     }
-    pub fn get_dmg(&self) -> &i8{
+    pub fn get_dmg(&self) -> &i8 {
         &self.dmg
     }
 
-    pub fn get_hp(&self) -> &u8{
+    pub fn get_hp(&self) -> &u8 {
         &self.hp
     }
 
@@ -77,26 +69,22 @@ impl Monster {
         &self.max_hp
     }
 
-    pub fn dead(&mut self){
+    pub fn dead(&mut self) {
         let monster = &self.name;
         let dead = "Dead".red();
-        self.des = format!("A {monster} lies on the ground.\n Dead\nYou killed it.", );
+        self.des = format!("A {monster} lies on the ground.\n Dead\nYou killed it.",);
         self.name = format!("Dead {monster}")
     }
 
-    pub fn drop(&mut self) -> Vec<ItemsTypes>{
+    pub fn drop(&mut self) -> Vec<ItemsTypes> {
         //todo
         let items = self.loot.to_owned();
         self.loot = vec![];
         items
     }
-
-
-
 }
 
-
-impl Encounter for Monster{
+impl Encounter for Monster {
     fn get_Name(&self) -> &str {
         &self.name
     }
@@ -108,6 +96,4 @@ impl Encounter for Monster{
     fn get_description(&self) -> &str {
         &self.des
     }
-
-
 }

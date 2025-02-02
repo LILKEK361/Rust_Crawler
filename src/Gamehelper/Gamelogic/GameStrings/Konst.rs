@@ -2,10 +2,10 @@
 
 use crossterm::style::Stylize;
 
+pub const TOMANYARGUMENTS: &str =
+    "You have supplyed to many arguments.\nPls use [filename] -- help to get help";
 
-pub const TOMANYARGUMENTS: &str = "You have supplyed to many arguments.\nPls use [filename] -- help to get help";
-
-pub const ARGUMENTHELP: &str =r#"
+pub const ARGUMENTHELP: &str = r#"
 
 Usage: [filename][EXE] -- <arg>
 
@@ -47,7 +47,7 @@ To be honest, I didn't expect anything else.\n
 Type [exit] to return to the home screen.
 ";
 
-pub const VICOTRYMESSAGE: &str ="\n
+pub const VICOTRYMESSAGE: &str = "\n
     Nice One.\n
     You really slayed the final boss.\n
     Good Job.\n
@@ -56,12 +56,18 @@ pub const VICOTRYMESSAGE: &str ="\n
 
 ";
 
-
-
 pub const COMBATHELPERMENU: &str = "attack: to attack\ndefend: to defend\npassiv:todo\n";
 
-pub const PLAYERINFO: fn(name: &str, level: i8, health: u8, max_health: u8, armor: i8, inventory_size: i8) -> String = |name, level, health,max_health, armor, inventory_size | {
-    let INFO = format!("\n
+pub const PLAYERINFO: fn(
+    name: &str,
+    level: i8,
+    health: u8,
+    max_health: u8,
+    armor: i8,
+    inventory_size: i8,
+) -> String = |name, level, health, max_health, armor, inventory_size| {
+    let INFO = format!(
+        "\n
         Stats:
         -----
         Name: {name}
@@ -75,10 +81,9 @@ pub const PLAYERINFO: fn(name: &str, level: i8, health: u8, max_health: u8, armo
         Inventory size: {inventory_size}
         -----
 
-    ");
+    "
+    );
     INFO
-
-
 };
 
 pub const HELP: &str = "\
@@ -88,7 +93,8 @@ All commands avalibale / lower- or uppercase isn't important: \n
 ~La | Look around: displays extra information for the current room\n
 ~inventory: opens the inventory\n
 ~info: displays the character stats \n
-~loot: loots a corpse todo
+~loot: loots a corpse todo \n
+~clear: to clear the log
 ";
 
 pub const INVENTORYHELP: &str = "\n
@@ -101,7 +107,3 @@ pub const INVENTORYHELP: &str = "\n
 ";
 
 pub const LOGBUFFER: usize = 5;
-
-
-
-

@@ -1,34 +1,41 @@
 use crate::gameobjects::item_handler::{Equipmintslots, Item};
 use std::any::Any;
 
+use crossterm::event::KeyEventKind::Press;
 use crossterm::event::{read, Event};
+use crossterm::style::Stylize;
+use log::log;
+use ratatui::layout::Alignment::Center;
+use ratatui::layout::Constraint::Ratio;
+use ratatui::layout::Direction::{Horizontal, Vertical};
 use ratatui::layout::{Alignment, Direction, Rect, Rows};
-use ratatui::{crossterm::event::{self, KeyCode, KeyEventKind}, layout, layout::{Constraint, Layout}, text::{Line, Span, Text}, widgets::{Block, List, ListItem, Paragraph}, DefaultTerminal, Frame, TerminalOptions};
+use ratatui::prelude::Stylize as OtherStylize;
+use ratatui::style::{Color, Style};
+use ratatui::widgets::{BorderType, Borders, Cell, Row, Table, Wrap};
+use ratatui::{
+    crossterm::event::{self, KeyCode, KeyEventKind},
+    layout,
+    layout::{Constraint, Layout},
+    text::{Line, Span, Text},
+    widgets::{Block, List, ListItem, Paragraph},
+    DefaultTerminal, Frame, TerminalOptions,
+};
 use std::cmp::PartialEq;
 use std::collections::HashMap;
 use std::fmt::format;
 use std::io::{self};
 use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, Mutex, MutexGuard, OnceLock};
-use crossterm::event::KeyEventKind::Press;
-use crossterm::style::Stylize;
-use log::log;
-use ratatui::layout::Alignment::Center;
-use ratatui::layout::Constraint::Ratio;
-use ratatui::layout::Direction::{Horizontal, Vertical};
-use ratatui::prelude::Stylize as OtherStylize;
-use ratatui::style::{Color, Style};
-use ratatui::widgets::{BorderType, Borders, Cell, Row, Table, Wrap};
 
-use crate::gameobjects::dungeon::{Dungeon, DungeonHandler, Dungeonroom};
-use crate::gameobjects::item_handler::ItemsTypes;
-use crate::{add_log, gamestate_ref, read_log, Gamestate};
-use ratatui::widgets::block::Position;
 use crate::gamelogic::game_screens::{Drawable, MainScreen, WindowContents};
 use crate::gamelogic::konst;
+use crate::gameobjects::dungeon::{Dungeon, DungeonHandler, Dungeonroom};
 use crate::gameobjects::encounter::Encounter;
+use crate::gameobjects::item_handler::ItemsTypes;
 use crate::gameobjects::player;
 use crate::gameobjects::player::Player;
+use crate::{add_log, gamestate_ref, read_log, Gamestate};
+use ratatui::widgets::block::Position;
 /*
     This file will handle the ui drawing for the game
 
@@ -47,9 +54,6 @@ enum InputMode {
     Normal,
     Editing,
 }
-
-
-
 
 impl tdrawer {
     pub fn new() -> tdrawer {
@@ -129,7 +133,7 @@ impl tdrawer {
             Player::create_new_player();
             Dungeon::generate_new_dungeon();
             *gamestate_ref().lock().unwrap() = Gamestate::run;
-           /*
+            /*
             DungeonHandler::dungeon_handler_ref()
                 .lock()
                 .unwrap()
@@ -140,7 +144,7 @@ impl tdrawer {
         {
             *gamestate_ref().lock().unwrap() = Gamestate::home;
         } else if (*gamestate_ref().lock().unwrap() == Gamestate::run) {
-           /*
+            /*
             DungeonHandler::dungeon_handler_ref()
                 .lock()
                 .unwrap()
@@ -149,7 +153,6 @@ impl tdrawer {
             && !(*gamestate_ref().lock().unwrap() == Gamestate::run))
         {
             self.show_spoiler = true;
-
         } else if (self.input_string.clone().to_ascii_lowercase().eq("menu")
             && !(*gamestate_ref().lock().unwrap() == Gamestate::run))
         {
@@ -267,70 +270,22 @@ impl tdrawer {
         } else if command.eq("combat".into()) {
             Self::draw_combat(frame, container, area);
         } else if command.eq("inventory".into()) {
-           // Self::draw_inventory(frame, container, area);
+            // Self::draw_inventory(frame, container, area);
         } else if command.eq("look".into()) {
-            Self::draw_room(frame, container, area);
+            //Self::draw_room(frame, container, area);
         } else if command.eq("help".into()) {
             Self::draw_help(frame, container, area);
         } else if (command.eq("info".into())) {
             Self::draw_character_sheet(frame, container, area)
-        }else if(command.eq("death".into())){
+        } else if (command.eq("death".into())) {
             Self::draw_death_screen(frame, container, area)
-        }else if(command.eq("victory")){
+        } else if (command.eq("victory")) {
             Self::draw_victory_screen(frame, container, area)
         }
     }
     pub fn draw_help(frame: &mut Frame, container: &Block, area: &Rect) {
         frame.render_widget(Paragraph::new(konst::HELP), container.inner(*area))
     }
-    pub fn draw_room(frame: &mut Frame, container: &Block, area: &Rect) {
-        let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
-        let current_room = dungeon.get_current_room();
-
-        let fulllayout = Layout::default()
-            .direction(Horizontal)
-            .constraints([
-                Constraint::Ratio(1, 3),
-                Constraint::Ratio(1, 3),
-                Constraint::Ratio(1, 3),
-            ])
-            .split(container.inner(*area));
-        let roomlayout = Layout::default()
-            .direction(Vertical)
-            .constraints([
-                Constraint::Ratio(1, 3),
-                Constraint::Ratio(1, 3),
-                Constraint::Ratio(1, 3),
-            ])
-            .split(fulllayout[1]);
-
-        let paragraphlayout = Layout::default()
-            .direction(Vertical)
-            .constraints([Constraint::Percentage(30), Constraint::Percentage(70)])
-            .split(roomlayout[0]);
-        let notelayout = Layout::default()
-            .direction(Vertical)
-            .constraints([Constraint::Percentage(30), Constraint::Percentage(70)])
-            .split(roomlayout[2]);
-
-        let test_room = Block::default()
-            .borders(Borders::ALL)
-            .title(current_room.get_room_title());
-
-        let des = Paragraph::new(current_room.get_des())
-            .wrap(Wrap { trim: true })
-            .alignment(Alignment::Center);
-
-        let note = Paragraph::new(format!("Here are notes:\n{}", current_room.get_note()))
-            .wrap(Wrap { trim: true })
-            .alignment(Alignment::Center);
-
-        frame.render_widget(test_room, roomlayout[1]);
-        frame.render_widget(des, paragraphlayout[1]);
-        frame.render_widget(note, notelayout[1]);
-    }
-
-
 
     pub fn draw_character_sheet(frame: &mut Frame, container: &Block, area: &Rect) {
         let player = Player::player_ref().lock().unwrap();
@@ -388,16 +343,22 @@ impl tdrawer {
     }
 
     pub fn draw_death_screen(frame: &mut Frame, container: &Block, area: &Rect) {
-
-        frame.render_widget(Paragraph::new(konst::DEATHMESSAGE).alignment(Alignment::Center).wrap(Wrap {trim: true}), container.inner(*area))
-
+        frame.render_widget(
+            Paragraph::new(konst::DEATHMESSAGE)
+                .alignment(Alignment::Center)
+                .wrap(Wrap { trim: true }),
+            container.inner(*area),
+        )
     }
 
-    pub fn draw_victory_screen(frame: &mut Frame, container: &Block, area: &Rect){
-
-        frame.render_widget( Paragraph::new(konst::VICOTRYMESSAGE).alignment(Alignment::Center).wrap(Wrap {trim: true}), container.inner(*area))
+    pub fn draw_victory_screen(frame: &mut Frame, container: &Block, area: &Rect) {
+        frame.render_widget(
+            Paragraph::new(konst::VICOTRYMESSAGE)
+                .alignment(Alignment::Center)
+                .wrap(Wrap { trim: true }),
+            container.inner(*area),
+        )
     }
-
 
     pub fn get_log() -> List<'static> {
         let mut messages: Vec<ListItem> = read_log()
@@ -452,8 +413,6 @@ impl tdrawer {
             tdrawer
         })
     }
-
-
 }
 
 pub fn generate_Card(name: String, hp: u8, max_hp: u8) -> Paragraph<'static> {
@@ -466,46 +425,43 @@ pub fn generate_Card(name: String, hp: u8, max_hp: u8) -> Paragraph<'static> {
     info
 }
 
-
-
-
 pub struct drawer {
     input_string: String,
-    Messages: Vec<String>,
     char_start_index: usize,
     character_index: usize,
     terminal: DefaultTerminal,
     home: bool,
     game: bool,
-
 }
 
 impl drawer {
-
-    pub fn new() -> Self{
-        Self   {
+    pub fn new() -> Self {
+        Self {
             input_string: String::new(),
-            Messages: vec![],
-            character_index:0,
-            char_start_index:0,
+
+            character_index: 0,
+            char_start_index: 0,
             terminal: ratatui::init(),
             home: true,
             game: false,
         }
     }
 
-     fn add_message(&mut self,){
-         self.Messages.push(self.input_string.clone().parse().unwrap());
-         self.input_string = String::from("");
-         self.character_index = self.char_start_index;
-         if((&self.Messages.get(self.Messages.len() - 1).unwrap()).eq(&"start")){
-           &self.start_game();
-         } else {
+    fn add_message(&mut self) {
+        let cmd = &self.input_string.clone();
+        self.input_string = String::from("");
+        self.character_index = self.char_start_index;
+        add_log(cmd);
 
-             &self.handle_input(self.input_string.clone().parse().unwrap());
-         }
+        if ((cmd).eq(&"start") && self.home) {
+            self.home = false;
+            self.game = true;
+            &self.start_game();
 
+        } else {
+            self.handle_input(cmd);
 
+        }
     }
 
     fn clamp_cursor(&self, new_cursor_pos: usize) -> usize {
@@ -522,48 +478,41 @@ impl drawer {
         self.character_index = self.clamp_cursor(cursor_moved_right);
     }
 
-    fn delete_char(&mut self){
-        if(self.input_string.len() > 0){
-           let _  = self.input_string.split_off(self.input_string.len() - 1);
+    fn delete_char(&mut self) {
+        if (self.input_string.len() > 0) {
+            let _ = self.input_string.split_off(self.input_string.len() - 1);
         }
     }
 
-    fn add_char(&mut self,add_char: char) {
+    fn add_char(&mut self, add_char: char) {
         self.input_string.push(add_char)
     }
 
-
-    pub fn draw<T: Drawable>(&mut self, screen: T) -> io::Result<&str>{
+    pub fn draw<T: Drawable>(&mut self, screen: T) -> io::Result<&str> {
         let _ = self.terminal.clear();
         loop {
-            self.terminal.draw(|frame: &mut Frame|{
-                screen.draw(frame, &self.input_string, self.Messages.clone())
-
-            })?;
+            self.terminal
+                .draw(|frame: &mut Frame| screen.draw(frame, &self.input_string, read_log()))?;
 
             if let Ok(Event::Key(key)) = event::read() {
-                if(key.kind == Press) {
+                if (key.kind == Press) {
                     match key.code {
                         KeyCode::Enter => self.add_message(),
                         KeyCode::Char(char) => self.add_char(char),
-                        KeyCode::Esc => return Ok("exit"),
+                        KeyCode::Esc => std::process::exit(0),
                         KeyCode::Backspace => self.delete_char(),
                         _ => {}
                     }
                 }
             }
-
-
         }
-
     }
 
-    pub fn start_game(&mut self){
+    pub fn start_game(&mut self) {
         Player::create_new_player();
         Dungeon::generate_new_dungeon();
         let _ = self.draw(WindowContents::new_map_screen());
     }
-
 
     pub fn drawer_static_ref() -> &'static Mutex<drawer> {
         static DRAWER: OnceLock<Mutex<drawer>> = OnceLock::new();
@@ -573,181 +522,23 @@ impl drawer {
             drawer
         })
     }
-    pub fn handle_input(&self, action: String) {
 
-        let cmd_map = HashMap::from([
-            (
-                "movement".to_string(),
-                vec![
-                    "up".to_string(),
-                    "down".to_string(),
-                    "left".to_string(),
-                    "right".to_string(),
-                ],
-            ),
-            (
-                "combat".to_string(),
-                vec![
-                    "attack".to_string(),
-                    "defend".to_string(),
-
-                ]
-
-            ),
-
-        ]);
-
-        if (Dungeon::dungeon_ref().lock().unwrap().is_combat() == &true) {
-            if(cmd_map.get("combat").unwrap().contains(&action.to_ascii_lowercase())){
-
-                let combat_action = cmd_map.get("combat").unwrap();
-                let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
-                let mut dungeonroom = dungeon.get_current_room();
-
-                let mut player = Player::player_ref().lock().unwrap();
-
-                if(action.eq(&combat_action[0]/*attack*/)){
-                    dungeonroom.get_Monster().unwrap().take_dmg((player.attack()));
-
-                    if (dungeonroom.encoutner.get_Type().eq("Goal") && !dungeonroom.get_Monster().unwrap().is_alive()){
-                        tdrawer::set_render_queue("victory".parse().unwrap());
-
-                    } else if(!dungeonroom.get_Monster().unwrap().is_alive()){
-                        dungeonroom.clearMonsterRoom(&player);
-                        &dungeon.set_combat(false);
-                        tdrawer::set_render_queue("look".into())
-
-                    }else {
-                        player.take_dmg(*(dungeonroom.get_Monster().unwrap().get_dmg()));
-                    }
-
-                }else if(action.eq(&combat_action[1] /*Defend*/)){
-                    player.defend(*dungeonroom.get_Monster().unwrap().get_dmg());
-                }
-
-
-
-            }else {
-                add_log("You can't use this action in combat");
-            }
-
-
-        } else if(*Player::player_ref().lock().unwrap().is_in_inventory()){
-            if(action.eq("close".into())){
-                Player::player_ref().lock().unwrap().set_inventory(false);
-                tdrawer::set_render_queue("look".into())
-            }else if(action.trim().contains("drop" ) && !action.eq("drop") ){
-                match &action.split(" ").collect::<Vec<_>>()[1].parse::<usize>() {
-                    Ok(index) => {                        Player::player_ref().lock().unwrap().drop_item_from_inventory(*index);
-                    }
-                    Err(..) => {add_log("You're a funny one aren't you?")}
-                }
-
-
-
-            }else if(action.contains("inspect")) {
-                match &action.split(" ").collect::<Vec<_>>()[1].parse::<usize>() {
-                    Ok(index) => {
-                        Player::player_ref().lock().unwrap().inspect(*index as u8);
-                    }
-                    Err(..) => { add_log("You're a funny one aren't you?") }
-                }
-            } else if(action.eq("stop")){
-                Player::player_ref().lock().unwrap().stop_inspect();
-
-            } else if((action.contains("equip") && !action.eq("equip") && !action.contains("unequip"))){
-                if(action.split(" ").collect::<Vec<_>>().len() == 3) {
-                    match &action.split(" ").collect::<Vec<_>>()[1].parse::<usize>() {
-                        Ok(index) => {
-                            match &action.split(" ").collect::<Vec<_>>()[2].parse::<String>() {
-                                Ok(e_slot) => {
-                                    Player::player_ref().lock().unwrap().equip_item(*index, Equipmintslots::from_string(String::from(e_slot)))
-                                }
-                                Err(..) => { add_log("You're a funny one aren't you?") }
-                            }
-                        }
-                        Err(..) => { add_log("You're a funny one aren't you?") }
-                    };
-                }else {
-                    add_log("Dungeon: Pls use your brain");
-                    add_log("because I dont")
-                }
-
-            } else if(action.contains("unequip") && !action.eq("unequip")) {
-                if(action.split(" ").collect::<Vec<_>>().len() == 2) {
-                    match &action.split(" ").collect::<Vec<_>>()[1].parse::<String>() {
-                        Ok(slot) => Player::player_ref().lock().unwrap().unequip(Equipmintslots::from_string(String::from(slot))),
-                        Err(..) => {
-                            add_log("Dungeon: Pls use your brain");
-                            add_log("because I dont")
-                        }
-                    }
-                } else {
-                    add_log("Dungeon: Pls use your brain");
-                    add_log("because I dont")
-                }
-            } else if(action.contains("use") && !action.eq("use")){
-
-                if(action.split(" ").collect::<Vec<_>>().len() == 2){
-
-                    match &action.split(" ").collect::<Vec<_>>()[1].parse::<u8>() {
-                        Ok(slot) => Player::player_ref().lock().unwrap().use_item(*slot),
-                        Err(..) => {
-                            add_log("Dungeon: Pls use your brain");
-                            add_log("because I dont")
-                        }
-                    }
-                }
-
-            }
-            else {
-                add_log("Dungeon: Type close to leave")
-            }
+    pub fn handle_input(&mut self, action: &str) {
+        if (action.eq("la") || action.eq("look around")) {
+            let _ = self.draw(WindowContents::new_room_screen());
+        } else if (action.eq("map")) {
+            let _ = self.draw(WindowContents::new_map_screen());
+        } else if (action.eq("help")) {
+            let _ = self.draw(WindowContents::new_help_screen());
+        } else if (action.eq("clear")) {
+            add_log("Todo: Cleared")
+        } else if (vec!["up", "down", "left", "right"].contains(&&**&action)) {
+            Dungeon::dungeon_ref().lock().unwrap().move_player(&*action)
+        }  else if(action.eq("info")){
+            let _ = self.draw(WindowContents::new_info_screen());
         }
-
         else {
-            if (action.to_ascii_lowercase().eq("map".into())) {
-                tdrawer::set_render_queue("map".into());
-
-            } else if cmd_map.get("movement").unwrap().contains(&action) {
-                let movment = &cmd_map.get("movement").unwrap();
-
-                if action.eq(&movment[0]) {
-                    Dungeon::dungeon_ref().lock().unwrap().move_player("up");
-                } else if action.eq(&movment[1]) {
-                    Dungeon::dungeon_ref().lock().unwrap().move_player("down");
-                } else if action.eq(&movment[2]) {
-                    Dungeon::dungeon_ref().lock().unwrap().move_player("left");
-                } else if action.eq(&movment[3]) {
-                    Dungeon::dungeon_ref().lock().unwrap().move_player("right");
-                }
-            } else if(action.to_ascii_lowercase().eq("inventory".into()) || action.to_ascii_lowercase().eq("i".into())){
-                tdrawer::set_render_queue("inventory".into());
-                Player::player_ref().lock().unwrap().set_inventory(true);
-
-            }else if(action.to_ascii_lowercase().eq("look around".into()) || action.to_ascii_lowercase().eq("la".into())) {
-                tdrawer::set_render_queue("look".into());
-
-            } else if(action.eq("help".into())){
-                tdrawer::set_render_queue("help".into())
-
-            } else if(action.eq("info".into())){
-                tdrawer::set_render_queue("info".into())
-
-            }else if(action.eq("clear".into()) && Dungeon::dungeon_ref().lock().unwrap().get_current_room().get_Type().eq("Goal")){
-                add_log("Dungeon: Yppi you found the goal.");
-                add_log("If you type clear again you will");
-                add_log("procced...")
-            } else if (action.eq("loot".into())){
-
-                //todo
-                let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
-                dungeon.get_current_room().handleLoot()
-            }
-            else {
-                add_log("Unvaild Command")
-            }
+            add_log("Dungeon: You can't use that action".into())
         }
-
     }
 }

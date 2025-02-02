@@ -12,24 +12,22 @@ pub struct Treasure {
     t_type: String,
 }
 
-
 impl Treasure {
     pub fn new() -> Self {
         Self {
             name: String::from(room_descriptions::TREASURETITLE),
             des: String::from(room_descriptions::TREASUREDES),
             treasure: vec![gamelogic::gamehelperfunctions::generate_random_treaure()],
-            t_type: String::from("Chest") ,
+            t_type: String::from("Chest"),
         }
     }
 
-    pub fn take(&mut self) -> Vec<ItemsTypes>{
+    pub fn take(&mut self) -> Vec<ItemsTypes> {
         let treasure = self.treasure.to_owned();
         self.treasure = vec![];
         treasure
     }
- }
-
+}
 
 impl Encounter for Treasure {
     fn get_Name(&self) -> &str {

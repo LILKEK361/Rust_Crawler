@@ -1,7 +1,7 @@
-use std::collections::hash_map::Values;
-use std::ffi::CString;
 use crate::gameobjects::item_handler::{Equipmintslots, Item, Raritys};
 use crate::gameobjects::passiv_handler::PassivTypes;
+use std::collections::hash_map::Values;
+use std::ffi::CString;
 
 #[derive(Clone)]
 pub struct TreasureItem {
@@ -11,11 +11,18 @@ pub struct TreasureItem {
     passiv: PassivTypes,
     rarity: Raritys,
     value: u8,
-    bonus_dmg: u8
+    bonus_dmg: u8,
 }
 
 impl TreasureItem {
-    pub fn new(name: String, equipmintslots: Equipmintslots, des:String, passiv: String, rarity: Raritys, value: u8) -> Self {
+    pub fn new(
+        name: String,
+        equipmintslots: Equipmintslots,
+        des: String,
+        passiv: String,
+        rarity: Raritys,
+        value: u8,
+    ) -> Self {
         Self {
             name,
             equipmintslots,
@@ -24,17 +31,13 @@ impl TreasureItem {
             rarity,
             value,
             bonus_dmg: 5,
-
         }
     }
 
     pub fn get_passiv(&self) -> &PassivTypes {
         &self.passiv
     }
-
 }
-
-
 
 impl Item for TreasureItem {
     fn get_name(&self) -> &str {

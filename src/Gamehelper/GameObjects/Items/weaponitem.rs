@@ -3,7 +3,6 @@ use crate::gameobjects::item_handler::{Equipmintslots, Item, Raritys};
 
 #[derive(Clone)]
 pub(crate) struct WeaponItem {
-
     //Common stats for item
     name: String,
     equip_slot: Equipmintslots,
@@ -15,9 +14,7 @@ pub(crate) struct WeaponItem {
 }
 
 impl WeaponItem {
-
     pub fn new(name: String, des: String, rarity: Raritys, dmg_bonus: u8, value: u8) -> Self {
-
         Self {
             name,
             equip_slot: Equipmintslots::Hands,
@@ -26,13 +23,9 @@ impl WeaponItem {
             dmg_bonus,
             value,
         }
-
     }
 
-
-    pub fn get_stats(&self) -> () {
-
-    }
+    pub fn get_stats(&self) -> () {}
 }
 
 impl Item for WeaponItem {
@@ -40,7 +33,7 @@ impl Item for WeaponItem {
         &self.name
     }
 
-    fn get_equipment_slot(&self) -> &Equipmintslots{
+    fn get_equipment_slot(&self) -> &Equipmintslots {
         &self.equip_slot
     }
 
@@ -54,7 +47,7 @@ impl Item for WeaponItem {
         &self.value
     }
 
-    fn get_bonus_dmg(&self) -> &u8{
+    fn get_bonus_dmg(&self) -> &u8 {
         &self.dmg_bonus
     }
 }

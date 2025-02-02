@@ -6,18 +6,18 @@ pub struct Consumable {
     value: u8,
     uses: u8,
     rarity: Raritys,
-    buf: u8
+    buf: u8,
 }
 
 impl Consumable {
-    pub fn new(name: String, des: String, rarity: Raritys, uses: u8, buf: u8 ,value: u8) -> Self{
+    pub fn new(name: String, des: String, rarity: Raritys, uses: u8, buf: u8, value: u8) -> Self {
         Self {
             name,
             des,
             rarity,
             uses,
             buf,
-            value
+            value,
         }
     }
 
@@ -28,15 +28,12 @@ impl Consumable {
     pub fn used(&mut self) {
         self.uses = self.uses - 1;
     }
-    pub fn get_uses(&self) -> &u8{
+    pub fn get_uses(&self) -> &u8 {
         &self.uses
     }
-
-
 }
 
-
-impl Item for Consumable{
+impl Item for Consumable {
     fn get_name(&self) -> &str {
         &self.name
     }

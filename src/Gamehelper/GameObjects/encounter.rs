@@ -1,19 +1,14 @@
 use crate::gameobjects::monster::Monster;
 
 #[derive(Clone)]
-pub(crate) enum EncounterTypes{
+pub(crate) enum EncounterTypes {
     Monster(crate::gameobjects::monster::Monster),
     Trap(crate::gameobjects::trap::Trap),
     Empty(crate::gameobjects::empty::Empty),
     None,
     Goal(Monster),
-    Treasure(crate::gameobjects::treasure::Treasure)
-
+    Treasure(crate::gameobjects::treasure::Treasure),
 }
-
-
-
-
 
 impl Encounter for EncounterTypes {
     fn get_Name(&self) -> &str {
@@ -23,12 +18,12 @@ impl Encounter for EncounterTypes {
             EncounterTypes::Empty(em) => em.get_Name(),
             EncounterTypes::None => "None",
             EncounterTypes::Goal(monster) => {
-                if(monster.is_alive()){
+                if (monster.is_alive()) {
                     &monster.name
                 } else {
                     "Goal"
                 }
-            },
+            }
             EncounterTypes::Treasure(treasure) => treasure.get_Name(),
         }
     }
@@ -61,8 +56,3 @@ pub(crate) trait Encounter: Sync + Send + Clone {
     fn get_Type(&self) -> &str;
     fn get_description(&self) -> &str;
 }
-
-
-
-
-

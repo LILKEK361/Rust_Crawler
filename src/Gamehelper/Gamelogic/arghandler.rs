@@ -1,4 +1,1 @@
-pub fn get_arguments(){
-
-
-}
+pub fn get_arguments() {}

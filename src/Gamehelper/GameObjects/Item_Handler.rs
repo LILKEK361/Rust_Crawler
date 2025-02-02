@@ -1,14 +1,12 @@
-use std::ops::Deref;
 use crate::gameobjects::consumable_item::Consumable;
 use crate::gameobjects::item_handler::Raritys::{BROKEN, DEMONIC, GODLY, RARE};
+use std::ops::Deref;
 
-enum ItemTypes{
-
+enum ItemTypes {
     Weapontype,
     Equiptype,
     Consumable,
     InventorySlot,
-
 }
 
 #[derive(Clone)]
@@ -20,12 +18,10 @@ pub enum Raritys {
     SHIZO,
     BROKEN,
     DEMONIC,
-
-    
 }
 
 impl Raritys {
-    pub fn from(s: String) ->Self {
+    pub fn from(s: String) -> Self {
         match s.to_lowercase().as_str() {
             "trash" => Raritys::TRASH,
             "common" => Raritys::COMMON,
@@ -34,8 +30,8 @@ impl Raritys {
             "shizo" => Raritys::SHIZO,
             "broken" => Raritys::BROKEN,
             "demonic" => Raritys::DEMONIC,
-             // Return None for invalid inputs
-            _ => {Raritys::TRASH}
+            // Return None for invalid inputs
+            _ => Raritys::TRASH,
         }
     }
 
@@ -47,11 +43,9 @@ impl Raritys {
             GODLY => "godly",
             BROKEN => "broken",
             DEMONIC => "demonic",
-            _ => "Mh bug"
+            _ => "Mh bug",
         }
     }
-
-
 }
 
 #[derive(Clone, Eq, PartialEq, Hash)]
@@ -65,7 +59,7 @@ pub(crate) enum Equipmintslots {
 }
 
 impl Equipmintslots {
-    pub fn to_string(&self) -> & str {
+    pub fn to_string(&self) -> &str {
         match self {
             Equipmintslots::Head => "Head",
             Equipmintslots::Torso => "Torso",
@@ -83,39 +77,30 @@ impl Equipmintslots {
             "hands" => Equipmintslots::Hands,
             "pants" => Equipmintslots::Pants,
             "shoes" => Equipmintslots::Shoes,
-            _ => Equipmintslots::None
+            _ => Equipmintslots::None,
         }
     }
 }
 
 #[derive(Clone)]
 pub(crate) enum ItemsTypes {
-
     EquipItem(crate::gameobjects::equip_item::EquipItem),
     WeaponItem(crate::gameobjects::weaponitem::WeaponItem),
     InventorySlot(crate::gameobjects::inventoryslot::Inventoryslot),
     TreasureItem(crate::gameobjects::treasure_item::TreasureItem),
-    ConsumableItem(crate::gameobjects::consumable_item::Consumable)
-
+    ConsumableItem(crate::gameobjects::consumable_item::Consumable),
 }
-
 
 impl ItemsTypes {
     pub fn get_consumable_item(&mut self) -> Result<&mut Consumable, String> {
         match self {
-            ItemsTypes::ConsumableItem(item) => {
-                Ok(item)
-            }
-            _=> {Err("Not an usable item".into())}
+            ItemsTypes::ConsumableItem(item) => Ok(item),
+            _ => Err("Not an usable item".into()),
         }
     }
 }
 
-
-
-
 impl Item for ItemsTypes {
-
     fn get_name(&self) -> &str {
         match self {
             ItemsTypes::EquipItem(item) => item.get_name(),
@@ -133,8 +118,6 @@ impl Item for ItemsTypes {
             ItemsTypes::WeaponItem(item) => item.get_equipment_slot(),
             ItemsTypes::TreasureItem(item) => item.get_equipment_slot(),
             ItemsTypes::ConsumableItem(item) => item.get_equipment_slot(),
-
-
         }
     }
 
@@ -145,11 +128,9 @@ impl Item for ItemsTypes {
             ItemsTypes::WeaponItem(item) => item.get_des(),
             ItemsTypes::TreasureItem(item) => item.get_des(),
             ItemsTypes::ConsumableItem(item) => item.get_des(),
-
-
         }
     }
-    
+
     fn get_rarity(&self) -> &Raritys {
         match self {
             ItemsTypes::EquipItem(item) => item.get_rarity(),
@@ -157,20 +138,16 @@ impl Item for ItemsTypes {
             ItemsTypes::WeaponItem(item) => item.get_rarity(),
             ItemsTypes::TreasureItem(item) => item.get_rarity(),
             ItemsTypes::ConsumableItem(item) => item.get_rarity(),
-
-
         }
     }
 
-     fn get_value(&self) -> &u8 {
+    fn get_value(&self) -> &u8 {
         match self {
             ItemsTypes::EquipItem(item) => item.get_value(),
             ItemsTypes::InventorySlot(item) => item.get_value(),
             ItemsTypes::WeaponItem(item) => item.get_value(),
             ItemsTypes::TreasureItem(item) => item.get_value(),
             ItemsTypes::ConsumableItem(item) => item.get_value(),
-
-
         }
     }
 
@@ -181,11 +158,8 @@ impl Item for ItemsTypes {
             ItemsTypes::WeaponItem(item) => item.get_bonus_dmg(),
             ItemsTypes::TreasureItem(item) => item.get_bonus_dmg(),
             ItemsTypes::ConsumableItem(item) => item.get_bonus_dmg(),
-
-
         }
     }
-
 }
 
 pub trait Item: Sync + Send + Clone {
@@ -195,11 +169,4 @@ pub trait Item: Sync + Send + Clone {
     fn get_rarity(&self) -> &Raritys;
     fn get_value(&self) -> &u8;
     fn get_bonus_dmg(&self) -> &u8;
-
-
 }
-
-
-
-
-
