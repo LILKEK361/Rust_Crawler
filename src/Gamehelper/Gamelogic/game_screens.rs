@@ -7,9 +7,7 @@ use ratatui::{layout, Frame};
 use std::clone::Clone;
 use std::collections::HashMap;
 
-use crate::gamelogic::game_screens::WindowContents::{
-    DEATH, HELP, INFO, INVENTORY, MAPSCREEN, ROOM, VIC,
-};
+use crate::gamelogic::game_screens::WindowContents::{COMBAT, DEATH, HELP, INFO, INVENTORY, MAPSCREEN, ROOM, VIC};
 use crate::gamelogic::{draw_functions, gamehelperfunctions, konst};
 use crate::gameobjects::player::Player;
 
@@ -60,6 +58,10 @@ impl WindowContents {
     pub fn new_help_screen() -> Self {
         HELP(GameScreen::new())
     }
+
+    pub fn new_combat_screen() -> Self {
+        COMBAT(GameScreen::from(Layout::default().direction(Horizontal).constraints([Constraint::Ratio(1,3),Constraint::Ratio(1,3),Constraint::Ratio(1,3)])))
+    }
 }
 
 impl Drawable for WindowContents {
@@ -67,7 +69,8 @@ impl Drawable for WindowContents {
         match &self {
             INVENTORY(screen) => {
 
-                //draw_functions::draw_inventory(frame, screen)
+                draw_functions::draw_inventory(frame, screen);
+                draw_functions::draw_log_and_input(frame,  log,input_string, screen);
             }
             MAPSCREEN(screen) => {
                 draw_functions::draw_map(
@@ -130,22 +133,11 @@ impl Drawable for WindowContents {
                 draw_functions::draw_log_and_input(frame, log, input_string, screen);
             }
             INFO(screen) => {
-                let player = Player::player_ref().lock().unwrap();
-                let player_stats = player.get_stats();
-                frame.render_widget(
-                    Paragraph::new(konst::PLAYERINFO(
-                        player_stats.0,
-                        player_stats.1 as i8,
-                        player_stats.2,
-                        player_stats.3 as u8,
-                        player_stats.4,
-                        player_stats.5,
-                    ))
-                    .block(Block::new().borders(Borders::ALL).title("Dungeon")),
-                    screen
-                        .content_layout
-                        .split(screen.layout.split(frame.area())[0])[0],
-                );
+                draw_functions::draw_player_info(frame, screen);
+                draw_functions::draw_log_and_input(frame, log, input_string, screen);
+            }
+            COMBAT(screen) => {
+                draw_functions::draw_combat(frame, screen);
                 draw_functions::draw_log_and_input(frame, log, input_string, screen);
             }
 

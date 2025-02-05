@@ -95,12 +95,12 @@ impl Player {
 
     //Functions for combat of the player
     pub fn attack(&self) -> u8 {
-        //todo: Check for equipment
+
         self.attack
     }
 
-    pub fn take_dmg(&mut self, dmg: i8) {
-        let taken_dmg = (dmg as u8 - (self.armor / 2) as u8);
+    pub fn take_dmg(&mut self, dmg: u8) {
+        let taken_dmg = (dmg - (self.armor / 2) as u8);
         add_log(&*format!("You took {} dmg,", taken_dmg));
 
         if (taken_dmg > self.health) {

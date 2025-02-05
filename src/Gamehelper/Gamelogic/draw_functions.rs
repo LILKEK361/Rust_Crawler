@@ -115,6 +115,8 @@ pub fn draw_map(frame: &mut Frame, rect: Rect) {
             }
         }
     }
+
+
 }
 
 pub fn draw_room(frame: &mut Frame, rect: Rect) {
@@ -130,40 +132,42 @@ pub fn draw_room(frame: &mut Frame, rect: Rect) {
         ])
         .split(rect);
 
-    let paragraphlayout = Layout::default()
-        .direction(Vertical)
-        .constraints([Constraint::Percentage(30), Constraint::Percentage(70)])
-        .split(roomlayout[0]);
-    let notelayout = Layout::default()
-        .direction(Vertical)
-        .constraints([Constraint::Percentage(30), Constraint::Percentage(70)])
-        .split(roomlayout[2]);
-
-    let test_room = Block::default()
-        .borders(Borders::ALL)
-        .title(current_room.get_room_title());
-
-    let des = Paragraph::new(current_room.get_des())
-        .wrap(Wrap { trim: true })
-        .alignment(ratatui::layout::Alignment::Center);
-
-    let note = Paragraph::new(format!("Here are notes:\n{}", current_room.get_note()))
-        .wrap(Wrap { trim: true })
-        .alignment(ratatui::layout::Alignment::Center);
-
-    frame.render_widget(test_room, roomlayout[1]);
-    frame.render_widget(des, paragraphlayout[1]);
-    frame.render_widget(note, notelayout[1]);
+    frame.render_widget(
+        Block::default()
+            .borders(Borders::ALL)
+            .title(current_room.get_room_title()),
+        roomlayout[1],
+    );
+    frame.render_widget(
+        Paragraph::new(current_room.get_des())
+            .wrap(Wrap { trim: true })
+            .alignment(ratatui::layout::Alignment::Center),
+        Layout::default()
+            .direction(Vertical)
+            .constraints([Constraint::Percentage(30), Constraint::Percentage(70)])
+            .split(roomlayout[0])[1],
+    );
+    frame.render_widget(
+        Paragraph::new(format!("Here are notes:\n{}", current_room.get_note()))
+            .wrap(Wrap { trim: true })
+            .alignment(ratatui::layout::Alignment::Center),
+        Layout::default()
+            .direction(Vertical)
+            .constraints([Constraint::Percentage(30), Constraint::Percentage(70)])
+            .split(roomlayout[2])[1],
+    );
 }
 
-/*
+
 pub(crate) fn draw_inventory(frame: &mut Frame, game_screen: &GameScreen) {
     match &game_screen.content{
-        Some(content_layout) => {
+        Some(content) => {
+
             let player = Player::player_ref().lock().unwrap();
 
             let inventory = player.get_inventory();
 
+            let view_layout = content.split(game_screen.content_layout.split(game_screen.layout.split(frame.area())[0])[0]);
 
             let items_layout = Layout::default()
                 .constraints(
@@ -172,7 +176,7 @@ pub(crate) fn draw_inventory(frame: &mut Frame, game_screen: &GameScreen) {
                         .collect::<Vec<Constraint>>(),
                 )
                 .direction(Vertical)
-                .split(content_layout.split(frame.area())[0]);
+                .split(content.split(game_screen.content_layout.split(game_screen.layout.split(frame.area())[0])[0])[0]);
 
             for i in 0..(inventory.len() + 1) {
                 let row_layout = Layout::default()
@@ -228,26 +232,6 @@ pub(crate) fn draw_inventory(frame: &mut Frame, game_screen: &GameScreen) {
                 }
             }
 
-            let help = Paragraph::new(Text::from(
-                konst::INVENTORYHELP
-                    .split("\n")
-                    .map(|txt| Line::from(Span::from(txt)))
-                    .collect::<Vec<Line>>(),
-            ))
-                .block(Block::new().title("Inventory Help").borders(Borders::ALL));
-
-            let equipment_display = Block::new().borders(Borders::ALL);
-
-            let mut equipment_layout = Layout::default()
-                .constraints([
-                    Constraint::Percentage(25),
-                    Constraint::Percentage(25),
-                    Constraint::Percentage(25),
-                    Constraint::Percentage(25),
-                ])
-                .direction(Vertical)
-                .split(equipment_display.inner(content_layout[1]));
-
             if (player.get_inspect().0) {
                 let item = inventory.get(player.get_inspect().1 as usize).unwrap();
                 let itemdes = item
@@ -269,17 +253,9 @@ pub(crate) fn draw_inventory(frame: &mut Frame, game_screen: &GameScreen) {
                     ))),
                 ]);
 
-                frame.render_widget(item_list, equipment_display.inner(content_layout[1]));
-                frame.render_widget(
-                    equipment_display.title(format!(
-                        "Item: {}",
-                        inventory
-                            .get(player.get_inspect().1 as usize)
-                            .unwrap()
-                            .get_name()
-                    )),
-                    content_layout[1],
-                );
+                frame.render_widget(item_list.block(Block::new().borders(Borders::ALL)), view_layout[1]);
+
+
             } else {
                 let equipment_list = List::new(vec![
                     ListItem::from(Line::from("")),
@@ -309,20 +285,52 @@ pub(crate) fn draw_inventory(frame: &mut Frame, game_screen: &GameScreen) {
                     )))),
                 ]);
 
-                frame.render_widget(equipment_list, equipment_display.inner(content_layout[1]));
+                frame.render_widget(equipment_list.block(Block::default().borders(Borders::ALL).title("Equipment")), view_layout[1]);
 
-                frame.render_widget(
-                    equipment_display
-                        .title("Equipment")
-                        .title_position(Position::Top),
-                    content_layout[1],
-                );
             }
 
-            frame.render_widget(help, content_layout[1]);
+
         }
         _ => {}
     }
 
 }
- */
+
+pub(crate) fn draw_player_info(frame: &mut Frame, screen: &GameScreen) {
+    let player = Player::player_ref().lock().unwrap();
+    let player_stats = player.get_stats();
+    frame.render_widget(
+        Paragraph::new(konst::PLAYERINFO(
+            player_stats.0,
+            player_stats.1 as i8,
+            player_stats.2,
+            player_stats.3 as u8,
+            player_stats.4,
+            player_stats.5,
+        ))
+            .block(Block::new().borders(Borders::ALL).title("Dungeon")),
+        screen
+            .content_layout
+            .split(screen.layout.split(frame.area())[0])[0],
+    );
+}
+
+pub(crate) fn draw_combat(frame: &mut Frame, screen: &GameScreen) {
+    match &screen.content {
+        Some(content) => {
+
+            let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
+
+            let monster = dungeon.get_current_room().get_Monster().unwrap();
+
+            let player = Player::player_ref().lock().unwrap();
+            let combat_layout = content.split(screen.content_layout.split(screen.layout.split(frame.area())[0])[0]);
+            let player_box = Paragraph::new(format!("HP: {} / {}", player.get_hp(), player.get_max_hp()));
+            let monster_box =  Paragraph::new(format!("HP: {} / {}", monster.get_hp(), monster.get_max_hp()));
+            frame.render_widget(player_box, combat_layout[0]);
+            frame.render_widget(monster_box, combat_layout[1])
+
+        }
+        _ => {}
+    }
+}

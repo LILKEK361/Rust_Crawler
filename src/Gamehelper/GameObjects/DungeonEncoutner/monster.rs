@@ -11,7 +11,7 @@ pub(crate) struct Monster {
     des: String,
     alive: bool,
     hp: u8,
-    dmg: i8,
+    dmg: u8,
     max_hp: u8,
     loot: Vec<ItemsTypes>,
 }
@@ -51,13 +51,14 @@ impl Monster {
             self.hp = self.hp - dmg;
             if (self.hp <= 0) {
                 self.alive = false;
+                self.dead()
             }
         } else {
             self.hp = self.hp - self.hp;
             self.alive = false;
         }
     }
-    pub fn get_dmg(&self) -> &i8 {
+    pub fn get_dmg(&self) -> &u8 {
         &self.dmg
     }
 

@@ -25,6 +25,7 @@ use std::collections::HashMap;
 use std::fmt::format;
 use std::io::{self};
 use std::ops::{Deref, DerefMut};
+use std::ptr::null;
 use std::sync::{Arc, Mutex, MutexGuard, OnceLock};
 
 use crate::gamelogic::game_screens::{Drawable, MainScreen, WindowContents};
@@ -430,6 +431,7 @@ pub struct drawer {
     char_start_index: usize,
     character_index: usize,
     terminal: DefaultTerminal,
+    combat: bool,
     home: bool,
     game: bool,
 }
@@ -442,6 +444,7 @@ impl drawer {
             character_index: 0,
             char_start_index: 0,
             terminal: ratatui::init(),
+            combat: false,
             home: true,
             game: false,
         }
@@ -457,10 +460,8 @@ impl drawer {
             self.home = false;
             self.game = true;
             &self.start_game();
-
         } else {
             self.handle_input(cmd);
-
         }
     }
 
@@ -524,21 +525,71 @@ impl drawer {
     }
 
     pub fn handle_input(&mut self, action: &str) {
-        if (action.eq("la") || action.eq("look around")) {
-            let _ = self.draw(WindowContents::new_room_screen());
-        } else if (action.eq("map")) {
-            let _ = self.draw(WindowContents::new_map_screen());
-        } else if (action.eq("help")) {
-            let _ = self.draw(WindowContents::new_help_screen());
-        } else if (action.eq("clear")) {
-            add_log("Todo: Cleared")
-        } else if (vec!["up", "down", "left", "right"].contains(&&**&action)) {
-            Dungeon::dungeon_ref().lock().unwrap().move_player(&*action)
-        }  else if(action.eq("info")){
-            let _ = self.draw(WindowContents::new_info_screen());
-        }
-        else {
-            add_log("Dungeon: You can't use that action".into())
-        }
+       if(*Dungeon::dungeon_ref().lock().unwrap().is_combat()){
+
+           if(vec!["defend", "attack"].contains(&action)){
+
+                let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
+
+                let monster = dungeon.get_current_room().get_Monster().unwrap();
+
+                if (action.eq("attack")) {
+                    monster.take_dmg(Player::player_ref().lock().unwrap().attack());
+
+                    add_log(&*format!("The {} took {} dmg", &monster.get_Name(), Player::player_ref().lock().unwrap().attack()));
+
+                    if (!monster.is_alive()) {
+
+                        if( dungeon.get_current_room().get_Type().to_ascii_lowercase().eq("goal")){
+
+                            let _ = self.draw(WindowContents::new_vic_screen());
+
+                        } else {
+                            drop(dungeon);
+                            let _ = self.draw(WindowContents::new_room_screen());
+
+                        }
+
+                    } else {
+
+                        Player::player_ref().lock().unwrap().take_dmg(*monster.get_dmg());
+
+                        if(!Player::player_ref().lock().unwrap().alive){
+
+                            let _ = self.draw(WindowContents::new_death_screen());
+
+                        }
+                    };
+                }
+                if(action.eq("defend")) {
+
+                };
+           } else {
+               add_log("Dungeon: You can't use that action during")
+           }
+       }else {
+           if (action.eq("la") || action.eq("look around")) {
+               let _ = self.draw(WindowContents::new_room_screen());
+           } else if (action.eq("map")) {
+               let _ = self.draw(WindowContents::new_map_screen());
+           } else if (action.eq("help")) {
+               let _ = self.draw(WindowContents::new_help_screen());
+           } else if (action.eq("clear")) {
+               add_log("Todo: Cleared")
+           } else if (vec!["up", "down", "left", "right"].contains(&&**&action)) {
+               Dungeon::dungeon_ref().lock().unwrap().move_player(&*action);
+               if(*Dungeon::dungeon_ref().lock().unwrap().is_combat()){
+                   let _ = self.draw(WindowContents::new_combat_screen());
+               }
+           } else if (action.eq("info")) {
+               let _ = self.draw(WindowContents::new_info_screen());
+
+           } else if action.eq("i") || action.eq("inventory") {
+               let _ = self.draw(WindowContents::new_inventory_screen());
+           } else
+           {
+               add_log("Dungeon: You can't use that action".into())
+           }
+       }
     }
 }

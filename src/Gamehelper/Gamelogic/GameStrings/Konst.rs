@@ -88,22 +88,21 @@ pub const PLAYERINFO: fn(
 
 pub const HELP: &str = "\
 All commands avalibale / lower- or uppercase isn't important: \n
-~Movement: [up, down, left, right] | you can move always but for a better experience open the map \n
-~Map: displays the dungeonmap\n
-~La | Look around: displays extra information for the current room\n
-~inventory: opens the inventory\n
-~info: displays the character stats \n
-~loot: loots a corpse todo \n
-~clear: to clear the log
+~ [up, down, left, right] | you can move always but for a better experience open the map \n
+~ [map]: displays the dungeonmap\n
+~ [la | Look around]: displays extra information for the current room\n
+~ [info]: displays the character stats \n
+~ [loot]: loots a corpse todo \n
+~ [clear]: to clear the log
+------------------------
+Inventory commands:\n
+~ [inventory | i] : opens the inventory\n
+~ [drop [index]]: drops the item / carefull you cant pick it up again\n
+~ [equip [index] [slot]]: equips an item to th given slot\n
+~ [unequip [slot]]: unequipts an item / carefull it is delete after\n
+~ [inspect [slot]]: inspect a give item\n
 ";
 
-pub const INVENTORYHELP: &str = "\n
-~close: to close the inventoy
-~drop [index]: drops the item / carefull you cant pick it up again
-~equip [index] [slot]: equips an item to th given slot
-~unequip [slot]: unequipts an item / carefull it is delete after
-~inspect [slot]: inspect a give item
 
-";
 
 pub const LOGBUFFER: usize = 5;

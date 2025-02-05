@@ -20,6 +20,9 @@ use std::ptr::eq;
 use std::sync::mpsc::Sender;
 use std::sync::{mpsc, Arc, Mutex, OnceLock};
 use std::thread;
+use crossterm::style::Stylize;
+use colored::Colorize;
+
 
 pub struct DungeonHandler {
     tx: Sender<()>,
@@ -97,12 +100,13 @@ pub(crate) struct Dungeon {
 
 impl Dungeon {
     pub fn new() -> Self {
-        let testing = false;
+        let testing = true;
         let mut rooms = if !testing {
             Self::generator_maze(10, 15)
         } else {
             vec![vec![
                 Dungeonroom::EmptyRoom("Empty"),
+                Dungeonroom::MonsterRoom(String::from("Goblin")),
                 Dungeonroom::GoalRoom(),
             ]]
         };
@@ -278,8 +282,9 @@ impl Dungeon {
         match &mut room.encoutner {
             EncounterTypes::Monster(monster) => {
                 if (monster.is_alive()) {
+
                     self.combat = true;
-                    //add_log(&*format!("A strange looking {} attacks", monster.get_Name()));
+
                 }
             }
             EncounterTypes::Trap(trap) => {
@@ -295,7 +300,7 @@ impl Dungeon {
             EncounterTypes::Goal(monster) => {
                 if (monster.is_alive()) {
                     self.combat = true;
-                    //tdrawer::set_render_queue("combat".parse().unwrap())
+
                 }
             }
             _ => {}
@@ -424,12 +429,7 @@ impl Dungeonroom {
         &self.encoutner.get_description()
     }
 
-    pub fn get_dmg_from_Monster(&self) -> &i8 {
-        match &self.encoutner {
-            EncounterTypes::Monster(Monster) => Monster.get_dmg(),
-            _ => &0,
-        }
-    }
+
 
     pub fn get_Monster(&mut self) -> Option<&mut Monster> {
         match &mut self.encoutner {
