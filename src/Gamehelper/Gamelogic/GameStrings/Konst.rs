@@ -1,6 +1,7 @@
 //In this file there will be story elements and string relations for the game
 
 use crossterm::style::Stylize;
+use terminal_link::Link;
 
 pub const TOMANYARGUMENTS: &str =
     "You have supplyed to many arguments.\nPls use [filename] -- help to get help";
@@ -106,3 +107,21 @@ defend: to defend\n
 ";
 
 pub const LOGBUFFER: usize = 5;
+
+pub const TEST_FIlE_PATH: &str = "./testingdata.json";
+pub const FIlE_PATH: &str = "./data.json";
+
+pub const GITHUBLINK: &str = "https://github.com/LILKEK361/Rust_Crawler";
+
+pub const GAMENAME: &str = "RUST_CRAWLER";
+pub const JSONFILEERROR: fn(link: Link) -> String = |link|  { format ! ("
+    Look like you dont have the config file for the game :(.\n
+    You may want to go to my Github page to download the file : \n
+    {}\n
+    There you also can read about creating your own config for the game\n
+    or expand the one I provid.
+", link.url)};
+
+pub const JSONFILEPATHFOUND: fn(path : &str) -> String = |path|{
+    format!("JSONFILE found at: \n {path}")
+};

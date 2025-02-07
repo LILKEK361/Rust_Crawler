@@ -1,5 +1,5 @@
 use crate::gamelogic::gamehelperfunctions::{generate_random_equip, generate_random_weapon};
-use crate::gamelogic::terminaldrawer::{drawer, tdrawer};
+use crate::gamelogic::terminaldrawer::{drawer};
 use crate::gameobjects::consumable_item::Consumable;
 use crate::gameobjects::inventoryslot;
 use crate::gameobjects::inventoryslot::Inventoryslot;

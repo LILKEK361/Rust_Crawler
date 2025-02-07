@@ -4,7 +4,7 @@ use crossterm::{
     event, execute,
     terminal::{self, SetSize},
 };
-use gamelogic::{postgreshandler, terminaldrawer::tdrawer};
+
 use ratatui::Terminal;
 use std::io::{stderr, stdout, Stdout};
 
@@ -21,8 +21,8 @@ use crate::gamehelper::dbpaths;
 use crate::gamelogic::game_screens::MainScreen;
 use crate::gamelogic::gamehelperfunctions::generate_random_weapon;
 use crate::gamelogic::terminaldrawer::drawer;
-use crate::gamelogic::{arghandler, konst};
-use crate::gameobjects::dungeon::{Dungeon, DungeonHandler};
+use crate::gamelogic::{arghandler, konst, postgreshandler, reader};
+
 use crate::gameobjects::item_handler::Item;
 use crossterm::terminal::EnterAlternateScreen;
 use ratatui::widgets::Block;
@@ -68,7 +68,10 @@ fn main() {
     } else if (args.len() > 1) {
         println!("{}", konst::TOMANYARGUMENTS)
     } else if (args.get(0).unwrap().to_ascii_lowercase().eq("setup")) {
-        println!("Looks for data.json file")
+
+        println!("Looks for data.json file");
+        reader::check_file(konst::TEST_FIlE_PATH);
+
     } else if (args.get(0).unwrap().to_ascii_lowercase().eq("start")) {
 
 

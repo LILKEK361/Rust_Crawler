@@ -13,6 +13,8 @@ dependencies = [
  "rand 0.9.0-beta.1",
  "ratatui",
  "serde",
+ "serde_json",
+ "terminal-link",
 ]
 
 [[package]]
@@ -783,6 +785,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_json"
+version = "1.0.138"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d434192e7da787e94a6ea7e9670b26a036d0ca41e0b7efb2676dd32bae872949"
+dependencies = [
+ "itoa",
+ "memchr",
+ "ryu",
+ "serde",
+]
+
+[[package]]
 name = "sha2"
 version = "0.10.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -909,6 +923,12 @@ dependencies = [
  "quote",
  "unicode-ident",
 ]
+
+[[package]]
+name = "terminal-link"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "253bcead4f3aa96243b0f8fa46f9010e87ca23bd5d0c723d474ff1d2417bbdf8"
 
 [[package]]
 name = "tinyvec"
