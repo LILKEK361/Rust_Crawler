@@ -56,7 +56,7 @@ pub const VICOTRYMESSAGE: &str = "\n
 
 ";
 
-pub const COMBATHELPERMENU: &str = "attack: to attack\ndefend: to defend\npassiv:todo\n";
+
 
 pub const PLAYERINFO: fn(
     name: &str,
@@ -101,6 +101,10 @@ Inventory commands:\n
 ~ [equip [index] [slot]]: equips an item to th given slot\n
 ~ [unequip [slot]]: unequipts an item / carefull it is delete after\n
 ~ [inspect [slot]]: inspect a give item\n
+------------------------
+Combat commands: \n
+attack: to attack\n
+defend: to defend\n
 ";
 
 

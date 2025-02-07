@@ -332,14 +332,9 @@ impl tdrawer {
             *monster.get_max_hp(),
         );
 
-        let help = Paragraph::new(konst::COMBATHELPERMENU).block(
-            Block::new()
-                .borders(Borders::ALL)
-                .title("Combat Basic Commands"),
-        );
 
         frame.render_widget(playercard, mapLayout[0]);
-        frame.render_widget(help, helper_layout[1]);
+
         frame.render_widget(monstercard, mapLayout[2]);
     }
 
@@ -431,7 +426,7 @@ pub struct drawer {
     char_start_index: usize,
     character_index: usize,
     terminal: DefaultTerminal,
-    combat: bool,
+
     home: bool,
     game: bool,
 }
@@ -444,7 +439,7 @@ impl drawer {
             character_index: 0,
             char_start_index: 0,
             terminal: ratatui::init(),
-            combat: false,
+
             home: true,
             game: false,
         }
@@ -525,23 +520,30 @@ impl drawer {
     }
 
     pub fn handle_input(&mut self, action: &str) {
-       if(*Dungeon::dungeon_ref().lock().unwrap().is_combat()){
 
-           if(vec!["defend", "attack"].contains(&action)){
 
-                let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
+        if*(Dungeon::dungeon_ref().lock().unwrap().is_combat()){
+           if(vec!["defend", "attack", "help"].contains(&action)){
 
-                let monster = dungeon.get_current_room().get_Monster().unwrap();
 
                 if (action.eq("attack")) {
+
+
+                    let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
+
+                    let monster = dungeon.get_current_room().get_Monster().unwrap();
+
                     monster.take_dmg(Player::player_ref().lock().unwrap().attack());
 
                     add_log(&*format!("The {} took {} dmg", &monster.get_Name(), Player::player_ref().lock().unwrap().attack()));
 
                     if (!monster.is_alive()) {
 
-                        if( dungeon.get_current_room().get_Type().to_ascii_lowercase().eq("goal")){
 
+                        dungeon.set_combat(false);
+
+                        if( dungeon.get_current_room().get_Type().to_ascii_lowercase().eq("goal")){
+                            drop(dungeon);
                             let _ = self.draw(WindowContents::new_vic_screen());
 
                         } else {
@@ -563,11 +565,29 @@ impl drawer {
                 }
                 if(action.eq("defend")) {
 
+                    let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
+
+                    let monster = dungeon.get_current_room().get_Monster().unwrap();
+
+                    let mut  player = Player::player_ref().lock().unwrap();
+
+                    player.defend(*monster.get_dmg() as i8);
+
+                    if(!player.alive){
+                        drop(dungeon);
+                        let _ = self.draw(WindowContents::new_death_screen());
+
+                    }
                 };
+               if(action.eq("help")) {
+                   let _ = self.draw(WindowContents::new_help_screen());
+               }
+
            } else {
                add_log("Dungeon: You can't use that action during")
            }
-       }else {
+        }
+        else {
            if (action.eq("la") || action.eq("look around")) {
                let _ = self.draw(WindowContents::new_room_screen());
            } else if (action.eq("map")) {
@@ -586,7 +606,10 @@ impl drawer {
 
            } else if action.eq("i") || action.eq("inventory") {
                let _ = self.draw(WindowContents::new_inventory_screen());
-           } else
+
+           } else if(vec!["drop", "equip", "use"].contains(&&"bana")){}
+
+           else
            {
                add_log("Dungeon: You can't use that action".into())
            }

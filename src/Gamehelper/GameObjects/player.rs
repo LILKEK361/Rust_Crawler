@@ -143,13 +143,15 @@ impl Player {
     }
 
     pub fn defend(&mut self, dmg: i8) {
-        if ((dmg - (self.armor * 2)) as u8 > self.health) {
+        if ((dmg - (self.armor * 2)) as i8 > self.health as i8) {
             self.alive = false;
             Self::player_died()
         }
 
         if (dmg - (self.armor * 2) > 0) {
             self.health = self.health - ((dmg - (self.armor * 2)) as u8)
+        } else {
+            add_log("Dungeon: You took no dmg")
         }
     }
 

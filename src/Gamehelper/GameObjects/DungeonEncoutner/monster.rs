@@ -72,7 +72,7 @@ impl Monster {
 
     pub fn dead(&mut self) {
         let monster = &self.name;
-        let dead = "Dead".red();
+
         self.des = format!("A {monster} lies on the ground.\n Dead\nYou killed it.",);
         self.name = format!("Dead {monster}")
     }

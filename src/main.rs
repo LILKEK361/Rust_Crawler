@@ -62,36 +62,34 @@ pub fn read_log() -> Vec<String> {
 fn main() {
     let mut args: Vec<_> = std::env::args().collect(); // get all arguments passed to app
     args.remove(0);
+
     if (args.is_empty()) {
         println!("{}", konst::UNKONWCMD)
+
     } else if (args.len() > 1) {
         println!("{}", konst::TOMANYARGUMENTS)
+
     } else if (args.get(0).unwrap().to_ascii_lowercase().eq("setup")) {
-        println!("DB setup startet") //todo
-                                     //PgHandler::setup()
+        println!("Looks for data.json file")
+
     } else if (args.get(0).unwrap().to_ascii_lowercase().eq("start")) {
         execute!(
             stdout(),
             SetSize(120, 40) // width, height
         );
 
-        let mut terminal = ratatui::init();
-
-        tdrawer::tdrawer_ref()
-            .lock()
-            .unwrap()
-            .deref_mut()
-            .draw(&mut terminal)
-            .unwrap();
-    } else if (args.get(0).unwrap().to_ascii_lowercase().eq("help")) {
-        println!("{}", konst::ARGUMENTHELP)
-    } else if args.get(0).unwrap().to_ascii_lowercase().eq("debug") {
         drawer::drawer_static_ref()
             .lock()
             .unwrap()
             .deref_mut()
             .draw(MainScreen::new())
             .expect("TODO: panic message");
+
+    } else if (args.get(0).unwrap().to_ascii_lowercase().eq("help")) {
+        println!("{}", konst::ARGUMENTHELP)
+
+    } else if args.get(0).unwrap().to_ascii_lowercase().eq("debug") {
+
     } else {
         println!("{}", konst::UNKONWCMD)
     }

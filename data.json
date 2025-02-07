@@ -1,0 +1,29 @@
+{
+  "monsters" : {
+
+  },
+
+  "traps" : {
+
+  },
+
+  "treasures" : {
+
+  },
+
+  "items" : {
+
+    "armor" : {
+
+    },
+
+    "consumables" : {
+
+    },
+
+    "weapons" : {
+
+    }
+
+  }
+}

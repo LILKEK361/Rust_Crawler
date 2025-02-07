@@ -1,0 +1,117 @@
+{
+  "monsters" : {
+
+    "goblin" :  {
+      "hp" : 10,
+      "dmg" : 5,
+      "loot" : null,
+      "description" : "A green looking man jumps at you"
+    },
+
+    "skeleton" : {
+      "hp" : 15,
+      "dmg" : 2,
+      "loot" : null,
+      "description": "Did the pile of bones just move?"
+    },
+
+    "slime" : {
+      "hp" : 30,
+      "dmg" : 1,
+      "loot" : null,
+      "description" : "A strange looking liguide."
+    }
+  },
+
+  "traps" : {
+
+
+
+  },
+
+  "treasures" : {
+
+  },
+
+  "items" : {
+
+    "armor" : {
+      "head": {
+        "ironhelmet" : {
+          "def": 2,
+          "slot": "head"
+        },
+        "bucket": {
+          "def" : 1,
+          "slot": "head"
+        },
+        "goldhelment": {
+          "def": 4,
+          "slot": "head"
+        }
+      },
+
+      "torso": {
+        "ironchestplate": {
+          "def" : 3,
+          "slot": "torso"
+        },
+        "guccishirt" : {
+          "def": 1,
+          "slot": "torso"
+        }
+      },
+      "pants": {
+        "cargopants" : {
+          "def" : 1,
+          "slot": "pants"
+        },
+        "ironleggings" : {
+          "def" : 2,
+          "slot": "pants"
+        }
+      },
+      "shoes" : {
+        "addileten" : {
+          "def": 2,
+          "slot": "shoes"
+        },
+        "sandels" : {
+          "def" : 0,
+          "slot" : "shoes"
+        }
+      }
+
+
+
+    },
+
+    "consumables" : {
+
+    },
+
+    "weapons" : {
+      "ironsword" : {
+        "dmg": 4,
+        "des" : "A crusty looking sword."
+      },
+      "spoon": {
+        "dmg" : 1,
+        "des" : "Huh. Why spoon? You don't even eat"
+      },
+      "axe" : {
+        "dmg" : 4,
+        "des" : "Maybe go hack some wood with it."
+      }
+    }
+
+  },
+  "random_rooms" : {
+     "laboretory" : {
+       "description" : "You walk into a room that recks of smells you never smeld before. \n On the left is a small table with various flask on it. \n Some contain a wierd blue liquid. On the right is a big shelf with books in a language you cant quite read.\n"
+     },
+    "Vektorraum" : {
+      "description" : "On entry you get this wierd feeling.\n You see a big board with various symbols scriblet on it.\n You see three lines and in the center an arrow emerges."
+    }
+  }
+}
