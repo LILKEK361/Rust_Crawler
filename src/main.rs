@@ -65,18 +65,12 @@ fn main() {
 
     if (args.is_empty()) {
         println!("{}", konst::UNKONWCMD)
-
     } else if (args.len() > 1) {
         println!("{}", konst::TOMANYARGUMENTS)
-
     } else if (args.get(0).unwrap().to_ascii_lowercase().eq("setup")) {
         println!("Looks for data.json file")
-
     } else if (args.get(0).unwrap().to_ascii_lowercase().eq("start")) {
-        execute!(
-            stdout(),
-            SetSize(120, 40) // width, height
-        );
+
 
         drawer::drawer_static_ref()
             .lock()
@@ -84,12 +78,9 @@ fn main() {
             .deref_mut()
             .draw(MainScreen::new())
             .expect("TODO: panic message");
-
     } else if (args.get(0).unwrap().to_ascii_lowercase().eq("help")) {
         println!("{}", konst::ARGUMENTHELP)
-
     } else if args.get(0).unwrap().to_ascii_lowercase().eq("debug") {
-
     } else {
         println!("{}", konst::UNKONWCMD)
     }

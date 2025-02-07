@@ -24,7 +24,10 @@
   },
 
   "traps" : {
-
+    "emptyroom" :{
+      "des" : "A suspicios looking room.\n You get the feeling that something is wrong",
+      "dmg" : 4
+    }
 
 
   },

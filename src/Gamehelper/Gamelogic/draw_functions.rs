@@ -115,8 +115,6 @@ pub fn draw_map(frame: &mut Frame, rect: Rect) {
             }
         }
     }
-
-
 }
 
 pub fn draw_room(frame: &mut Frame, rect: Rect) {
@@ -158,16 +156,18 @@ pub fn draw_room(frame: &mut Frame, rect: Rect) {
     );
 }
 
-
 pub(crate) fn draw_inventory(frame: &mut Frame, game_screen: &GameScreen) {
-    match &game_screen.content{
+    match &game_screen.content {
         Some(content) => {
-
             let player = Player::player_ref().lock().unwrap();
 
             let inventory = player.get_inventory();
 
-            let view_layout = content.split(game_screen.content_layout.split(game_screen.layout.split(frame.area())[0])[0]);
+            let view_layout = content.split(
+                game_screen
+                    .content_layout
+                    .split(game_screen.layout.split(frame.area())[0])[0],
+            );
 
             let items_layout = Layout::default()
                 .constraints(
@@ -176,7 +176,13 @@ pub(crate) fn draw_inventory(frame: &mut Frame, game_screen: &GameScreen) {
                         .collect::<Vec<Constraint>>(),
                 )
                 .direction(Vertical)
-                .split(content.split(game_screen.content_layout.split(game_screen.layout.split(frame.area())[0])[0])[0]);
+                .split(
+                    content.split(
+                        game_screen
+                            .content_layout
+                            .split(game_screen.layout.split(frame.area())[0])[0],
+                    )[0],
+                );
 
             for i in 0..(inventory.len() + 1) {
                 let row_layout = Layout::default()
@@ -253,9 +259,10 @@ pub(crate) fn draw_inventory(frame: &mut Frame, game_screen: &GameScreen) {
                     ))),
                 ]);
 
-                frame.render_widget(item_list.block(Block::new().borders(Borders::ALL)), view_layout[1]);
-
-
+                frame.render_widget(
+                    item_list.block(Block::new().borders(Borders::ALL)),
+                    view_layout[1],
+                );
             } else {
                 let equipment_list = List::new(vec![
                     ListItem::from(Line::from("")),
@@ -285,15 +292,14 @@ pub(crate) fn draw_inventory(frame: &mut Frame, game_screen: &GameScreen) {
                     )))),
                 ]);
 
-                frame.render_widget(equipment_list.block(Block::default().borders(Borders::ALL).title("Equipment")), view_layout[1]);
-
+                frame.render_widget(
+                    equipment_list.block(Block::default().borders(Borders::ALL).title("Equipment")),
+                    view_layout[1],
+                );
             }
-
-
         }
         _ => {}
     }
-
 }
 
 pub(crate) fn draw_player_info(frame: &mut Frame, screen: &GameScreen) {
@@ -308,7 +314,7 @@ pub(crate) fn draw_player_info(frame: &mut Frame, screen: &GameScreen) {
             player_stats.4,
             player_stats.5,
         ))
-            .block(Block::new().borders(Borders::ALL).title("Dungeon")),
+        .block(Block::new().borders(Borders::ALL).title("Dungeon")),
         screen
             .content_layout
             .split(screen.layout.split(frame.area())[0])[0],
@@ -318,18 +324,25 @@ pub(crate) fn draw_player_info(frame: &mut Frame, screen: &GameScreen) {
 pub(crate) fn draw_combat(frame: &mut Frame, screen: &GameScreen) {
     match &screen.content {
         Some(content) => {
-
             let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
 
             let monster = dungeon.get_current_room().get_Monster().unwrap();
 
             let player = Player::player_ref().lock().unwrap();
-            let combat_layout = content.split(screen.content_layout.split(screen.layout.split(frame.area())[0])[0]);
-            let player_box = Paragraph::new(format!("HP: {} / {}", player.get_hp(), player.get_max_hp()));
-            let monster_box =  Paragraph::new(format!("HP: {} / {}", monster.get_hp(), monster.get_max_hp()));
+            let combat_layout = content.split(
+                screen
+                    .content_layout
+                    .split(screen.layout.split(frame.area())[0])[0],
+            );
+            let player_box =
+                Paragraph::new(format!("HP: {} / {}", player.get_hp(), player.get_max_hp()));
+            let monster_box = Paragraph::new(format!(
+                "HP: {} / {}",
+                monster.get_hp(),
+                monster.get_max_hp()
+            ));
             frame.render_widget(player_box, combat_layout[0]);
             frame.render_widget(monster_box, combat_layout[1])
-
         }
         _ => {}
     }

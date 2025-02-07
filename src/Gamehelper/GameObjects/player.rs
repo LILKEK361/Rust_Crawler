@@ -9,8 +9,10 @@ use crate::{add_log, gameobjects, gamestate_ref, Gamestate};
 use std::ascii::AsciiExt;
 use std::collections::hash_map::IntoValues;
 use std::collections::HashMap;
+use std::io;
 use std::mem::forget;
 use std::sync::{Mutex, OnceLock};
+use crate::gameobjects::item_handler::ItemsTypes::InventorySlot;
 
 pub(crate) struct Player {
     pub name: String,
@@ -22,7 +24,7 @@ pub(crate) struct Player {
     level: i8,
     pub alive: bool,
     max_hp: u8,
-    in_inventory: bool,
+
     armor: i8,
     skillmod: i8,
     skills: Vec<String>, //todo
@@ -36,14 +38,7 @@ impl Player {
             inventory: vec![
                 generate_random_equip(),
                 generate_random_weapon(),
-                ItemsTypes::ConsumableItem(Consumable::new(
-                    "Healing Potion".into(),
-                    "A healing Potion".to_string(),
-                    Raritys::TRASH,
-                    1,
-                    20,
-                    0,
-                )),
+                ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
@@ -59,7 +54,7 @@ impl Player {
             inventory_size: 10,
             level: 0,
             max_hp: 100,
-            in_inventory: false,
+
             armor: 5,
             skills: vec!["Todo".into()],
             equipmentslots: HashMap::from([
@@ -95,7 +90,6 @@ impl Player {
 
     //Functions for combat of the player
     pub fn attack(&self) -> u8 {
-
         self.attack
     }
 
@@ -106,7 +100,6 @@ impl Player {
         if (taken_dmg > self.health) {
             self.health = 0;
             self.alive = false;
-            Self::player_died()
         } else {
             self.health = self.health - taken_dmg;
         }
@@ -118,7 +111,6 @@ impl Player {
         if (dmg as u8 >= self.health) {
             self.health = 0;
             self.alive = false;
-            Self::player_died()
         } else {
             self.health = self.health - dmg as u8;
         }
@@ -126,6 +118,17 @@ impl Player {
 
     pub fn get_hp(&self) -> &u8 {
         &self.health
+    }
+
+    pub fn has_free_inventory_slot(&self) -> bool {
+        for slot in &self.inventory  {
+            if(slot.get_name().to_ascii_lowercase().eq("empty")) {
+                return true;
+            }
+        }
+
+        false
+
     }
 
     pub fn check_equipment_bonus_dmg(&self) -> u8 {
@@ -145,7 +148,6 @@ impl Player {
     pub fn defend(&mut self, dmg: i8) {
         if ((dmg - (self.armor * 2)) as i8 > self.health as i8) {
             self.alive = false;
-            Self::player_died()
         }
 
         if (dmg - (self.armor * 2) > 0) {
@@ -201,13 +203,6 @@ impl Player {
         }
     }
 
-    pub fn is_in_inventory(&self) -> &bool {
-        &self.in_inventory
-    }
-
-    pub fn set_inventory(&mut self, yes: bool) {
-        self.in_inventory = yes;
-    }
     pub fn get_inventory(&self) -> &[ItemsTypes] {
         &self.inventory
     }
@@ -395,8 +390,74 @@ impl Player {
         }
     }
 
-    pub fn player_died() {
-        tdrawer::set_render_queue("death".into());
-        //*gamestate_ref().lock().unwrap() = Gamestate::home;
+    pub fn handle_equip(&mut self, action: &str) {
+        let cmd = action.split(" ").collect::<Vec<&str>>();
+
+        if (cmd.len() != 3 || cmd[2].eq("")) {
+            add_log("Dungeon: Pls provid the right  arguments");
+        } else {
+            match cmd[1].parse::<usize>() {
+                Ok(index) => {
+                    if (index > self.inventory.len() - 1) {
+                        add_log("Dungeon: unvalid index")
+                    } else {
+                        if (!(Equipmintslots::from_string(cmd[2].parse().unwrap())
+                            == Equipmintslots::None))
+                        {
+                            &self.equip_item(
+                                index,
+                                Equipmintslots::from_string(cmd[2].parse().unwrap()),
+                            );
+                        } else {
+                            add_log("Dungeon: Unvalid equipmentslot")
+                        }
+                    }
+                }
+                _ => add_log("Dungeon: unvalid index"),
+            }
+        }
+    }
+
+    pub fn handle_unequip(&mut self, action: &str){
+        let cmd = action.split(" ").collect::<Vec<&str>>();
+
+        if (cmd.len() != 2 || cmd[1].eq("")) {
+            add_log("Dungeon: Pls provid the right arguments");
+        } else {
+            self.unequip(Equipmintslots::from_string(cmd[1].parse().unwrap()));
+
+        }
+
+    }
+
+    pub fn handle_inspect(&mut self, action: &str) {
+        let cmd = action.split(" ").collect::<Vec<&str>>();
+
+        if (cmd.len() != 2 || cmd[1].eq("")) {
+            add_log("Dungeon: Pls provid the right arguments");
+        } else {
+           match cmd[1].parse::<usize>(){
+               Ok(index) => {
+                   self.inspect(index as u8);
+               }
+               _ => add_log("Dungeon: Pls provid the right arguments")
+           }
+
+        }
+    }
+
+    pub fn handle_drop(&mut self, action: &str){
+        let cmd = action.split(" ").collect::<Vec<&str>>();
+        if(cmd.len() != 2 || cmd[1].eq(" ")){
+            add_log("Dungeon: Pls provid the right arguments")
+        } else {
+            match cmd[1].parse::<usize>(){
+                Ok(index) => {
+                    self.drop_item_from_inventory(index)
+                }
+                _ => add_log("Dungeon: Pls provid the right arguments")
+            }
+        }
+
     }
 }

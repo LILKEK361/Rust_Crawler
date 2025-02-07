@@ -7,7 +7,9 @@ use ratatui::{layout, Frame};
 use std::clone::Clone;
 use std::collections::HashMap;
 
-use crate::gamelogic::game_screens::WindowContents::{COMBAT, DEATH, HELP, INFO, INVENTORY, MAPSCREEN, ROOM, VIC};
+use crate::gamelogic::game_screens::WindowContents::{
+    COMBAT, DEATH, HELP, INFO, INVENTORY, MAPSCREEN, ROOM, VIC,
+};
 use crate::gamelogic::{draw_functions, gamehelperfunctions, konst};
 use crate::gameobjects::player::Player;
 
@@ -60,7 +62,13 @@ impl WindowContents {
     }
 
     pub fn new_combat_screen() -> Self {
-        COMBAT(GameScreen::from(Layout::default().direction(Horizontal).constraints([Constraint::Ratio(1,3),Constraint::Ratio(1,3),Constraint::Ratio(1,3)])))
+        COMBAT(GameScreen::from(
+            Layout::default().direction(Horizontal).constraints([
+                Constraint::Ratio(1, 3),
+                Constraint::Ratio(1, 3),
+                Constraint::Ratio(1, 3),
+            ]),
+        ))
     }
 }
 
@@ -68,9 +76,8 @@ impl Drawable for WindowContents {
     fn draw(&self, mut frame: &mut Frame, input_string: &str, log: Vec<String>) {
         match &self {
             INVENTORY(screen) => {
-
                 draw_functions::draw_inventory(frame, screen);
-                draw_functions::draw_log_and_input(frame,  log,input_string, screen);
+                draw_functions::draw_log_and_input(frame, log, input_string, screen);
             }
             MAPSCREEN(screen) => {
                 draw_functions::draw_map(

@@ -13,7 +13,7 @@ pub(crate) mod game_screens;
 pub(crate) mod gamehelperfunctions;
 #[path = "Gamehelper/Datenbankmanager/postgreshandler.rs"]
 pub(crate) mod postgreshandler;
-#[path = "Gamehelper/Gamelogic/GameStrings/room_descriptions.rs"]
-pub(crate) mod room_descriptions;
 #[path = "Gamehelper/Gamelogic/reader.rs"]
 pub(crate) mod reader;
+#[path = "Gamehelper/Gamelogic/GameStrings/room_descriptions.rs"]
+pub(crate) mod room_descriptions;

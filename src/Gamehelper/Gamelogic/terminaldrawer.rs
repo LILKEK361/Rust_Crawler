@@ -332,7 +332,6 @@ impl tdrawer {
             *monster.get_max_hp(),
         );
 
-
         frame.render_widget(playercard, mapLayout[0]);
 
         frame.render_widget(monstercard, mapLayout[2]);
@@ -521,98 +520,119 @@ impl drawer {
 
     pub fn handle_input(&mut self, action: &str) {
 
+        Player::player_ref().lock().unwrap().stop_inspect();
 
-        if*(Dungeon::dungeon_ref().lock().unwrap().is_combat()){
-           if(vec!["defend", "attack", "help"].contains(&action)){
-
-
+        if *(Dungeon::dungeon_ref().lock().unwrap().is_combat()) {
+            if (vec!["defend", "attack", "help"].contains(&action)) {
                 if (action.eq("attack")) {
-
-
                     let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
 
                     let monster = dungeon.get_current_room().get_Monster().unwrap();
 
                     monster.take_dmg(Player::player_ref().lock().unwrap().attack());
 
-                    add_log(&*format!("The {} took {} dmg", &monster.get_Name(), Player::player_ref().lock().unwrap().attack()));
+                    add_log(&*format!(
+                        "The {} took {} dmg",
+                        &monster.get_Name(),
+                        Player::player_ref().lock().unwrap().attack()
+                    ));
 
                     if (!monster.is_alive()) {
-
-
                         dungeon.set_combat(false);
 
-                        if( dungeon.get_current_room().get_Type().to_ascii_lowercase().eq("goal")){
+                        if (dungeon
+                            .get_current_room()
+                            .get_Type()
+                            .to_ascii_lowercase()
+                            .eq("goal"))
+                        {
                             drop(dungeon);
                             let _ = self.draw(WindowContents::new_vic_screen());
-
                         } else {
                             drop(dungeon);
                             let _ = self.draw(WindowContents::new_room_screen());
-
                         }
-
                     } else {
+                        Player::player_ref()
+                            .lock()
+                            .unwrap()
+                            .take_dmg(*monster.get_dmg());
 
-                        Player::player_ref().lock().unwrap().take_dmg(*monster.get_dmg());
-
-                        if(!Player::player_ref().lock().unwrap().alive){
-
+                        if (!Player::player_ref().lock().unwrap().alive) {
                             let _ = self.draw(WindowContents::new_death_screen());
-
                         }
                     };
                 }
-                if(action.eq("defend")) {
-
+                if (action.eq("defend")) {
                     let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
 
                     let monster = dungeon.get_current_room().get_Monster().unwrap();
 
-                    let mut  player = Player::player_ref().lock().unwrap();
+                    let mut player = Player::player_ref().lock().unwrap();
 
                     player.defend(*monster.get_dmg() as i8);
 
-                    if(!player.alive){
+                    if (!player.alive) {
                         drop(dungeon);
                         let _ = self.draw(WindowContents::new_death_screen());
-
                     }
                 };
-               if(action.eq("help")) {
-                   let _ = self.draw(WindowContents::new_help_screen());
-               }
+                if (action.eq("help")) {
+                    let _ = self.draw(WindowContents::new_help_screen());
+                }
+            } else {
+                add_log("Dungeon: You can't use that action during")
+            }
+        } else {
+            if (action.eq("la") || action.eq("look around")) {
+                let _ = self.draw(WindowContents::new_room_screen());
+            } else if (action.eq("map")) {
+                let _ = self.draw(WindowContents::new_map_screen());
+            } else if (action.eq("help")) {
+                let _ = self.draw(WindowContents::new_help_screen());
+            } else if (action.eq("clear")) {
+                add_log("Todo: Cleared")
+            } else if (vec!["up", "down", "left", "right"].contains(&&**&action)) {
+                Dungeon::dungeon_ref().lock().unwrap().move_player(&*action);
+                if (*Dungeon::dungeon_ref().lock().unwrap().is_combat()) {
+                    let _ = self.draw(WindowContents::new_combat_screen());
+                }
+            } else if (action.eq("info")) {
+                let _ = self.draw(WindowContents::new_info_screen());
+            } else if action.eq("i") || action.eq("inventory") {
+                let _ = self.draw(WindowContents::new_inventory_screen());
+            } else if (drawer::inventory_input(&action)) {
+                if (action.contains("drop")) {
+                    Player::player_ref().lock().unwrap().handle_drop(&action);
+                } else if (action.contains("equip") && !action.contains("unequip")) {
+                    Player::player_ref().lock().unwrap().handle_equip(&action)
+                } else if (action.contains("unequip")) {
+                    Player::player_ref().lock().unwrap().handle_unequip(&action)
+                } else if (action.contains("inspect")) {
+                    Player::player_ref().lock().unwrap().handle_inspect(&action)
+                }
+            } else if(action.eq("loot")){
 
-           } else {
-               add_log("Dungeon: You can't use that action during")
-           }
+            } else if(action.eq("exit")){
+                self.game = false;
+                self.home = true;
+                let _ = self.draw(MainScreen::new());
+            } else {
+                add_log("Dungeon: You can't use that action".into())
+            }
         }
-        else {
-           if (action.eq("la") || action.eq("look around")) {
-               let _ = self.draw(WindowContents::new_room_screen());
-           } else if (action.eq("map")) {
-               let _ = self.draw(WindowContents::new_map_screen());
-           } else if (action.eq("help")) {
-               let _ = self.draw(WindowContents::new_help_screen());
-           } else if (action.eq("clear")) {
-               add_log("Todo: Cleared")
-           } else if (vec!["up", "down", "left", "right"].contains(&&**&action)) {
-               Dungeon::dungeon_ref().lock().unwrap().move_player(&*action);
-               if(*Dungeon::dungeon_ref().lock().unwrap().is_combat()){
-                   let _ = self.draw(WindowContents::new_combat_screen());
-               }
-           } else if (action.eq("info")) {
-               let _ = self.draw(WindowContents::new_info_screen());
-
-           } else if action.eq("i") || action.eq("inventory") {
-               let _ = self.draw(WindowContents::new_inventory_screen());
-
-           } else if(vec!["drop", "equip", "use"].contains(&&"bana")){}
-
-           else
-           {
-               add_log("Dungeon: You can't use that action".into())
-           }
-       }
     }
+
+    pub fn inventory_input(action: &&str) -> (bool) {
+        let inventory_cmd = vec!["drop", "equip", "inspect", "unequip"];
+        for cmd in inventory_cmd {
+            if (action.contains(cmd)) {
+                return true;
+            }
+        }
+
+        false
+    }
+
+
 }

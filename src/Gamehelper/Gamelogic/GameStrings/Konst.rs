@@ -56,8 +56,6 @@ pub const VICOTRYMESSAGE: &str = "\n
 
 ";
 
-
-
 pub const PLAYERINFO: fn(
     name: &str,
     level: i8,
@@ -99,14 +97,12 @@ Inventory commands:\n
 ~ [inventory | i] : opens the inventory\n
 ~ [drop [index]]: drops the item / carefull you cant pick it up again\n
 ~ [equip [index] [slot]]: equips an item to th given slot\n
-~ [unequip [slot]]: unequipts an item / carefull it is delete after\n
-~ [inspect [slot]]: inspect a give item\n
+~ [unequip [slot]]: unequipts an item \n
+~ [inspect [index]]: inspect a give item\n
 ------------------------
 Combat commands: \n
 attack: to attack\n
 defend: to defend\n
 ";
-
-
 
 pub const LOGBUFFER: usize = 5;

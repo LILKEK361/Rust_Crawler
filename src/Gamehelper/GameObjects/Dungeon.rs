@@ -10,6 +10,8 @@ use crate::gameobjects::trap::Trap;
 use crate::gameobjects::treasure::Treasure;
 use crate::gameobjects::weaponitem::WeaponItem;
 use crate::{add_log, gamestate_ref, Gamestate};
+use colored::Colorize;
+use crossterm::style::Stylize;
 use rand::Rng;
 use ratatui::DefaultTerminal;
 use std::any::Any;
@@ -20,9 +22,6 @@ use std::ptr::eq;
 use std::sync::mpsc::Sender;
 use std::sync::{mpsc, Arc, Mutex, OnceLock};
 use std::thread;
-use crossterm::style::Stylize;
-use colored::Colorize;
-
 
 pub struct DungeonHandler {
     tx: Sender<()>,
@@ -282,9 +281,7 @@ impl Dungeon {
         match &mut room.encoutner {
             EncounterTypes::Monster(monster) => {
                 if (monster.is_alive()) {
-
                     self.combat = true;
-
                 }
             }
             EncounterTypes::Trap(trap) => {
@@ -300,7 +297,6 @@ impl Dungeon {
             EncounterTypes::Goal(monster) => {
                 if (monster.is_alive()) {
                     self.combat = true;
-
                 }
             }
             _ => {}
@@ -428,8 +424,6 @@ impl Dungeonroom {
     pub fn get_des(&self) -> &str {
         &self.encoutner.get_description()
     }
-
-
 
     pub fn get_Monster(&mut self) -> Option<&mut Monster> {
         match &mut self.encoutner {
