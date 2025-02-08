@@ -19,7 +19,7 @@
       "hp" : 30,
       "dmg" : 1,
       "loot" : null,
-      "description" : "A strange looking liguide."
+      "description" : "A strange looking liquid."
     }
   },
 
@@ -81,19 +81,18 @@
           "def" : 0,
           "slot" : "shoes"
         }
+      },
+
+      "treasures" : {
+
+      },
+
+      "consumables" : {
+
       }
-
-
-
     },
 
-    "treasures" : {
 
-    },
-
-    "consumables" : {
-
-    },
 
     "weapons" : {
       "ironsword" : {

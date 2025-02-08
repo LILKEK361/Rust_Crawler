@@ -125,3 +125,16 @@ pub const JSONFILEERROR: fn(link: Link) -> String = |link|  { format ! ("
 pub const JSONFILEPATHFOUND: fn(path : &str) -> String = |path|{
     format!("JSONFILE found at: \n {path}")
 };
+
+pub const JSONINFO: fn(monster: u8, trap: u8, armorpieces: u8, treasures: u8, consumables: u8, weapons: u8, randomroom: u8) -> String = |monster, trap,armor_pieces, treasures, consumables, weapons, randomroom| {
+
+    format!("The follwoing was found in the JSON-File: \n
+       Items: {}\n
+       Armorpieces: {armor_pieces},\n
+       Weapons: {weapons},\n
+       Treasures: {treasures},\n
+       Consumables: {consumables},\n
+       Randomrooms: {randomroom},\n
+    ", armor_pieces+consumables+weapons+treasures)
+
+};
