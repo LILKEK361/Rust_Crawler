@@ -6,39 +6,40 @@ use crate::gameobjects::item_handler::{Equipmintslots, Item, ItemsTypes, Raritys
 use colored::Colorize;
 use log::trace;
 use rand::Rng;
-use serde_json::{Map, Value};
+use serde_json::{json, Map, Value};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io;
 use std::io::{Error, Read};
+use serde_json::map::Values;
 use terminal_link::Link;
 
 struct JSONFILESTRUCT {
-    items: u8,
-    monster: u8,
-    traps: u8,
+    items: usize,
+    monster: usize,
+    traps: usize,
     //Head, Torso, pants, shoes,
-    armorpieces: u8,
-    treasures: u8,
-    consumables: u8,
-    weapons: u8,
-    randomroom: u8,
+    armorpieces: usize,
+    treasures: usize,
+    consumables: usize,
+    weapons: usize,
+    randomroom: usize,
 }
 
 impl JSONFILESTRUCT {
     pub fn new(
-        monster: u8,
-        trap: u8,
-        armorpieces: u8,
-        treasures: u8,
-        consumables: u8,
-        weapons: u8,
-        randomrom: u8,
+        monster: usize,
+        trap: usize,
+        armorpieces: usize,
+        treasures: usize,
+        consumables: usize,
+        weapons: usize,
+        randomrom: usize,
     ) -> Self {
-        let mut all_armor: u8 = 0;
+
 
         Self {
-            items: treasures + consumables + weapons + all_armor,
+            items: treasures + consumables + weapons + armorpieces,
             monster,
             traps: trap,
             randomroom: randomrom,
@@ -59,45 +60,55 @@ pub fn check_file(path: &str) -> anyhow::Result<&str, String> {
             let json: serde_json::Value =
                 serde_json::from_reader(file).expect("file should be proper JSON");
 
-            let monsters = json.get("monsters").unwrap().as_object().unwrap();
+            let monsters = match_json(json.get("monsters"));
 
-            let traps = json.get("traps").unwrap().as_object().unwrap();
-
-            let items = json.get("items").unwrap().as_object().unwrap();
-
-            let weapon = items.get("weapons").unwrap().as_object().unwrap();
+            let traps = match_json(json.get("traps"));
 
 
+            let items = match_json(json.get("items"));
 
-            let armorpieces = items.get("armor").unwrap().as_object().unwrap();
+            let weapon = match_json(json.get("items").unwrap().get("weapons"));
 
-            let randomrooms = json.get("random_rooms").unwrap().as_object().unwrap();
+
+
+            let armorpieces =match_json(json.get("items").unwrap().get("armor"));
+
+
+            let randomrooms = match_json(json.get("random_rooms"));
+
+            let treasures = match_json(json.get("items").unwrap().get("treasures"));
+
+            let consumables = match_json(json.get("items").unwrap().get("consumables"));
 
             let mut amor_count = 0;
 
-            for (k, v) in armorpieces {
+            for (k, v) in json.get("items").unwrap().get("armor").unwrap().as_object().unwrap() {
                 for (k2, v2) in v.as_object().unwrap() {
                     amor_count += 1;
                 }
             }
 
             let JSONFILESTRUCT = JSONFILESTRUCT::new(
-                monsters.len() as u8,
-                traps.iter().len() as u8,
-                amor_count,
-                0,
-                0,
-                weapon.len() as u8,
-                randomrooms.len() as u8,
+                monsters,
+                traps,
+                armorpieces,
+                treasures,
+                consumables,
+                weapon,
+                randomrooms
+
             );
 
-            println!("{}", konst::JSONINFO(monsters.len() as u8,
-                                           traps.iter().len() as u8,
-                                           amor_count,
-                                           0,
-                                           0,
-                                           weapon.len() as u8,
-                                           randomrooms.len() as u8,));
+            println!("{}", konst::JSONINFO(
+                monsters,
+                traps,
+                armorpieces,
+                treasures,
+                consumables,
+                weapon,
+                randomrooms
+
+            ));
             return Ok("loading complete");
         }
         Err(_) => {
@@ -106,6 +117,20 @@ pub fn check_file(path: &str) -> anyhow::Result<&str, String> {
                 konst::GITHUBLINK,
             )))
         }
+    }
+}
+
+pub fn match_json(value: Option<&Value>) -> usize {
+    match value {
+        Some(v) => {
+            match v.as_object() {
+                Some(va) => {
+                    va.len()
+                }
+                _ => 0
+            }
+        }
+        _ => {0}
     }
 }
 

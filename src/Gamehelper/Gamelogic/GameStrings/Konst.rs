@@ -126,7 +126,7 @@ pub const JSONFILEPATHFOUND: fn(path : &str) -> String = |path|{
     format!("JSONFILE found at: \n {path}")
 };
 
-pub const JSONINFO: fn(monster: u8, trap: u8, armorpieces: u8, treasures: u8, consumables: u8, weapons: u8, randomroom: u8) -> String = |monster, trap,armor_pieces, treasures, consumables, weapons, randomroom| {
+pub const JSONINFO: fn(monster: usize, trap: usize, armorpieces: usize, treasures: usize, consumables: usize, weapons: usize, randomroom: usize) -> String = |monster, trap,armor_pieces, treasures, consumables, weapons, randomroom| {
 
     format!("The follwoing was found in the JSON-File: \n
        Items: {}\n
