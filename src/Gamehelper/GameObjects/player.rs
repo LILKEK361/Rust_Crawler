@@ -12,6 +12,7 @@ use std::collections::HashMap;
 use std::io;
 use std::mem::forget;
 use std::sync::{Mutex, OnceLock};
+use crate::gamelogic::reader::{generate_armor_piece, generate_weapon, read_with_item_category};
 use crate::gameobjects::item_handler::ItemsTypes::InventorySlot;
 
 pub(crate) struct Player {
@@ -36,8 +37,8 @@ impl Player {
         Self {
             name,
             inventory: vec![
-                generate_random_equip(),
-                generate_random_weapon(),
+                generate_armor_piece(&read_with_item_category("armor".parse().unwrap()).unwrap()),
+                generate_weapon(&read_with_item_category("weapons".parse().unwrap()).unwrap()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
@@ -46,6 +47,7 @@ impl Player {
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
                 ItemsTypes::InventorySlot(Inventoryslot::empty()),
+
             ],
             health: 100,
             alive: true,

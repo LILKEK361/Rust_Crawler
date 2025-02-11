@@ -30,6 +30,19 @@ impl Monster {
         }
     }
 
+    pub fn from_json(name: String, hp: u8, dmg: u8, des: String) -> Self{
+        Self {
+            name,
+            m_type: "Monster".into(),
+            des,
+            alive: true,
+            hp,
+            max_hp: hp,
+            dmg,
+            loot: vec![],
+        }
+    }
+
     pub fn new_Boss(name: String) -> Self {
         Self {
             name: String::from(&name),

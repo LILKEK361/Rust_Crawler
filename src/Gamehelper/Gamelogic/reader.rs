@@ -3,53 +3,18 @@ use crate::gameobjects::dungeon::Dungeonroom;
 use crate::gameobjects::encounter::EncounterTypes;
 use crate::gameobjects::equip_item::EquipItem;
 use crate::gameobjects::item_handler::{Equipmintslots, Item, ItemsTypes, Raritys};
+use crate::gameobjects::weaponitem::WeaponItem;
 use colored::Colorize;
 use log::trace;
 use rand::Rng;
+use serde_json::map::Values;
 use serde_json::{json, Map, Value};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io;
-use std::io::{Error, Read};
-use serde_json::map::Values;
+use std::io::{Error, ErrorKind, Read};
 use terminal_link::Link;
-
-struct JSONFILESTRUCT {
-    items: usize,
-    monster: usize,
-    traps: usize,
-    //Head, Torso, pants, shoes,
-    armorpieces: usize,
-    treasures: usize,
-    consumables: usize,
-    weapons: usize,
-    randomroom: usize,
-}
-
-impl JSONFILESTRUCT {
-    pub fn new(
-        monster: usize,
-        trap: usize,
-        armorpieces: usize,
-        treasures: usize,
-        consumables: usize,
-        weapons: usize,
-        randomrom: usize,
-    ) -> Self {
-
-
-        Self {
-            items: treasures + consumables + weapons + armorpieces,
-            monster,
-            traps: trap,
-            randomroom: randomrom,
-            armorpieces,
-            treasures,
-            consumables,
-            weapons,
-        }
-    }
-}
+use crate::gameobjects::monster::Monster;
 
 pub fn read_json_file() {}
 pub fn check_file(path: &str) -> anyhow::Result<&str, String> {
@@ -64,15 +29,11 @@ pub fn check_file(path: &str) -> anyhow::Result<&str, String> {
 
             let traps = match_json(json.get("traps"));
 
-
             let items = match_json(json.get("items"));
 
             let weapon = match_json(json.get("items").unwrap().get("weapons"));
 
-
-
-            let armorpieces =match_json(json.get("items").unwrap().get("armor"));
-
+            let armorpieces = match_json(json.get("items").unwrap().get("armor"));
 
             let randomrooms = match_json(json.get("random_rooms"));
 
@@ -82,33 +43,31 @@ pub fn check_file(path: &str) -> anyhow::Result<&str, String> {
 
             let mut amor_count = 0;
 
-            for (k, v) in json.get("items").unwrap().get("armor").unwrap().as_object().unwrap() {
+            for (k, v) in json
+                .get("items")
+                .unwrap()
+                .get("armor")
+                .unwrap()
+                .as_object()
+                .unwrap()
+            {
                 for (k2, v2) in v.as_object().unwrap() {
                     amor_count += 1;
                 }
             }
 
-            let JSONFILESTRUCT = JSONFILESTRUCT::new(
-                monsters,
-                traps,
-                armorpieces,
-                treasures,
-                consumables,
-                weapon,
-                randomrooms
-
+            println!(
+                "{}",
+                konst::JSONINFO(
+                    monsters,
+                    traps,
+                    armorpieces,
+                    treasures,
+                    consumables,
+                    weapon,
+                    randomrooms
+                )
             );
-
-            println!("{}", konst::JSONINFO(
-                monsters,
-                traps,
-                armorpieces,
-                treasures,
-                consumables,
-                weapon,
-                randomrooms
-
-            ));
             return Ok("loading complete");
         }
         Err(_) => {
@@ -122,15 +81,11 @@ pub fn check_file(path: &str) -> anyhow::Result<&str, String> {
 
 pub fn match_json(value: Option<&Value>) -> usize {
     match value {
-        Some(v) => {
-            match v.as_object() {
-                Some(va) => {
-                    va.len()
-                }
-                _ => 0
-            }
-        }
-        _ => {0}
+        Some(v) => match v.as_object() {
+            Some(va) => va.len(),
+            _ => 0,
+        },
+        _ => 0,
     }
 }
 
@@ -162,11 +117,60 @@ pub fn generate_armor_piece(armordata: &Map<String, Value>) -> ItemsTypes {
         0,
     ))
 }
+
+pub fn generate_weapon(weapondata: &Map<String, Value>) -> ItemsTypes {
+    let mut keys: Vec<_> = weapondata.keys().into_iter().map(|key| key).collect();
+
+    let rand = rand::rng().random_range(0..keys.len());
+
+    let random_weapon = weapondata.get(keys[rand]).unwrap().as_object().unwrap();
+
+    ItemsTypes::WeaponItem(WeaponItem::new(
+        keys[rand].to_owned(),
+        random_weapon.get("des").unwrap().to_string(),
+        Raritys::COMMON,
+        random_weapon.get("dmg").unwrap().as_u64().unwrap() as u8,
+        0,
+    ))
+}
+
+pub fn generate_monster(monsterdata: &Map<String, Value>) -> EncounterTypes {
+
+    let mut keys: Vec<_> = monsterdata.keys().into_iter().map(|key| key).collect();
+    let rand = rand::rng().random_range(0..keys.len());
+
+    let randommonster = monsterdata.get(keys[rand]).unwrap().as_object().unwrap();
+
+    EncounterTypes::Monster(Monster::from_json(
+        keys[rand].to_owned(),
+        randommonster.get("hp").unwrap().as_u64().unwrap() as u8 ,
+        randommonster.get("dmg").unwrap().as_u64().unwrap() as u8 ,
+        randommonster.get("des").unwrap().to_string(),
+    ))
+
+
+
+}
+
+pub fn read_with_item_category(key: String) -> io::Result<Map<String, Value>> {
+    match File::open(konst::TEST_FIlE_PATH) {
+        Ok(file) => {
+            let json: serde_json::Value =
+                serde_json::from_reader(file).expect("file should be proper JSON");;
+
+            return Ok(json.get("items").unwrap().get(key).unwrap().as_object().unwrap().to_owned())
+
+        }
+        Err(e) => {
+            Err(e)
+        }
+    }
+
+
+}
+
+
 /*
-pub fn generate_weapon() -> ItemsTypes {}
-
-pub fn generate_monster() -> EncounterTypes {}
-
 pub fn generate_room() -> Dungeonroom {}
 
 */
