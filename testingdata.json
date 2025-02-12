@@ -1,35 +1,38 @@
 {
-  "monsters" : {
+  "encounter" : {
+    "monsters" : {
+      "goblin" :  {
+        "hp" : 10,
+        "dmg" : 5,
+        "loot" : null,
+        "description" : "A green looking man jumps at you"
+      },
 
-    "goblin" :  {
-      "hp" : 10,
-      "dmg" : 5,
-      "loot" : null,
-      "description" : "A green looking man jumps at you"
+      "skeleton" : {
+        "hp" : 15,
+        "dmg" : 2,
+        "loot" : null,
+        "description": "Did the pile of bones just move?"
+      },
+
+      "slime" : {
+        "hp" : 30,
+        "dmg" : 1,
+        "loot" : null,
+        "description" : "A strange looking liquid."
+      }
     },
 
-    "skeleton" : {
-      "hp" : 15,
-      "dmg" : 2,
-      "loot" : null,
-      "description": "Did the pile of bones just move?"
-    },
-
-    "slime" : {
-      "hp" : 30,
-      "dmg" : 1,
-      "loot" : null,
-      "description" : "A strange looking liquid."
+    "traps" : {
+        "Empty" :{
+          "des" : "A suspicios looking room.\n You get the feeling that something is wrong",
+          "dmg" : 4
+        },
+        "Library" :{
+        "des" : "A wierd tingle in the back of your head.\n Is it just this depressing dungeon or \n maybe something else?",
+        "dmg" : 2
+        }
     }
-  },
-
-  "traps" : {
-    "emptyroom" :{
-      "des" : "A suspicios looking room.\n You get the feeling that something is wrong",
-      "dmg" : 4
-    }
-
-
   },
 
 
@@ -87,7 +90,10 @@
     },
 
     "treasures" : {
-
+      "Golden Spetula": {
+        "dmg": 10,
+        "des" : "Wow. You never seen such a display of arrogance.\n Maybe it should be nerfed.\n"
+      }
     },
 
     "consumables" : {
@@ -111,11 +117,14 @@
 
   },
   "random_rooms" : {
-     "laboretory" : {
+     "Laboratory" : {
        "description" : "You walk into a room that recks of smells you never smeld before. \n On the left is a small table with various flask on it. \n Some contain a wierd blue liquid. On the right is a big shelf with books in a language you cant quite read.\n"
      },
     "Vektorraum" : {
       "description" : "On entry you get this wierd feeling.\n You see a big board with various symbols scriblet on it.\n You see three lines and in the center an arrow emerges."
+    },
+    "Library" : {
+      "description" : "A huge room opens up infront of you.\n The room is filled to the ceilling with shelfs \n containing all kinds of books.\n You know that one\n what was it called ? Was it book of Ra?"
     }
   }
 }

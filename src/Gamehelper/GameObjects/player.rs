@@ -1,5 +1,5 @@
 use crate::gamelogic::gamehelperfunctions::{generate_random_equip, generate_random_weapon};
-use crate::gamelogic::reader::{generate_armor_piece, generate_weapon, read_with_item_category};
+use crate::gamelogic::reader::{generate_armor_piece, generate_weapon, read_category_item};
 use crate::gamelogic::terminaldrawer::drawer;
 use crate::gameobjects::consumable_item::Consumable;
 use crate::gameobjects::inventoryslot;
@@ -37,15 +37,15 @@ impl Player {
         Self {
             name,
             inventory: vec![
-                generate_armor_piece(&read_with_item_category("armor".parse().unwrap()).unwrap()),
-                generate_armor_piece(&read_with_item_category("armor".parse().unwrap()).unwrap()),
-                generate_armor_piece(&read_with_item_category("armor".parse().unwrap()).unwrap()),
-                generate_weapon(&read_with_item_category("weapons".parse().unwrap()).unwrap()),
-                generate_weapon(&read_with_item_category("weapons".parse().unwrap()).unwrap()),
-                generate_weapon(&read_with_item_category("weapons".parse().unwrap()).unwrap()),
-                generate_weapon(&read_with_item_category("weapons".parse().unwrap()).unwrap()),
-                generate_weapon(&read_with_item_category("weapons".parse().unwrap()).unwrap()),
-                generate_weapon(&read_with_item_category("weapons".parse().unwrap()).unwrap()),
+                generate_armor_piece(&read_category_item("armor".parse().unwrap()).unwrap()),
+                generate_armor_piece(&read_category_item("armor".parse().unwrap()).unwrap()),
+                generate_armor_piece(&read_category_item("armor".parse().unwrap()).unwrap()),
+                generate_weapon(&read_category_item("weapons".parse().unwrap()).unwrap()),
+                generate_weapon(&read_category_item("weapons".parse().unwrap()).unwrap()),
+                generate_weapon(&read_category_item("weapons".parse().unwrap()).unwrap()),
+                generate_weapon(&read_category_item("weapons".parse().unwrap()).unwrap()),
+                generate_weapon(&read_category_item("weapons".parse().unwrap()).unwrap()),
+                generate_weapon(&read_category_item("weapons".parse().unwrap()).unwrap()),
             ],
             health: 100,
             alive: true,
@@ -105,7 +105,7 @@ impl Player {
         }
     }
 
-    pub fn take_true_dmg(&mut self, dmg: i8) {
+    pub fn take_true_dmg(&mut self, dmg: u8) {
         add_log(&*format!("You took {} dmg,", dmg as u8));
 
         if (dmg as u8 >= self.health) {
@@ -274,7 +274,8 @@ impl Player {
                 .equipmentslots
                 .get(&slot)
                 .unwrap()
-                .get_name().to_ascii_lowercase()
+                .get_name()
+                .to_ascii_lowercase()
                 .eq("empty")
                 && slot == *self.inventory.get(item_index).unwrap().get_equipment_slot()
                 && slot != Equipmintslots::None)

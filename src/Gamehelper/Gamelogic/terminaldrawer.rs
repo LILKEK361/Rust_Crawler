@@ -72,7 +72,13 @@ impl drawer {
             self.home = false;
             self.game = true;
             &self.start_game();
-        } else {
+        } else if(cmd).eq(&"spoiler") && self.home {
+          let _ = self.draw(WindowContents::new_spoiler());
+        }else if(cmd).eq(&"menu") && self.home {
+            let _ = self.draw(MainScreen::new());
+        }
+
+        else {
             self.handle_input(cmd);
         }
     }
@@ -137,7 +143,6 @@ impl drawer {
     }
 
     pub fn handle_input(&mut self, action: &str) {
-
         Player::player_ref().lock().unwrap().stop_inspect();
 
         if *(Dungeon::dungeon_ref().lock().unwrap().is_combat()) {
@@ -229,9 +234,8 @@ impl drawer {
                 } else if (action.contains("inspect")) {
                     Player::player_ref().lock().unwrap().handle_inspect(&action)
                 }
-            } else if(action.eq("loot")){
-
-            } else if(action.eq("exit")){
+            } else if (action.eq("loot")) {
+            } else if (action.eq("exit")) {
                 self.game = false;
                 self.home = true;
                 let _ = self.draw(MainScreen::new());
@@ -251,6 +255,4 @@ impl drawer {
 
         false
     }
-
-
 }

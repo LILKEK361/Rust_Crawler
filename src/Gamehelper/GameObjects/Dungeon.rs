@@ -1,6 +1,8 @@
 use crate::gamelogic::game_screens::WindowContents;
 use crate::gamelogic::gamehelperfunctions;
-use crate::gamelogic::terminaldrawer::{drawer};
+use crate::gamelogic::gamehelperfunctions::generate_random_empty_room;
+use crate::gamelogic::reader::{generate_random_room, generate_trap, read_encounter_category};
+use crate::gamelogic::terminaldrawer::drawer;
 use crate::gameobjects::encounter::EncounterTypes::Empty;
 use crate::gameobjects::encounter::{Encounter, EncounterTypes};
 use crate::gameobjects::item_handler::{Equipmintslots, Item, ItemsTypes, Raritys};
@@ -22,6 +24,7 @@ use std::ptr::eq;
 use std::sync::mpsc::Sender;
 use std::sync::{mpsc, Arc, Mutex, OnceLock};
 use std::thread;
+
 //This clase will handle the gameloop and all the game mechanics
 pub(crate) struct Dungeon {
     rooms: Vec<Vec<Dungeonroom>>,
@@ -31,12 +34,12 @@ pub(crate) struct Dungeon {
 
 impl Dungeon {
     pub fn new() -> Self {
-        let testing = true;
+        let testing = false;
         let mut rooms = if !testing {
             Self::generator_maze(10, 15)
         } else {
             vec![vec![
-                Dungeonroom::EmptyRoom("Empty"),
+                generate_random_room().unwrap(),
                 Dungeonroom::MonsterRoom(String::from("Goblin")),
                 Dungeonroom::GoalRoom(),
             ]]
@@ -98,13 +101,13 @@ impl Dungeon {
                     if (counter >= 2) {
                         let random_number = rand::rng().random_range(0..=(counter - 1));
                         maze[none_rooms[random_number].0][none_rooms[random_number].1] =
-                            Dungeonroom::EmptyRoom("Empty")
+                            generate_random_room().unwrap()
                     }
                 }
                 if (counter >= 3) {
                     let random_number = rand::rng().random_range(0..=(counter - 1));
                     maze[none_rooms[random_number].0][none_rooms[random_number].1] =
-                        Dungeonroom::EmptyRoom("Empty")
+                        generate_random_room().unwrap()
                 }
             }
         }
@@ -263,7 +266,7 @@ impl Dungeonroom {
 
         match random_number {
             0 => Dungeonroom::MonsterRoom("Goblin".into()),
-            1 => Dungeonroom::EmptyRoom("E"),
+            1 => generate_random_room().unwrap(),
             2 => Dungeonroom::TrapRoom(),
             3 => Dungeonroom::None(),
             4 => Dungeonroom::TreaureRoom(),
@@ -292,26 +295,21 @@ impl Dungeonroom {
         Self {
             enterable: true,
             visited: true, //change
-            encoutner: EncounterTypes::Trap(Trap::new()),
+            encoutner: generate_trap(&read_encounter_category("traps".into()).unwrap()),
             note: String::new(),
         }
     }
 
     pub fn StartingRoom() -> Self {
-        Self {
-            encoutner: gamehelperfunctions::generate_random_empty_room(),
-            visited: true,
-            enterable: true,
-            note: String::new(),
-        }
+        generate_random_room().unwrap()
     }
 
-    pub fn EmptyRoom(name: &str) -> Self {
+    pub fn fillerRoom(name: String, des: String, note: String) -> Self {
         Self {
+            encoutner: EncounterTypes::Empty(crate::gameobjects::empty::Empty::new(name, des)),
             enterable: true,
-            encoutner: gamehelperfunctions::generate_random_empty_room(),
-            visited: false, //todo! change after testing
-            note: String::new(),
+            visited: true,
+            note,
         }
     }
 

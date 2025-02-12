@@ -30,7 +30,7 @@ impl Monster {
         }
     }
 
-    pub fn from_json(name: String, hp: u8, dmg: u8, des: String) -> Self{
+    pub fn from_json(name: String, hp: u8, dmg: u8, des: String) -> Self {
         Self {
             name,
             m_type: "Monster".into(),

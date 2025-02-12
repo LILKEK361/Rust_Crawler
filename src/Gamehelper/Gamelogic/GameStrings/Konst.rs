@@ -114,27 +114,40 @@ pub const FIlE_PATH: &str = "./data.json";
 pub const GITHUBLINK: &str = "https://github.com/LILKEK361/Rust_Crawler";
 
 pub const GAMENAME: &str = "RUST_CRAWLER";
-pub const JSONFILEERROR: fn(link: Link) -> String = |link|  { format ! ("
+pub const JSONFILEERROR: fn(link: Link) -> String = |link| {
+    format!(
+        "
     Look like you dont have the config file for the game :(.\n
     You may want to go to my Github page to download the file : \n
     {}\n
     There you also can read about creating your own config for the game\n
     or expand the one I provid.
-", link.url)};
-
-pub const JSONFILEPATHFOUND: fn(path : &str) -> String = |path|{
-    format!("JSONFILE found at: \n {path}")
+",
+        link.url
+    )
 };
 
-pub const JSONINFO: fn(monster: usize, trap: usize, armorpieces: usize, treasures: usize, consumables: usize, weapons: usize, randomroom: usize) -> String = |monster, trap,armor_pieces, treasures, consumables, weapons, randomroom| {
+pub const JSONFILEPATHFOUND: fn(path: &str) -> String =
+    |path| format!("JSONFILE found at: \n {path}");
 
-    format!("The follwoing was found in the JSON-File: \n
+pub const JSONINFO: fn(
+    monster: usize,
+    trap: usize,
+    armorpieces: usize,
+    treasures: usize,
+    consumables: usize,
+    weapons: usize,
+    randomroom: usize,
+) -> String = |monster, trap, armor_pieces, treasures, consumables, weapons, randomroom| {
+    format!(
+        "The follwoing was found in the JSON-File: \n
        Items: {}\n
        Armorpieces: {armor_pieces},\n
        Weapons: {weapons},\n
        Treasures: {treasures},\n
        Consumables: {consumables},\n
        Randomrooms: {randomroom},\n
-    ", armor_pieces+consumables+weapons+treasures)
-
+    ",
+        armor_pieces + consumables + weapons + treasures
+    )
 };

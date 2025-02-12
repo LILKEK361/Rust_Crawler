@@ -1,19 +1,37 @@
 {
-  "monsters" : {
+  "encounter" : {
+    "monsters" : {
 
+    },
+
+    "traps" : {
+
+    }
   },
 
-  "traps" : {
 
-  },
-
-  "treasures" : {
-
-  },
 
   "items" : {
 
     "armor" : {
+      "head": {
+
+      },
+
+      "torso": {
+
+      },
+      "pants": {
+
+      },
+      "shoes" : {
+
+      }
+
+
+    },
+
+    "treasures" : {
 
     },
 
@@ -24,6 +42,9 @@
     "weapons" : {
 
     }
+
+  },
+  "random_rooms" : {
 
   }
 }

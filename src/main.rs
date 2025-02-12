@@ -68,13 +68,9 @@ fn main() {
     } else if (args.len() > 1) {
         println!("{}", konst::TOMANYARGUMENTS)
     } else if (args.get(0).unwrap().to_ascii_lowercase().eq("setup")) {
-
         println!("Looks for data.json file");
         reader::check_file(konst::TEST_FIlE_PATH);
-
     } else if (args.get(0).unwrap().to_ascii_lowercase().eq("start")) {
-
-
         drawer::drawer_static_ref()
             .lock()
             .unwrap()

@@ -5,20 +5,20 @@ pub(crate) struct Trap {
     name: String,
     t_type: String,
     des: String,
-    dmg: i8,
+    dmg: u8,
     skillcheck: i8,
     spotted: bool,
     disarmed: bool,
 }
 
 impl Trap {
-    pub(crate) fn new() -> Trap {
+    pub(crate) fn new(name: String, des: String, dmg: u8) -> Trap {
         Self {
-            name: "Empty".to_string(),
+            name,
             t_type: "Empty".into(),
-            des: "Somthings different to the other rooms.\nYou can't quite say what it is.\nBut there is something\nMaybe just you paranoire or maybe something else".into(),
+            des,
             skillcheck: 10,
-            dmg: 2,
+            dmg,
             spotted: false,
             disarmed: false,
        }
@@ -26,7 +26,7 @@ impl Trap {
 }
 
 impl Trap {
-    pub fn get_dmg(&self) -> &i8 {
+    pub fn get_dmg(&self) -> &u8 {
         &self.dmg
     }
 

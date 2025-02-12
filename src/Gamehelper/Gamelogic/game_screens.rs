@@ -7,9 +7,7 @@ use ratatui::{layout, Frame};
 use std::clone::Clone;
 use std::collections::HashMap;
 
-use crate::gamelogic::game_screens::WindowContents::{
-    COMBAT, DEATH, HELP, INFO, INVENTORY, MAPSCREEN, ROOM, VIC,
-};
+use crate::gamelogic::game_screens::WindowContents::{Spoiler, COMBAT, DEATH, HELP, INFO, INVENTORY, MAPSCREEN, ROOM, VIC};
 use crate::gamelogic::{draw_functions, gamehelperfunctions, konst};
 use crate::gameobjects::player::Player;
 
@@ -22,6 +20,7 @@ pub enum WindowContents {
     DEATH(GameScreen), //TODO
     HELP(GameScreen),
     INFO(GameScreen),
+    Spoiler(GameScreen)
 }
 
 impl WindowContents {
@@ -69,6 +68,10 @@ impl WindowContents {
                 Constraint::Ratio(1, 3),
             ]),
         ))
+    }
+
+    pub fn new_spoiler() -> Self {
+        Spoiler(GameScreen::new())
     }
 }
 
@@ -147,6 +150,19 @@ impl Drawable for WindowContents {
                 draw_functions::draw_combat(frame, screen);
                 draw_functions::draw_log_and_input(frame, log, input_string, screen);
             }
+            Spoiler(screen) => {
+                frame.render_widget(
+                    Paragraph::new(konst::SPOILER)
+                        .block(Block::default().borders(Borders::ALL))
+                        .alignment(Center)
+                        .wrap(Wrap { trim: true }),
+                    screen
+                        .content_layout
+                        .split(screen.layout.split(frame.area())[0])[0],
+                );
+                draw_functions::draw_log_and_input(frame, log, input_string, screen);
+
+            }
 
             _ => {}
         }
@@ -177,17 +193,7 @@ impl MainScreen {
 
 impl Drawable for MainScreen {
     fn draw(&self, mut frame: &mut Frame, input_string: &str, log: Vec<String>) {
-        if *&self.show {
-            frame.render_widget(
-                Paragraph::new(konst::SPOILER)
-                    .block(Block::default().borders(Borders::ALL))
-                    .alignment(Center)
-                    .wrap(Wrap { trim: true }),
-                *&self
-                    .content_layout
-                    .split(*&self.layout.split(frame.area())[0])[0],
-            )
-        } else {
+
             frame.render_widget(
                 Paragraph::new(konst::MAINMENU)
                     .block(Block::default().borders(Borders::ALL))
@@ -196,8 +202,7 @@ impl Drawable for MainScreen {
                 *&self
                     .content_layout
                     .split(*&self.layout.split(frame.area())[0])[0],
-            )
-        }
+            );
 
         //TODO Make Log block
         frame.render_widget(
@@ -265,25 +270,4 @@ pub trait Drawable {
     fn draw(&self, frame: &mut Frame, input_string: &str, log: Vec<String>);
 }
 
-//pub const  MAIN_LAYOUT: Layout = Layout::new(Direction::Vertical,[Constraint::Percentage(90), Constraint::Percentage(10)]);
 
-//pub const CONTENT_WINDOW: Layout = Layout::default() .direction(Direction::Horizontal) .margin(1) .constraints([Constraint::Percentage(75), Constraint::Percentage(25)]);
-/*
-pub const INPUTBLOG: Block = Block::default()
-    .borders(Borders::ALL)
-    .title("Input")
-    .title_position(ratatui::widgets::block::Position::Top);
-
-pub const SPOILER_PARAGRAPH: Paragraph =  Paragraph::new(konst::SPOILER)
-    .alignment(Center)
-    .wrap(Wrap { trim: true });
-
-pub const GREET_PARAGRAPH: Paragraph = Paragraph::new(konst::MAINMENU)
-    .alignment(Center)
-    .wrap(Wrap { trim: true });
-
-pub const INVENTORY_LAYOUT: Layout = Layout::default()
-    .constraints([Constraint::Percentage(70), Constraint::Percentage(30)])
-    .direction(Horizontal);
-
-*/
