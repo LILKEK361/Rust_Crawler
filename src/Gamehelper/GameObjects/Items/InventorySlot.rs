@@ -12,7 +12,7 @@ pub(crate) struct Inventoryslot {
 impl Inventoryslot {
     pub fn empty() -> Self {
         Self {
-            name: "Empty".into(),
+            name: "empty".into(),
             eq_slot: Equipmintslots::None,
             rarity: Raritys::COMMON,
         }

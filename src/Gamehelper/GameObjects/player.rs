@@ -1,8 +1,10 @@
 use crate::gamelogic::gamehelperfunctions::{generate_random_equip, generate_random_weapon};
-use crate::gamelogic::terminaldrawer::{drawer};
+use crate::gamelogic::reader::{generate_armor_piece, generate_weapon, read_with_item_category};
+use crate::gamelogic::terminaldrawer::drawer;
 use crate::gameobjects::consumable_item::Consumable;
 use crate::gameobjects::inventoryslot;
 use crate::gameobjects::inventoryslot::Inventoryslot;
+use crate::gameobjects::item_handler::ItemsTypes::InventorySlot;
 use crate::gameobjects::item_handler::{Equipmintslots, Item, ItemsTypes, Raritys};
 use crate::gameobjects::passiv_handler::PassivTypes;
 use crate::{add_log, gameobjects, gamestate_ref, Gamestate};
@@ -12,8 +14,6 @@ use std::collections::HashMap;
 use std::io;
 use std::mem::forget;
 use std::sync::{Mutex, OnceLock};
-use crate::gamelogic::reader::{generate_armor_piece, generate_weapon, read_with_item_category};
-use crate::gameobjects::item_handler::ItemsTypes::InventorySlot;
 
 pub(crate) struct Player {
     pub name: String,
@@ -38,16 +38,14 @@ impl Player {
             name,
             inventory: vec![
                 generate_armor_piece(&read_with_item_category("armor".parse().unwrap()).unwrap()),
+                generate_armor_piece(&read_with_item_category("armor".parse().unwrap()).unwrap()),
+                generate_armor_piece(&read_with_item_category("armor".parse().unwrap()).unwrap()),
                 generate_weapon(&read_with_item_category("weapons".parse().unwrap()).unwrap()),
-                ItemsTypes::InventorySlot(Inventoryslot::empty()),
-                ItemsTypes::InventorySlot(Inventoryslot::empty()),
-                ItemsTypes::InventorySlot(Inventoryslot::empty()),
-                ItemsTypes::InventorySlot(Inventoryslot::empty()),
-                ItemsTypes::InventorySlot(Inventoryslot::empty()),
-                ItemsTypes::InventorySlot(Inventoryslot::empty()),
-                ItemsTypes::InventorySlot(Inventoryslot::empty()),
-                ItemsTypes::InventorySlot(Inventoryslot::empty()),
-
+                generate_weapon(&read_with_item_category("weapons".parse().unwrap()).unwrap()),
+                generate_weapon(&read_with_item_category("weapons".parse().unwrap()).unwrap()),
+                generate_weapon(&read_with_item_category("weapons".parse().unwrap()).unwrap()),
+                generate_weapon(&read_with_item_category("weapons".parse().unwrap()).unwrap()),
+                generate_weapon(&read_with_item_category("weapons".parse().unwrap()).unwrap()),
             ],
             health: 100,
             alive: true,
@@ -123,24 +121,13 @@ impl Player {
     }
 
     pub fn has_free_inventory_slot(&self) -> bool {
-        for slot in &self.inventory  {
-            if(slot.get_name().to_ascii_lowercase().eq("empty")) {
+        for slot in &self.inventory {
+            if (slot.get_name().to_ascii_lowercase().eq("empty")) {
                 return true;
             }
         }
 
         false
-
-    }
-
-    pub fn check_equipment_bonus_dmg(&self) -> u8 {
-        let mut dmg_bonus = 0;
-        for (k, v) in &self.equipmentslots {
-            if (!v.get_name().eq("empty")) {
-                dmg_bonus = dmg_bonus + v.get_bonus_dmg()
-            }
-        }
-        dmg_bonus
     }
 
     pub fn get_max_hp(&self) -> &u8 {
@@ -282,12 +269,12 @@ impl Player {
 
     pub fn equip_item(&mut self, item_index: usize, slot: Equipmintslots) {
         if (item_index <= (self.inventory_size - 1) as usize) {
+            let itemslot = self.inventory.get(item_index).unwrap().get_equipment_slot();
             if (self
                 .equipmentslots
                 .get(&slot)
                 .unwrap()
-                .get_name()
-                .to_ascii_lowercase()
+                .get_name().to_ascii_lowercase()
                 .eq("empty")
                 && slot == *self.inventory.get(item_index).unwrap().get_equipment_slot()
                 && slot != Equipmintslots::None)
@@ -420,16 +407,14 @@ impl Player {
         }
     }
 
-    pub fn handle_unequip(&mut self, action: &str){
+    pub fn handle_unequip(&mut self, action: &str) {
         let cmd = action.split(" ").collect::<Vec<&str>>();
 
         if (cmd.len() != 2 || cmd[1].eq("")) {
             add_log("Dungeon: Pls provid the right arguments");
         } else {
             self.unequip(Equipmintslots::from_string(cmd[1].parse().unwrap()));
-
         }
-
     }
 
     pub fn handle_inspect(&mut self, action: &str) {
@@ -438,28 +423,24 @@ impl Player {
         if (cmd.len() != 2 || cmd[1].eq("")) {
             add_log("Dungeon: Pls provid the right arguments");
         } else {
-           match cmd[1].parse::<usize>(){
-               Ok(index) => {
-                   self.inspect(index as u8);
-               }
-               _ => add_log("Dungeon: Pls provid the right arguments")
-           }
-
+            match cmd[1].parse::<usize>() {
+                Ok(index) => {
+                    self.inspect(index as u8);
+                }
+                _ => add_log("Dungeon: Pls provid the right arguments"),
+            }
         }
     }
 
-    pub fn handle_drop(&mut self, action: &str){
+    pub fn handle_drop(&mut self, action: &str) {
         let cmd = action.split(" ").collect::<Vec<&str>>();
-        if(cmd.len() != 2 || cmd[1].eq(" ")){
+        if (cmd.len() != 2 || cmd[1].eq(" ")) {
             add_log("Dungeon: Pls provid the right arguments")
         } else {
-            match cmd[1].parse::<usize>(){
-                Ok(index) => {
-                    self.drop_item_from_inventory(index)
-                }
-                _ => add_log("Dungeon: Pls provid the right arguments")
+            match cmd[1].parse::<usize>() {
+                Ok(index) => self.drop_item_from_inventory(index),
+                _ => add_log("Dungeon: Pls provid the right arguments"),
             }
         }
-
     }
 }

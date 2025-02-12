@@ -90,6 +90,7 @@ pub fn match_json(value: Option<&Value>) -> usize {
 }
 
 pub fn generate_armor_piece(armordata: &Map<String, Value>) -> ItemsTypes {
+
     let mut keys: Vec<_> = armordata.keys().into_iter().map(|key| key).collect();
 
     let armor_category = armordata
@@ -98,20 +99,20 @@ pub fn generate_armor_piece(armordata: &Map<String, Value>) -> ItemsTypes {
         .as_object()
         .unwrap();
 
-    keys = armor_category.keys().into_iter().map(|key| key).collect();
+    let armor_pieces: Vec<_> = armor_category.keys().into_iter().map(|key| key).collect();
 
     let random_armor_piece = rand::rng().random_range(0..armor_category.len());
 
     let armor_piece = armor_category
-        .get(keys[random_armor_piece])
+        .get(armor_pieces[random_armor_piece])
         .unwrap()
         .as_object()
         .unwrap();
 
     ItemsTypes::EquipItem(EquipItem::new(
-        keys[random_armor_piece].to_owned(),
-        keys[random_armor_piece].to_owned(),
-        Equipmintslots::from_string(armor_piece.get("slot").unwrap().to_string()),
+        armor_pieces[random_armor_piece].to_owned(),
+        armor_pieces[random_armor_piece].to_owned(),
+        Equipmintslots::from_string(armor_piece.get("slot").unwrap().as_str().unwrap().parse().unwrap()),
         armor_piece.get("def").unwrap().as_u64().unwrap() as u8,
         Raritys::COMMON,
         0,
@@ -127,7 +128,7 @@ pub fn generate_weapon(weapondata: &Map<String, Value>) -> ItemsTypes {
 
     ItemsTypes::WeaponItem(WeaponItem::new(
         keys[rand].to_owned(),
-        random_weapon.get("des").unwrap().to_string(),
+        random_weapon.get("des").unwrap().as_str().unwrap().parse().unwrap(),
         Raritys::COMMON,
         random_weapon.get("dmg").unwrap().as_u64().unwrap() as u8,
         0,
@@ -158,7 +159,7 @@ pub fn read_with_item_category(key: String) -> io::Result<Map<String, Value>> {
             let json: serde_json::Value =
                 serde_json::from_reader(file).expect("file should be proper JSON");;
 
-            return Ok(json.get("items").unwrap().get(key).unwrap().as_object().unwrap().to_owned())
+            Ok(json.get("items").unwrap().get(key).unwrap().as_object().unwrap().to_owned())
 
         }
         Err(e) => {
