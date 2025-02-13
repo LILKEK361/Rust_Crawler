@@ -19,9 +19,9 @@ use ratatui::{text::Text, Frame};
 
 use crate::gamehelper::dbpaths;
 use crate::gamelogic::game_screens::MainScreen;
-use crate::gamelogic::gamehelperfunctions::generate_random_weapon;
+
 use crate::gamelogic::terminaldrawer::drawer;
-use crate::gamelogic::{arghandler, konst, postgreshandler, reader};
+use crate::gamelogic::{arghandler, konst, reader};
 
 use crate::gameobjects::item_handler::Item;
 use crossterm::terminal::EnterAlternateScreen;
@@ -102,14 +102,6 @@ impl PartialEq for Gamestate {
     }
 }
 
-pub(crate) fn db_manager_ref() -> &'static Arc<Mutex<postgreshandler::PgHandler>> {
-    static MANAGER: OnceLock<Arc<Mutex<postgreshandler::PgHandler>>> = OnceLock::new();
-
-    MANAGER.get_or_init(|| {
-        let manager = Arc::new(Mutex::new(postgreshandler::PgHandler::new()));
-        manager
-    })
-}
 
 pub fn gamestate_ref() -> &'static Mutex<Gamestate> {
     static GAMESTATE: OnceLock<Mutex<Gamestate>> = OnceLock::new();

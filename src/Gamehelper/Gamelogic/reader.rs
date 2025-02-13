@@ -151,7 +151,7 @@ pub fn generate_monster(monsterdata: &Map<String, Value>) -> EncounterTypes {
         keys[rand].to_owned(),
         randommonster.get("hp").unwrap().as_u64().unwrap() as u8,
         randommonster.get("dmg").unwrap().as_u64().unwrap() as u8,
-        randommonster.get("des").unwrap().to_string(),
+        randommonster.get("description").unwrap().as_str().unwrap().to_string(),
     ))
 }
 

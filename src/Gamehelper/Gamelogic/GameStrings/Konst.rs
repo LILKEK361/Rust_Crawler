@@ -146,8 +146,16 @@ pub const JSONINFO: fn(
        Weapons: {weapons},\n
        Treasures: {treasures},\n
        Consumables: {consumables},\n
+       Monster: {monster}\n
        Randomrooms: {randomroom},\n
     ",
         armor_pieces + consumables + weapons + treasures
     )
 };
+
+
+pub const WEAPOONCAT: &str = "weapons";
+pub const ARMORCAT: &str = "armor";
+
+pub const MONSTERCAT: &str = "monsters";
+pub const TRAPCAT: &str = "traps";

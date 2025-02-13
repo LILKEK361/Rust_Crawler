@@ -9,10 +9,8 @@ pub(crate) mod arghandler;
 pub(crate) mod draw_functions;
 #[path = "Gamehelper/Gamelogic/game_screens.rs"]
 pub(crate) mod game_screens;
-#[path = "Gamehelper/Gamelogic/gamehelperfunctions.rs"]
-pub(crate) mod gamehelperfunctions;
-#[path = "Gamehelper/Datenbankmanager/postgreshandler.rs"]
-pub(crate) mod postgreshandler;
+
+
 #[path = "Gamehelper/Gamelogic/reader.rs"]
 pub(crate) mod reader;
 #[path = "Gamehelper/Gamelogic/GameStrings/room_descriptions.rs"]

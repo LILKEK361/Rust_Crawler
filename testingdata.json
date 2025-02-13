@@ -20,6 +20,12 @@
         "dmg" : 1,
         "loot" : null,
         "description" : "A strange looking liquid."
+      },
+
+      "bats" : {
+        "hp": 20,
+        "dmg" : 3,
+        "description" : "A huge looking swarm flys towards you."
       }
     },
 

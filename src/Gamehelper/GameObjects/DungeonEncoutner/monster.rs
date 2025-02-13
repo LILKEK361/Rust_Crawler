@@ -3,6 +3,7 @@ use crate::gameobjects::encounter::Encounter;
 use crate::gameobjects::item_handler::{ItemsTypes, Raritys};
 use crate::gameobjects::weaponitem::WeaponItem;
 use crossterm::style::Stylize;
+use crate::gamelogic::{konst, reader};
 
 #[derive(Clone)]
 pub(crate) struct Monster {
@@ -26,7 +27,7 @@ impl Monster {
             hp: 25,
             max_hp: 25,
             dmg: 6,
-            loot: vec![gamelogic::gamehelperfunctions::generate_random_drop()],
+            loot: vec![reader::generate_weapon(&reader::read_category_item(konst::WEAPOONCAT.into()).unwrap())],
         }
     }
 
@@ -39,7 +40,7 @@ impl Monster {
             hp,
             max_hp: hp,
             dmg,
-            loot: vec![],
+            loot: vec![reader::generate_weapon(&reader::read_category_item(konst::WEAPOONCAT.into()).unwrap())],
         }
     }
 

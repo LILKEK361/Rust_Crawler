@@ -1,7 +1,7 @@
 use crate::gamelogic::game_screens::WindowContents;
-use crate::gamelogic::gamehelperfunctions;
-use crate::gamelogic::gamehelperfunctions::generate_random_empty_room;
-use crate::gamelogic::reader::{generate_random_room, generate_trap, read_encounter_category};
+
+
+use crate::gamelogic::reader::{generate_monster, generate_random_room, generate_trap, read_encounter_category};
 use crate::gamelogic::terminaldrawer::drawer;
 use crate::gameobjects::encounter::EncounterTypes::Empty;
 use crate::gameobjects::encounter::{Encounter, EncounterTypes};
@@ -24,6 +24,7 @@ use std::ptr::eq;
 use std::sync::mpsc::Sender;
 use std::sync::{mpsc, Arc, Mutex, OnceLock};
 use std::thread;
+use crate::gamelogic::konst;
 
 //This clase will handle the gameloop and all the game mechanics
 pub(crate) struct Dungeon {
@@ -40,7 +41,7 @@ impl Dungeon {
         } else {
             vec![vec![
                 generate_random_room().unwrap(),
-                Dungeonroom::MonsterRoom(String::from("Goblin")),
+                Dungeonroom::MonsterRoom(),
                 Dungeonroom::GoalRoom(),
             ]]
         };
@@ -265,7 +266,7 @@ impl Dungeonroom {
         let random_number = rand::rng().random_range(0..=4);
 
         match random_number {
-            0 => Dungeonroom::MonsterRoom("Goblin".into()),
+            0 => Dungeonroom::MonsterRoom(),
             1 => generate_random_room().unwrap(),
             2 => Dungeonroom::TrapRoom(),
             3 => Dungeonroom::None(),
@@ -273,10 +274,10 @@ impl Dungeonroom {
             _ => Dungeonroom::None(),
         }
     }
-    pub fn MonsterRoom(name: String) -> Self {
+    pub fn MonsterRoom() -> Self {
         Self {
-            encoutner: EncounterTypes::Monster(Monster::new(name)),
-            visited: false, //todo change
+            encoutner: generate_monster(&read_encounter_category(konst::MONSTERCAT.into()).unwrap()),
+            visited: true, //todo change
             enterable: true,
             note: String::new(),
         }
@@ -294,7 +295,7 @@ impl Dungeonroom {
     pub fn TrapRoom() -> Self {
         Self {
             enterable: true,
-            visited: true, //change
+            visited: false, //change
             encoutner: generate_trap(&read_encounter_category("traps".into()).unwrap()),
             note: String::new(),
         }
@@ -326,7 +327,7 @@ impl Dungeonroom {
         Self {
             enterable: false,
             encoutner: EncounterTypes::None,
-            visited: true,
+            visited: false,
             note: String::new(),
         }
     }
@@ -363,7 +364,7 @@ impl Dungeonroom {
         }
     }
 
-    pub fn clearMonsterRoom(&mut self, player: &Player) {
+    pub fn clearMonsterRoom(&mut self) {
         self.note = "A unlooted corpse lays on the ground.\n Looks yummy\n".into();
         match &mut self.encoutner {
             EncounterTypes::Monster(monster) => {
@@ -375,27 +376,31 @@ impl Dungeonroom {
 
     pub fn handleLoot(&mut self) {
         let mut player = Player::player_ref().lock().unwrap();
-        match &mut self.encoutner {
-            EncounterTypes::Monster(monster) => {
-                for item in monster.drop() {
-                    if (!player.add_loot(item)) {
-                        add_log("Your inventory is full")
-                    } else {
-                        self.note = "".parse().unwrap();
+        if(player.has_free_inventory_slot()) {
+            match &mut self.encoutner {
+                EncounterTypes::Monster(monster) => {
+                    for item in monster.drop() {
+                        if (!player.add_loot(item)) {
+                            add_log("Your inventory is full")
+                        } else {
+                            self.note = "".parse().unwrap();
+                        }
                     }
                 }
-            }
-            EncounterTypes::Treasure(treaure) => {
-                for item in treaure.take() {
-                    if (!player.add_loot(item)) {
-                        add_log("Your inventory is full")
-                    } else {
-                        self.note = "".parse().unwrap();
+                EncounterTypes::Treasure(treaure) => {
+                    for item in treaure.take() {
+                        if (!player.add_loot(item)) {
+                            add_log("Your inventory is full")
+                        } else {
+                            self.note = "".parse().unwrap();
+                        }
                     }
                 }
-            }
 
-            _ => {}
+                _ => {}
+            }
+        } else {
+            add_log("Dungeon: Your inventory is full")
         }
     }
 }

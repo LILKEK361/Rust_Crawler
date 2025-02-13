@@ -17,7 +17,7 @@ impl Treasure {
         Self {
             name: String::from(room_descriptions::TREASURETITLE),
             des: String::from(room_descriptions::TREASUREDES),
-            treasure: vec![gamelogic::gamehelperfunctions::generate_random_treaure()],
+            treasure: vec![] ,//TODO,
             t_type: String::from("Chest"),
         }
     }

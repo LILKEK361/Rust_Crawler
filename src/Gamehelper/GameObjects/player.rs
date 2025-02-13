@@ -1,4 +1,4 @@
-use crate::gamelogic::gamehelperfunctions::{generate_random_equip, generate_random_weapon};
+
 use crate::gamelogic::reader::{generate_armor_piece, generate_weapon, read_category_item};
 use crate::gamelogic::terminaldrawer::drawer;
 use crate::gameobjects::consumable_item::Consumable;

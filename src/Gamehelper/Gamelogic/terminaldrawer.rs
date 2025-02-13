@@ -172,6 +172,7 @@ impl drawer {
                             drop(dungeon);
                             let _ = self.draw(WindowContents::new_vic_screen());
                         } else {
+                            dungeon.get_current_room().clearMonsterRoom();
                             drop(dungeon);
                             let _ = self.draw(WindowContents::new_room_screen());
                         }
@@ -235,6 +236,10 @@ impl drawer {
                     Player::player_ref().lock().unwrap().handle_inspect(&action)
                 }
             } else if (action.eq("loot")) {
+
+                let mut dungeon = Dungeon::dungeon_ref().lock().unwrap();
+                let _ = dungeon.get_current_room().handleLoot();
+
             } else if (action.eq("exit")) {
                 self.game = false;
                 self.home = true;

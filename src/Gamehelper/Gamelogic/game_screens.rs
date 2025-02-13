@@ -8,7 +8,7 @@ use std::clone::Clone;
 use std::collections::HashMap;
 
 use crate::gamelogic::game_screens::WindowContents::{Spoiler, COMBAT, DEATH, HELP, INFO, INVENTORY, MAPSCREEN, ROOM, VIC};
-use crate::gamelogic::{draw_functions, gamehelperfunctions, konst};
+use crate::gamelogic::{draw_functions, konst};
 use crate::gameobjects::player::Player;
 
 pub enum WindowContents {
